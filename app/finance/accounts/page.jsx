@@ -1,143 +1,192 @@
-// =============================================================
-// app/finance/accounts/page.jsx — [FIN-3] Account Manager Screen
-// =============================================================
-// View all financial accounts and their balances. Add new accounts.
-// Accounts represent real-world bank accounts, credit cards, cash, savings.
-// Route: /finance/accounts
-// Ref: App_Flow [FIN-3], PRD Section 4.1, Implementation_Plan Step 4.1
-// =============================================================
+'use client'
 
-// TODO 1: DIRECTIVE
-// - Add 'use client' at the top
+import { useState, useEffect } from 'react'
+import { supabase } from '@/utils/supabase'
+import Card from '@/components/Card'
+import BottomSheet from '@/components/BottomSheet'
+import LoadingSkeleton from '@/components/LoadingSkeleton'
+import { Landmark } from 'lucide-react'
 
-// TODO 2: IMPORTS
-// - Import { useState, useEffect } from 'react'
-// - Import { supabase } from '@/utils/supabase'
-// - Import Card from '@/components/Card'
-// - Import BottomSheet from '@/components/BottomSheet'
-// - Import LoadingSkeleton from '@/components/LoadingSkeleton'
-// - Import { Landmark } from 'lucide-react' (for empty state icon)
+const TYPE_LABELS = {
+  checking: 'Checking',
+  credit_card: 'Credit Card',
+  cash: 'Cash',
+  savings: 'Savings',
+}
 
-// TODO 3: STATE VARIABLES
-// - accounts: array — all accounts from the accounts table
-// - loading: boolean
-// - showModal: boolean — controls Add Account bottom sheet
-// - editingAccount: object|null — if editing, holds the account; null = add mode
-// - formName: string — account name input
-// - formType: string — account type ('checking' | 'credit_card' | 'cash' | 'savings')
-//     Default: 'checking'
-// - formStartingBalance: string — starting balance input
+const TYPE_OPTIONS = ['checking', 'credit_card', 'cash', 'savings']
 
-// TODO 4: FETCH ALL ACCOUNTS ON MOUNT
-// - useEffect:
-//     const { data } = await supabase
-//       .from('accounts')
-//       .select('*')
-//       .order('created_at', { ascending: true })
-//   - Set accounts state, set loading to false
+export default function AccountManager() {
+  const [accounts, setAccounts] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [showModal, setShowModal] = useState(false)
+  const [editingAccount, setEditingAccount] = useState(null)
+  const [formName, setFormName] = useState('')
+  const [formType, setFormType] = useState('checking')
+  const [formStartingBalance, setFormStartingBalance] = useState('')
 
-// TODO 5: HEADER
-// - <h1 className="text-2xl font-bold tracking-tight text-slate-50">Accounts</h1>
+  async function fetchAccounts() {
+    const { data } = await supabase
+      .from('accounts')
+      .select('*')
+      .order('created_at', { ascending: true })
+    setAccounts(data || [])
+    setLoading(false)
+  }
 
-// TODO 6: LOADING STATE
-// - <LoadingSkeleton count={3} height="h-20" />
+  useEffect(() => { fetchAccounts() }, [])
 
-// TODO 7: EMPTY STATE
-// - If no accounts:
-//     <div className="flex flex-col items-center justify-center py-20 gap-3 text-slate-500">
-//       <Landmark size={40} />
-//       <p className="text-sm">No accounts yet. Add your first one!</p>
-//     </div>
+  function openAdd() {
+    setEditingAccount(null)
+    setFormName('')
+    setFormType('checking')
+    setFormStartingBalance('')
+    setShowModal(true)
+  }
 
-// TODO 8: ACCOUNTS LIST
-// - Each account rendered as a Card:
-//
-//   8a. LEFT SIDE:
-//     - Account name: text-base font-semibold text-slate-50
-//     - Account type badge (under the name):
-//       - Display label mapping:
-//         'checking'    → "Checking"
-//         'credit_card' → "Credit Card"
-//         'cash'        → "Cash"
-//         'savings'     → "Savings"
-//       - Badge style: text-xs rounded-full px-2 py-0.5
-//         - checking/cash/savings → "text-emerald-400 bg-emerald-400/10"
-//         - credit_card → "text-rose-400 bg-rose-400/10"
-//
-//   8b. RIGHT SIDE:
-//     - Current balance: "$X,XXX.XX"
-//     - Color by account type:
-//       - checking, cash, savings → "text-emerald-400" (green = funds available)
-//       - credit_card → "text-rose-400" (red = amount owed / debt)
-//
-//   8c. TAP INTERACTION:
-//     - Tapping an account opens edit mode (name only — balance is NEVER manually editable)
-//     - Set editingAccount to the tapped account
-//     - Pre-fill formName
-//     - Open modal
+  function openEdit(account) {
+    setEditingAccount(account)
+    setFormName(account.name)
+    setFormType(account.account_type)
+    setShowModal(true)
+  }
 
-// TODO 9: "+ ADD ACCOUNT" BUTTON
-// - Full-width emerald button:
-//     className="bg-emerald-600 active:bg-emerald-700 text-white font-semibold
-//                rounded-xl py-4 w-full text-base mt-6"
-//     Label: "+ Add Account"
-//     onClick:
-//       1. Clear form (formName='', formType='checking', formStartingBalance='')
-//       2. Set editingAccount = null
-//       3. Set showModal = true
+  async function handleSave() {
+    if (!formName.trim()) return
 
-// TODO 10: ADD ACCOUNT MODAL (BottomSheet)
-// - <BottomSheet isOpen={showModal} onClose={...}
-//     title={editingAccount ? "Edit Account" : "Add Account"}>
-//
-// 10a. ACCOUNT NAME INPUT
-//   - Label: "Account Name"
-//   - type="text"
-//   - placeholder="e.g., Chase Checking"
-//   - Standard input classes
-//
-// 10b. ACCOUNT TYPE SELECTOR (segmented control — 4 options)
-//   - Label: "Account Type"
-//   - Options: Checking | Credit Card | Cash | Savings
-//   - Active: bg-emerald-600 text-white
-//   - Inactive: bg-slate-800 text-slate-400
-//   - Each maps to: 'checking', 'credit_card', 'cash', 'savings'
-//   - If editing: this field should be READ-ONLY (don't allow type change after creation)
-//
-// 10c. STARTING BALANCE INPUT (only shown in Add mode, not Edit)
-//   - Label: "Starting Balance"
-//   - type="text" inputMode="decimal" pattern="[0-9]*"
-//   - placeholder="0.00"
-//   - This is the balance at the time the account is added to the app
-//   - For credit cards: enter the current amount owed
-//
-// 10d. SAVE BUTTON
-//   className="bg-emerald-600 active:bg-emerald-700 text-white font-semibold
-//              rounded-xl py-4 w-full text-base mt-4"
-//
-//   If ADD mode:
-//     await supabase.from('accounts').insert({
-//       name: formName,
-//       account_type: formType,
-//       starting_balance: parseFloat(formStartingBalance),
-//       balance: parseFloat(formStartingBalance),  // balance starts equal to starting_balance
-//     })
-//
-//   If EDIT mode (name change only):
-//     await supabase.from('accounts')
-//       .update({ name: formName })
-//       .eq('id', editingAccount.id)
-//
-//   After save: close modal, re-fetch accounts list
+    if (editingAccount) {
+      await supabase
+        .from('accounts')
+        .update({ name: formName.trim() })
+        .eq('id', editingAccount.id)
+    } else {
+      const bal = parseFloat(formStartingBalance) || 0
+      await supabase.from('accounts').insert({
+        name: formName.trim(),
+        account_type: formType,
+        starting_balance: bal,
+        balance: bal,
+      })
+    }
 
-// =============================================================
-// PAGE WRAPPER
-// =============================================================
-// - <div className="px-4 pt-6 pb-4">
-//
-// IMPORTANT NOTES:
-// - balance = starting_balance on account creation
-// - balance is ONLY updated by the database trigger on transactions
-// - NEVER manually edit balance from the frontend
-// - Account deletion is OUT OF SCOPE for v1
-// - Editing only allows changing the account name, not type or balance
+    setShowModal(false)
+    fetchAccounts()
+  }
+
+  function formatBalance(amount) {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+    }).format(amount)
+  }
+
+  function balanceColor(type) {
+    return type === 'credit_card' ? 'text-rose-400' : 'text-emerald-400'
+  }
+
+  function badgeClasses(type) {
+    return type === 'credit_card'
+      ? 'text-rose-400 bg-rose-400/10'
+      : 'text-emerald-400 bg-emerald-400/10'
+  }
+
+  return (
+    <div className="px-4 pt-6 pb-4">
+      <h1 className="text-2xl font-bold tracking-tight text-slate-50 mb-6">Accounts</h1>
+
+      {loading ? (
+        <LoadingSkeleton count={3} height="h-20" />
+      ) : accounts.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-20 gap-3 text-slate-500">
+          <Landmark size={40} />
+          <p className="text-sm">No accounts yet. Add your first one!</p>
+        </div>
+      ) : (
+        <div className="flex flex-col gap-3">
+          {accounts.map((acc) => (
+            <Card key={acc.id} onClick={() => openEdit(acc)}>
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-base font-semibold text-slate-50">{acc.name}</h3>
+                  <span className={`text-xs rounded-full px-2 py-0.5 ${badgeClasses(acc.account_type)}`}>
+                    {TYPE_LABELS[acc.account_type]}
+                  </span>
+                </div>
+                <p className={`text-base font-semibold ${balanceColor(acc.account_type)}`}>
+                  {formatBalance(acc.balance)}
+                </p>
+              </div>
+            </Card>
+          ))}
+        </div>
+      )}
+
+      <button
+        onClick={openAdd}
+        className="bg-emerald-600 active:bg-emerald-700 text-white font-semibold rounded-xl py-4 w-full text-base mt-6"
+      >
+        + Add Account
+      </button>
+
+      <BottomSheet
+        isOpen={showModal}
+        onClose={() => setShowModal(false)}
+        title={editingAccount ? 'Edit Account' : 'Add Account'}
+      >
+        <div className="flex flex-col gap-4">
+          <div>
+            <label className="text-sm text-slate-300 mb-1 block">Account Name</label>
+            <input
+              type="text"
+              value={formName}
+              onChange={(e) => setFormName(e.target.value)}
+              placeholder="e.g., Chase Checking"
+              className="bg-slate-800 border border-slate-700 rounded-lg px-4 py-3 text-slate-50 placeholder:text-slate-500 text-base focus:outline-none focus:border-emerald-500 w-full"
+            />
+          </div>
+
+          <div>
+            <label className="text-sm text-slate-300 mb-1 block">Account Type</label>
+            <div className="grid grid-cols-2 gap-2">
+              {TYPE_OPTIONS.map((t) => (
+                <button
+                  key={t}
+                  onClick={() => !editingAccount && setFormType(t)}
+                  className={`px-3 py-2 rounded-lg text-sm font-medium ${
+                    formType === t
+                      ? 'bg-emerald-600 text-white'
+                      : 'bg-slate-800 text-slate-400'
+                  } ${editingAccount ? 'opacity-50' : ''}`}
+                >
+                  {TYPE_LABELS[t]}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {!editingAccount && (
+            <div>
+              <label className="text-sm text-slate-300 mb-1 block">Starting Balance</label>
+              <input
+                type="text"
+                inputMode="decimal"
+                pattern="[0-9]*"
+                value={formStartingBalance}
+                onChange={(e) => setFormStartingBalance(e.target.value)}
+                placeholder="0.00"
+                className="bg-slate-800 border border-slate-700 rounded-lg px-4 py-3 text-slate-50 placeholder:text-slate-500 text-base focus:outline-none focus:border-emerald-500 w-full"
+              />
+            </div>
+          )}
+
+          <button
+            onClick={handleSave}
+            className="bg-emerald-600 active:bg-emerald-700 text-white font-semibold rounded-xl py-4 w-full text-base mt-2"
+          >
+            {editingAccount ? 'Save Changes' : 'Add Account'}
+          </button>
+        </div>
+      </BottomSheet>
+    </div>
+  )
+}
