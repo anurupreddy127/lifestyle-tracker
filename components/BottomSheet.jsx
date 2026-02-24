@@ -7,14 +7,14 @@ export default function BottomSheet({ isOpen, onClose, title, children }) {
     <>
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-black/60 z-40"
+        className="fixed inset-0 bg-black/60 z-50"
         onClick={onClose}
       />
 
       {/* Sheet */}
       <div
         className="fixed inset-x-0 bottom-0 z-50 rounded-t-2xl bg-slate-900 border-t border-slate-800 max-h-[85vh] overflow-y-auto"
-        style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
+        style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 5rem)' }}
       >
         {/* Drag handle */}
         <div className="w-10 h-1 bg-slate-700 rounded-full mx-auto mt-3 mb-4" />

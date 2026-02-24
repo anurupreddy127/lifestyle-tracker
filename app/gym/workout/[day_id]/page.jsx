@@ -198,10 +198,10 @@ export default function ActiveWorkout() {
         })}
       </div>
 
-      {/* Fixed Finish Workout Button */}
+      {/* Fixed Finish Workout Button — above BottomNav */}
       <div
-        className="fixed bottom-0 left-0 right-0 p-4 bg-slate-950"
-        style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 16px)' }}
+        className="fixed left-0 right-0 p-4 bg-slate-950/90 backdrop-blur-md z-40"
+        style={{ bottom: 'calc(3.5rem + env(safe-area-inset-bottom))' }}
       >
         <button
           onClick={handleFinishWorkout}
