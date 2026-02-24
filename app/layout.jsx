@@ -20,7 +20,7 @@ export default function RootLayout({ children }) {
       </head>
       <body className="bg-slate-950 text-slate-50 select-none overscroll-none">
         <div
-          className="min-h-screen pb-20"
+          className="min-h-screen pb-28"
           style={{ paddingTop: 'env(safe-area-inset-top)' }}
         >
           {children}
