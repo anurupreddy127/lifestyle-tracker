@@ -2,13 +2,12 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { supabase } from '@/utils/supabase'
-import Card from '@/components/Card'
+import { useAuth } from '@/contexts/AuthContext'
 import BottomSheet from '@/components/BottomSheet'
-import { ChevronUp, ChevronDown, X } from 'lucide-react'
 
 export default function DayBuilder() {
   const router = useRouter()
+  const { supabase, user } = useAuth()
   const [dayName, setDayName] = useState('')
   const [selectedExercises, setSelectedExercises] = useState([])
   const [allExercises, setAllExercises] = useState([])
@@ -80,7 +79,7 @@ export default function DayBuilder() {
 
     const { data: newDay } = await supabase
       .from('workout_days')
-      .insert({ name: dayName.trim() })
+      .insert({ name: dayName.trim(), user_id: user.id })
       .select()
       .single()
 
@@ -90,6 +89,7 @@ export default function DayBuilder() {
       target_sets: parseInt(ex.target_sets),
       target_reps: parseInt(ex.target_reps),
       sort_order: index,
+      user_id: user.id,
     }))
     await supabase.from('day_exercises').insert(dayExercises)
 
@@ -103,70 +103,64 @@ export default function DayBuilder() {
   })
 
   return (
-    <div className="px-4 pt-6 pb-4">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold tracking-tight text-slate-50">Build Day</h1>
-        <button onClick={handleSave} className="text-indigo-400 font-semibold text-base">
-          Save
-        </button>
-      </div>
-
+    <div className="px-4 pt-2 pb-4">
       {error && (
-        <div className="bg-rose-500/10 border border-rose-500/30 rounded-xl p-3 mb-4 text-rose-400 text-sm">
+        <div className="bg-rose-50 border border-rose-200 rounded-xl p-3 mb-4 text-rose-600 text-sm">
           {error}
         </div>
       )}
 
       {/* Day Name Input */}
       <div className="mb-6">
-        <label className="text-sm text-slate-300 mb-1 block">Day Name</label>
+        <label className="text-sm font-medium text-slate-500 mb-1.5 block px-1">Day Name</label>
         <input
           type="text"
-          placeholder="e.g., Push Day"
+          placeholder="e.g. Upper Body Power"
           value={dayName}
           onChange={(e) => setDayName(e.target.value)}
-          className="bg-slate-800 border border-slate-700 rounded-lg px-4 py-3 text-slate-50 placeholder:text-slate-500 text-base focus:outline-none focus:border-indigo-500 w-full min-h-12"
+          className="bg-white border border-slate-200 rounded-xl h-14 px-4 text-lg text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary w-full"
         />
       </div>
 
+      {/* Exercises section header */}
+      <div className="flex items-center justify-between mb-3">
+        <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Exercises</p>
+        <p className="text-xs text-slate-400">{selectedExercises.length} Items</p>
+      </div>
+
       {/* Exercises List */}
-      <label className="text-sm text-slate-300 mb-2 block">Exercises</label>
       {selectedExercises.length === 0 ? (
-        <p className="text-sm text-slate-500 text-center py-8">
+        <p className="text-sm text-slate-400 text-center py-8">
           No exercises added yet. Tap below to add exercises.
         </p>
       ) : (
-        <div className="flex flex-col gap-3 mb-2">
+        <div className="flex flex-col gap-2 mb-2">
           {selectedExercises.map((ex, index) => (
-            <Card key={ex.exercise_id} className="flex items-center justify-between">
-              <div className="flex-1">
-                <p className="text-base font-semibold text-slate-50">{ex.name}</p>
-                <p className="text-xs text-slate-400">
-                  {ex.target_sets} sets x {ex.target_reps} reps
+            <div key={ex.exercise_id} className="bg-white border border-slate-200 rounded-xl p-4 flex items-center gap-3">
+              {/* Drag handle */}
+              <span className="material-symbols-outlined text-slate-400 text-[20px] shrink-0">drag_indicator</span>
+
+              {/* Info */}
+              <div className="flex-1 min-w-0">
+                <p className="text-base font-semibold text-slate-900 truncate">{ex.name}</p>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  {ex.target_sets} sets × {ex.target_reps} reps
                 </p>
               </div>
-              <div className="flex items-center gap-1">
-                <button
-                  onClick={() => moveExercise(index, -1)}
-                  className="text-slate-500 active:text-indigo-400 p-1"
-                >
-                  <ChevronUp size={18} />
+
+              {/* Actions */}
+              <div className="flex items-center gap-0.5">
+                <button onClick={() => moveExercise(index, -1)} className="text-slate-400 active:text-primary p-1">
+                  <span className="material-symbols-outlined text-[18px]">arrow_upward</span>
                 </button>
-                <button
-                  onClick={() => moveExercise(index, 1)}
-                  className="text-slate-500 active:text-indigo-400 p-1"
-                >
-                  <ChevronDown size={18} />
+                <button onClick={() => moveExercise(index, 1)} className="text-slate-400 active:text-primary p-1">
+                  <span className="material-symbols-outlined text-[18px]">arrow_downward</span>
                 </button>
-                <button
-                  onClick={() => removeExercise(index)}
-                  className="text-slate-500 active:text-rose-400 p-1 ml-1"
-                >
-                  <X size={18} />
+                <button onClick={() => removeExercise(index)} className="text-slate-400 active:text-rose-500 p-1 ml-1">
+                  <span className="material-symbols-outlined text-[18px]">delete</span>
                 </button>
               </div>
-            </Card>
+            </div>
           ))}
         </div>
       )}
@@ -174,42 +168,53 @@ export default function DayBuilder() {
       {/* Add Exercise Button */}
       <button
         onClick={() => { setSearchQuery(''); setShowPicker(true) }}
-        className="bg-slate-800 active:bg-slate-700 text-indigo-400 font-semibold rounded-xl py-4 w-full text-base border border-slate-700 mt-2"
+        className="border-2 border-dashed border-slate-200 rounded-xl py-4 w-full text-primary font-semibold text-sm flex items-center justify-center gap-2 mt-2 active:bg-slate-50"
       >
-        + Add Exercise
+        <span className="material-symbols-outlined text-[18px]">add_circle</span>
+        Add Exercise
       </button>
 
-      {/* Exercise Picker Bottom Sheet */}
-      <BottomSheet isOpen={showPicker} onClose={() => setShowPicker(false)} title="Select Exercise">
-        <input
-          type="text"
-          placeholder="Search exercises..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="bg-slate-800 border border-slate-700 rounded-lg px-4 py-3 text-slate-50 placeholder:text-slate-500 text-base focus:outline-none focus:border-indigo-500 w-full min-h-12 mb-4"
-        />
-        <div className="flex flex-col gap-2">
+      {/* Save Button */}
+      <button
+        onClick={handleSave}
+        className="bg-primary text-white font-bold rounded-xl py-4 w-full text-base mt-6 active:bg-primary/90 shadow-lg shadow-primary/20"
+      >
+        Save Day
+      </button>
+
+      {/* Exercise Picker */}
+      <BottomSheet isOpen={showPicker} onClose={() => setShowPicker(false)} title="Pick Exercise">
+        <div className="relative mb-4">
+          <span className="material-symbols-outlined text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 text-[20px]">search</span>
+          <input
+            type="text"
+            placeholder="Search exercises..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="bg-slate-100 border-none rounded-xl pl-10 pr-4 py-3 text-slate-900 placeholder:text-slate-400 text-base focus:outline-none focus:ring-2 focus:ring-primary/20 w-full"
+          />
+        </div>
+        <div className="flex flex-col gap-2 max-h-[40vh] overflow-y-auto">
           {filteredExercises.length === 0 ? (
-            <p className="text-sm text-slate-500 text-center py-4">
-              {allExercises.length === 0 ? 'No exercises in library. Add some first.' : 'No matching exercises.'}
+            <p className="text-sm text-slate-400 text-center py-4">
+              {allExercises.length === 0 ? 'No exercises in library.' : 'No matching exercises.'}
             </p>
           ) : (
             filteredExercises.map((ex) => (
               <button
                 key={ex.id}
                 onClick={() => handlePickExercise(ex)}
-                className="flex items-center justify-between bg-slate-800 rounded-lg px-4 py-3 active:bg-slate-700 text-left w-full"
+                className="flex items-center gap-3 bg-white border border-slate-100 rounded-xl px-3 py-3 active:bg-slate-50 text-left w-full"
               >
-                <span className="text-sm text-slate-50">{ex.name}</span>
-                <span
-                  className={`text-xs rounded-full px-2 py-0.5 ${
-                    ex.equipment_type === 'barbell_dumbbell'
-                      ? 'text-indigo-400 bg-indigo-400/10'
-                      : 'text-emerald-400 bg-emerald-400/10'
-                  }`}
-                >
-                  {ex.equipment_type === 'barbell_dumbbell' ? 'Barbell/DB' : 'Machine'}
-                </span>
+                <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center shrink-0">
+                  <span className="material-symbols-outlined text-primary text-[18px]">fitness_center</span>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <span className="text-sm font-semibold text-slate-900 block truncate">{ex.name}</span>
+                  <span className="text-[10px] font-bold uppercase text-primary/60">
+                    {ex.equipment_type === 'barbell_dumbbell' ? 'Barbell/Dumbbell' : 'Machine'}
+                  </span>
+                </div>
               </button>
             ))
           )}
@@ -220,35 +225,38 @@ export default function DayBuilder() {
       <BottomSheet
         isOpen={showTargetPrompt}
         onClose={() => setShowTargetPrompt(false)}
-        title={pendingExercise ? `Set Targets — ${pendingExercise.name}` : 'Set Targets'}
+        title={pendingExercise ? `Set Targets` : 'Set Targets'}
       >
-        <div className="flex gap-4 mb-4">
+        {pendingExercise && (
+          <p className="text-sm text-slate-500 mb-4">{pendingExercise.name}</p>
+        )}
+        <div className="flex gap-4 mb-6">
           <div className="flex-1">
-            <label className="text-sm text-slate-300 mb-1 block">Sets</label>
+            <label className="text-sm font-medium text-slate-500 mb-1.5 block">Sets</label>
             <input
               type="text"
               inputMode="numeric"
               pattern="[0-9]*"
               value={tempSets}
               onChange={(e) => setTempSets(e.target.value)}
-              className="bg-slate-800 border border-slate-700 rounded-lg px-4 py-3 text-slate-50 text-base focus:outline-none focus:border-indigo-500 w-full min-h-12 text-center"
+              className="bg-slate-100 border-none rounded-xl px-4 py-3 text-slate-900 text-lg text-center focus:outline-none focus:ring-2 focus:ring-primary/20 w-full font-bold"
             />
           </div>
           <div className="flex-1">
-            <label className="text-sm text-slate-300 mb-1 block">Reps</label>
+            <label className="text-sm font-medium text-slate-500 mb-1.5 block">Reps</label>
             <input
               type="text"
               inputMode="numeric"
               pattern="[0-9]*"
               value={tempReps}
               onChange={(e) => setTempReps(e.target.value)}
-              className="bg-slate-800 border border-slate-700 rounded-lg px-4 py-3 text-slate-50 text-base focus:outline-none focus:border-indigo-500 w-full min-h-12 text-center"
+              className="bg-slate-100 border-none rounded-xl px-4 py-3 text-slate-900 text-lg text-center focus:outline-none focus:ring-2 focus:ring-primary/20 w-full font-bold"
             />
           </div>
         </div>
         <button
           onClick={handleConfirmTarget}
-          className="bg-indigo-600 active:bg-indigo-700 text-white font-semibold rounded-xl py-4 w-full text-base"
+          className="bg-primary text-white font-semibold rounded-xl py-3.5 w-full text-base active:bg-primary/90"
         >
           Confirm
         </button>

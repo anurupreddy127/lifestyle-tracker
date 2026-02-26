@@ -12,7 +12,7 @@ export default function Toast({ message, isVisible, onDismiss }) {
   if (!isVisible) return null
 
   return (
-    <div className="fixed top-4 left-4 right-4 z-50 bg-slate-800 border border-slate-700 rounded-xl p-4 text-slate-50 text-sm">
+    <div className="fixed top-4 left-4 right-4 z-50 bg-slate-900 border border-slate-800 rounded-xl p-4 text-white text-sm shadow-lg">
       {message}
     </div>
   )

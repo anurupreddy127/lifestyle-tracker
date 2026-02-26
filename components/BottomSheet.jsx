@@ -7,25 +7,33 @@ export default function BottomSheet({ isOpen, onClose, title, children }) {
     <>
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-black/60 z-50"
+        className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50"
         onClick={onClose}
       />
 
       {/* Sheet */}
       <div
-        className="fixed inset-x-0 bottom-0 z-50 rounded-t-2xl bg-slate-900 border-t border-slate-800 max-h-[85vh] overflow-y-auto"
+        className="fixed inset-x-0 bottom-0 z-50 rounded-t-3xl bg-white border-t border-slate-200 shadow-2xl max-h-[85vh] overflow-y-auto"
         style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 5rem)' }}
       >
         {/* Drag handle */}
-        <div className="w-10 h-1 bg-slate-700 rounded-full mx-auto mt-3 mb-4" />
+        <div className="w-12 h-1.5 bg-slate-300 rounded-full mx-auto mt-3 mb-4" />
 
-        {/* Title */}
+        {/* Title row */}
         {title && (
-          <h2 className="text-lg font-semibold text-slate-50 px-4 mb-4">{title}</h2>
+          <div className="flex items-center justify-between px-5 mb-4">
+            <h2 className="text-xl font-bold text-slate-900">{title}</h2>
+            <button
+              onClick={onClose}
+              className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500"
+            >
+              <span className="material-symbols-outlined text-[18px]">close</span>
+            </button>
+          </div>
         )}
 
         {/* Content */}
-        <div className="px-4 pb-6">
+        <div className="px-5 pb-6">
           {children}
         </div>
       </div>

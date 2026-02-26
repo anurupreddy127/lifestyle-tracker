@@ -2,13 +2,21 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { supabase } from '@/utils/supabase'
-import Card from '@/components/Card'
+import { useAuth } from '@/contexts/AuthContext'
 import LoadingSkeleton from '@/components/LoadingSkeleton'
-import { Dumbbell } from 'lucide-react'
+
+const GRADIENTS = [
+  'from-blue-500 to-indigo-600',
+  'from-violet-500 to-purple-600',
+  'from-rose-500 to-pink-600',
+  'from-amber-500 to-orange-600',
+  'from-emerald-500 to-teal-600',
+  'from-cyan-500 to-blue-600',
+]
 
 export default function GymHome() {
   const router = useRouter()
+  const { supabase } = useAuth()
   const [days, setDays] = useState([])
   const [loading, setLoading] = useState(true)
 
@@ -25,38 +33,47 @@ export default function GymHome() {
   }, [])
 
   return (
-    <div className="px-4 pt-6 pb-4">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold tracking-tight text-slate-50">My Workouts</h1>
-        <button
-          onClick={() => router.push('/gym/library')}
-          className="text-slate-400 active:text-indigo-400 p-2"
-        >
-          <Dumbbell size={22} />
-        </button>
-      </div>
-
+    <div className="px-4 pt-4 pb-4">
       {/* Content */}
       {loading ? (
-        <LoadingSkeleton count={4} height="h-20" />
+        <LoadingSkeleton count={4} height="h-24" />
       ) : days.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-20 gap-3 text-slate-500">
-          <Dumbbell size={40} />
+        <div className="flex flex-col items-center justify-center py-20 gap-3 text-slate-400">
+          <span className="material-symbols-outlined text-5xl">fitness_center</span>
           <p className="text-sm">No days yet. Create your first workout!</p>
         </div>
       ) : (
         <div className="flex flex-col gap-3">
-          {days.map((day) => {
+          {days.map((day, index) => {
             const exerciseCount = day.day_exercises?.[0]?.count ?? 0
+            const gradient = GRADIENTS[index % GRADIENTS.length]
             return (
-              <Card
+              <div
                 key={day.id}
-                onClick={() => router.push(`/gym/workout/${day.id}`)}
+                className="bg-white border border-slate-200 rounded-xl shadow-sm p-3 flex items-center gap-3"
               >
-                <h3 className="text-base font-semibold text-slate-50">{day.name}</h3>
-                <p className="text-xs text-slate-400">{exerciseCount} {exerciseCount === 1 ? 'exercise' : 'exercises'}</p>
-              </Card>
+                {/* Thumbnail */}
+                <div className={`w-20 h-20 rounded-lg bg-gradient-to-br ${gradient} flex items-center justify-center shrink-0`}>
+                  <span className="material-symbols-outlined text-white/80 text-3xl">fitness_center</span>
+                </div>
+
+                {/* Info */}
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-base font-bold text-slate-900 truncate">{day.name}</h3>
+                  <div className="flex items-center gap-1 mt-1 text-slate-500">
+                    <span className="material-symbols-outlined text-[14px]">exercise</span>
+                    <span className="text-xs font-medium">{exerciseCount} {exerciseCount === 1 ? 'exercise' : 'exercises'}</span>
+                  </div>
+                </div>
+
+                {/* Start button */}
+                <button
+                  onClick={() => router.push(`/gym/workout/${day.id}`)}
+                  className="bg-primary text-white font-semibold text-sm rounded-lg px-4 h-9 shrink-0 active:bg-primary/90"
+                >
+                  Start
+                </button>
+              </div>
             )
           })}
         </div>
@@ -65,9 +82,10 @@ export default function GymHome() {
       {/* Create New Day Button */}
       <button
         onClick={() => router.push('/gym/builder')}
-        className="bg-indigo-600 active:bg-indigo-700 text-white font-semibold rounded-xl py-4 w-full text-base mt-6"
+        className="border-2 border-dashed border-slate-300 bg-slate-100 rounded-xl h-14 w-full font-bold text-slate-600 text-sm mt-4 flex items-center justify-center gap-2 active:bg-slate-200"
       >
-        + Create New Day
+        <span className="material-symbols-outlined text-[20px]">add_circle</span>
+        Create New Day
       </button>
     </div>
   )
