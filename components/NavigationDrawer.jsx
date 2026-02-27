@@ -17,10 +17,17 @@ const FINANCE_LINKS = [
   { label: 'Subscriptions', href: '/finance/subscriptions', icon: 'subscriptions' },
 ]
 
+function getWorkspace(pathname) {
+  if (pathname.startsWith('/finance')) return 'finance'
+  if (pathname.startsWith('/gym')) return 'gym'
+  return null
+}
+
 export default function NavigationDrawer({ isOpen, onClose }) {
   const pathname = usePathname()
   const { user, signOut } = useAuth()
-  const isFinance = pathname.startsWith('/finance')
+  const workspace = getWorkspace(pathname)
+  const isFinance = workspace === 'finance' || (!workspace && localStorage.getItem('lastWorkspace') === 'finance')
   const navLinks = isFinance ? FINANCE_LINKS : GYM_LINKS
 
   const handleSignOut = async () => {

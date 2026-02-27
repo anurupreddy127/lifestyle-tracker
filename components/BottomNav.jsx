@@ -1,5 +1,6 @@
 'use client'
 
+import { useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
@@ -24,9 +25,23 @@ function isTabActive(pathname, href) {
   return pathname.startsWith(href)
 }
 
+function getWorkspace(pathname) {
+  if (pathname.startsWith('/finance')) return 'finance'
+  if (pathname.startsWith('/gym')) return 'gym'
+  return null
+}
+
 export default function BottomNav() {
   const pathname = usePathname()
-  const isFinance = pathname.startsWith('/finance')
+  const workspace = getWorkspace(pathname)
+
+  useEffect(() => {
+    if (workspace) {
+      localStorage.setItem('lastWorkspace', workspace)
+    }
+  }, [workspace])
+
+  const isFinance = workspace === 'finance' || (!workspace && localStorage.getItem('lastWorkspace') === 'finance')
   const tabs = isFinance ? FINANCE_TABS : GYM_TABS
   const activeColor = isFinance ? 'text-finance' : 'text-primary'
 

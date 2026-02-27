@@ -101,3 +101,11 @@ ALTER TABLE workout_sessions ADD COLUMN IF NOT EXISTS duration_minutes INTEGER;
 -- UPDATE accounts SET user_id = 'YOUR_USER_ID_HERE' WHERE user_id IS NULL;
 -- UPDATE transactions SET user_id = 'YOUR_USER_ID_HERE' WHERE user_id IS NULL;
 -- UPDATE subscription_reminders SET user_id = 'YOUR_USER_ID_HERE' WHERE user_id IS NULL;
+
+-- =============================================================================
+-- Phase 2: Credit Card Account Fields
+-- =============================================================================
+
+ALTER TABLE accounts ADD COLUMN IF NOT EXISTS credit_limit NUMERIC;
+ALTER TABLE accounts ADD COLUMN IF NOT EXISTS available_credit NUMERIC;
+ALTER TABLE accounts ADD COLUMN IF NOT EXISTS due_date INTEGER;
