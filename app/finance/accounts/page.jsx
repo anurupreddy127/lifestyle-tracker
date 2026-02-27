@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import BottomSheet from "@/components/BottomSheet";
 import LoadingSkeleton from "@/components/LoadingSkeleton";
@@ -28,8 +28,41 @@ const TYPE_COLORS = {
   cash: "bg-emerald-100 text-emerald-600",
 };
 
+const BADGE_COLORS = {
+  checking: "bg-emerald-500",
+  savings: "bg-blue-500",
+  credit_card: "bg-rose-500",
+  cash: "bg-amber-500",
+};
+
+function resizeImage(file, maxWidth = 800, maxHeight = 600) {
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        let { width, height } = img;
+        if (width > maxWidth || height > maxHeight) {
+          const ratio = Math.min(maxWidth / width, maxHeight / height);
+          width = Math.round(width * ratio);
+          height = Math.round(height * ratio);
+        }
+        const canvas = document.createElement("canvas");
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0, width, height);
+        canvas.toBlob((blob) => resolve(blob), "image/jpeg", 0.7);
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
 export default function AccountManager() {
   const { supabase, user } = useAuth();
+  const fileInputRef = useRef(null);
   const [accounts, setAccounts] = useState([]);
   const [accountSpending, setAccountSpending] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -41,6 +74,9 @@ export default function AccountManager() {
   const [formCreditLimit, setFormCreditLimit] = useState("");
   const [formAvailableCredit, setFormAvailableCredit] = useState("");
   const [formDueDate, setFormDueDate] = useState("");
+  const [formImageFile, setFormImageFile] = useState(null);
+  const [formImagePreview, setFormImagePreview] = useState("");
+  const [imageRemoved, setImageRemoved] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleteError, setDeleteError] = useState("");
   const [saving, setSaving] = useState(false);
@@ -102,6 +138,17 @@ export default function AccountManager() {
     return day + (s[(v - 20) % 10] || s[v] || s[0]);
   }
 
+  async function uploadAccountImage(file, accountId) {
+    const resized = await resizeImage(file);
+    const path = `${user.id}/${accountId}-${Date.now()}.jpg`;
+    await supabase.storage.from("account-images").upload(path, resized, {
+      contentType: "image/jpeg",
+      upsert: true,
+    });
+    const { data } = supabase.storage.from("account-images").getPublicUrl(path);
+    return data.publicUrl;
+  }
+
   function openAdd() {
     setEditingAccount(null);
     setFormName("");
@@ -110,6 +157,9 @@ export default function AccountManager() {
     setFormCreditLimit("");
     setFormAvailableCredit("");
     setFormDueDate("");
+    setFormImageFile(null);
+    setFormImagePreview("");
+    setImageRemoved(false);
     setShowDeleteConfirm(false);
     setDeleteError("");
     setShowModal(true);
@@ -123,9 +173,27 @@ export default function AccountManager() {
     setFormCreditLimit(account.credit_limit != null ? String(account.credit_limit) : "");
     setFormAvailableCredit(account.available_credit != null ? String(account.available_credit) : "");
     setFormDueDate(account.due_date != null ? String(account.due_date) : "");
+    setFormImageFile(null);
+    setFormImagePreview(account.image_url || "");
+    setImageRemoved(false);
     setShowDeleteConfirm(false);
     setDeleteError("");
     setShowModal(true);
+  }
+
+  function handleImageSelect(e) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setFormImageFile(file);
+    setFormImagePreview(URL.createObjectURL(file));
+    setImageRemoved(false);
+  }
+
+  function handleImageRemove() {
+    setFormImageFile(null);
+    setFormImagePreview("");
+    setImageRemoved(true);
+    if (fileInputRef.current) fileInputRef.current.value = "";
   }
 
   async function handleSave() {
@@ -133,6 +201,8 @@ export default function AccountManager() {
 
     setSaving(true);
     try {
+      let accountId = editingAccount?.id;
+
       if (editingAccount) {
         const updateData = { name: formName.trim() };
 
@@ -154,11 +224,12 @@ export default function AccountManager() {
           .update(updateData)
           .eq("id", editingAccount.id);
       } else {
+        let insertData;
         if (formType === "credit_card") {
           const creditLimit = parseFloat(formCreditLimit) || 0;
           const availableCredit = parseFloat(formAvailableCredit) || 0;
           const dueDate = parseInt(formDueDate) || null;
-          await supabase.from("accounts").insert({
+          insertData = {
             name: formName.trim(),
             account_type: formType,
             credit_limit: creditLimit,
@@ -167,17 +238,38 @@ export default function AccountManager() {
             starting_balance: 0,
             balance: creditLimit - availableCredit,
             user_id: user.id,
-          });
+          };
         } else {
           const bal = parseFloat(formStartingBalance) || 0;
-          await supabase.from("accounts").insert({
+          insertData = {
             name: formName.trim(),
             account_type: formType,
             starting_balance: bal,
             balance: bal,
             user_id: user.id,
-          });
+          };
         }
+
+        const { data: inserted } = await supabase
+          .from("accounts")
+          .insert(insertData)
+          .select("id")
+          .single();
+        accountId = inserted?.id;
+      }
+
+      // Handle image upload/removal
+      if (formImageFile && accountId) {
+        const imageUrl = await uploadAccountImage(formImageFile, accountId);
+        await supabase
+          .from("accounts")
+          .update({ image_url: imageUrl })
+          .eq("id", accountId);
+      } else if (imageRemoved && editingAccount?.image_url) {
+        await supabase
+          .from("accounts")
+          .update({ image_url: null })
+          .eq("id", accountId);
       }
 
       setShowModal(false);
@@ -217,6 +309,90 @@ export default function AccountManager() {
       style: "currency",
       currency: "USD",
     }).format(amount);
+  }
+
+  function renderAccountCard(acc) {
+    const hasImage = !!acc.image_url;
+
+    return (
+      <div
+        key={acc.id}
+        onClick={() => openEdit(acc)}
+        className={`relative rounded-2xl overflow-hidden h-44 cursor-pointer active:opacity-90 transition-opacity ${
+          hasImage ? "" : "bg-white border border-slate-200 shadow-sm"
+        }`}
+      >
+        {/* Background image */}
+        {hasImage && (
+          <>
+            <img
+              src={acc.image_url}
+              alt=""
+              className="absolute inset-0 w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-black/50" />
+          </>
+        )}
+
+        {/* Content */}
+        <div className="relative h-full p-4 flex flex-col justify-between">
+          <div>
+            <span
+              className={`text-[10px] font-bold uppercase px-2 py-1 rounded-md ${
+                hasImage
+                  ? `${BADGE_COLORS[acc.account_type] || "bg-slate-500"} text-white`
+                  : TYPE_COLORS[acc.account_type] || "bg-slate-100 text-slate-500"
+              }`}
+            >
+              {TYPE_LABELS[acc.account_type]}
+            </span>
+            <h3
+              className={`text-lg font-bold mt-2 truncate ${
+                hasImage ? "text-white" : "text-slate-900"
+              }`}
+            >
+              {acc.name}
+            </h3>
+          </div>
+
+          <div className="flex items-end justify-between">
+            <div>
+              {acc.account_type === "credit_card" ? (
+                <>
+                  <p className={`text-xs ${hasImage ? "text-white/70" : "text-slate-500"}`}>
+                    Current Balance
+                  </p>
+                  <p className={`text-xl font-bold ${hasImage ? "text-white" : "text-rose-500"}`}>
+                    -{formatBalance((acc.credit_limit || 0) - (acc.available_credit || 0))}
+                  </p>
+                  <p className={`text-[10px] mt-0.5 ${hasImage ? "text-white/60" : "text-slate-400"}`}>
+                    {formatBalance(acc.available_credit || 0)} of{" "}
+                    {formatBalance(acc.credit_limit || 0)}
+                    {acc.due_date && ` · Due: ${getOrdinal(acc.due_date)}`}
+                  </p>
+                </>
+              ) : (
+                <>
+                  <p className={`text-xs ${hasImage ? "text-white/70" : "text-slate-500"}`}>
+                    Available Balance
+                  </p>
+                  <p className={`text-xl font-bold ${hasImage ? "text-white" : "text-slate-900"}`}>
+                    {formatBalance(acc.balance)}
+                  </p>
+                </>
+              )}
+            </div>
+            <span
+              className={`material-symbols-outlined text-[20px] ${
+                hasImage ? "text-white/60" : "text-slate-400"
+              }`}
+            >
+              chevron_right
+            </span>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -273,50 +449,8 @@ export default function AccountManager() {
             All Accounts
           </h2>
           <div className="flex flex-col gap-3">
-          {accounts.map((acc) => (
-            <div
-              key={acc.id}
-              onClick={() => openEdit(acc)}
-              className="bg-white border border-slate-200 rounded-xl p-4 flex items-center gap-3 cursor-pointer active:bg-slate-50 shadow-sm"
-            >
-              <div
-                className={`w-10 h-10 rounded-lg flex items-center justify-center ${TYPE_COLORS[acc.account_type] || "bg-slate-100 text-slate-500"}`}
-              >
-                <span className="material-symbols-outlined text-[20px]">
-                  {TYPE_ICONS[acc.account_type] || "account_balance"}
-                </span>
-              </div>
-              <div className="flex-1 min-w-0">
-                <h3 className="text-sm font-bold text-slate-900 truncate">
-                  {acc.name}
-                </h3>
-                <p className="text-xs text-slate-500">
-                  {TYPE_LABELS[acc.account_type]}
-                </p>
-              </div>
-              {acc.account_type === "credit_card" ? (
-                <div className="text-right shrink-0">
-                  <p className="text-sm font-bold text-rose-500">
-                    {formatBalance((acc.credit_limit || 0) - (acc.available_credit || 0))}
-                  </p>
-                  <p className="text-[10px] text-slate-400">
-                    {formatBalance(acc.available_credit || 0)} of{" "}
-                    {formatBalance(acc.credit_limit || 0)}
-                  </p>
-                  {acc.due_date && (
-                    <p className="text-[10px] text-slate-400">
-                      Due: {getOrdinal(acc.due_date)}
-                    </p>
-                  )}
-                </div>
-              ) : (
-                <p className="text-sm font-bold text-slate-900">
-                  {formatBalance(acc.balance)}
-                </p>
-              )}
-            </div>
-          ))}
-        </div>
+            {accounts.map((acc) => renderAccountCard(acc))}
+          </div>
         </>
       )}
 
@@ -350,6 +484,57 @@ export default function AccountManager() {
               placeholder="e.g., Chase Checking"
               className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-900 placeholder:text-slate-400 text-base focus:outline-none focus:ring-2 focus:ring-finance/20 w-full"
             />
+          </div>
+
+          {/* Image Picker */}
+          <div>
+            <label className="text-sm font-medium text-slate-500 mb-1.5 block">
+              Card Background
+            </label>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleImageSelect}
+              className="hidden"
+            />
+            {formImagePreview ? (
+              <div className="relative rounded-xl overflow-hidden h-32">
+                <img
+                  src={formImagePreview}
+                  alt="Preview"
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-black/30" />
+                <button
+                  onClick={handleImageRemove}
+                  className="absolute top-2 right-2 w-7 h-7 rounded-full bg-black/50 flex items-center justify-center"
+                >
+                  <span className="material-symbols-outlined text-white text-[16px]">
+                    close
+                  </span>
+                </button>
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  className="absolute bottom-2 right-2 px-3 py-1.5 rounded-lg bg-black/50 text-white text-xs font-medium flex items-center gap-1"
+                >
+                  <span className="material-symbols-outlined text-[14px]">
+                    edit
+                  </span>
+                  Change
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                className="w-full h-24 border-2 border-dashed border-slate-300 rounded-xl flex flex-col items-center justify-center gap-1 text-slate-400 active:bg-slate-50"
+              >
+                <span className="material-symbols-outlined text-[24px]">
+                  add_photo_alternate
+                </span>
+                <span className="text-xs font-medium">Add Photo</span>
+              </button>
+            )}
           </div>
 
           <div>

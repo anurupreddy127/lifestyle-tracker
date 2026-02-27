@@ -39,7 +39,7 @@ export default function NavigationDrawer({ isOpen, onClose }) {
     <>
       {/* Backdrop */}
       <div
-        className={`fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 transition-opacity duration-300 ${
+        className={`fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[60] transition-opacity duration-300 ${
           isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
         }`}
         onClick={onClose}
@@ -47,7 +47,7 @@ export default function NavigationDrawer({ isOpen, onClose }) {
 
       {/* Drawer panel */}
       <div
-        className={`fixed left-0 top-0 bottom-0 w-[280px] bg-white z-50 shadow-2xl transition-transform duration-300 ease-out flex flex-col ${
+        className={`fixed left-0 top-0 bottom-0 w-[280px] bg-white z-[60] shadow-2xl transition-transform duration-300 ease-out flex flex-col ${
           isOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
         style={{ paddingTop: 'env(safe-area-inset-top)' }}
