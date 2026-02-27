@@ -16,32 +16,37 @@ export default function GymStats() {
 
   useEffect(() => {
     async function fetchData() {
-      // Fetch sessions for frequency
-      const { data: sessData } = await supabase
-        .from('workout_sessions')
-        .select('id, day_id, performed_at, workout_days(name)')
-        .order('performed_at', { ascending: false })
-        .limit(200)
-      setSessions(sessData || [])
+      try {
+        // Fetch sessions for frequency
+        const { data: sessData } = await supabase
+          .from('workout_sessions')
+          .select('id, day_id, performed_at, workout_days(name)')
+          .order('performed_at', { ascending: false })
+          .limit(200)
+        setSessions(sessData || [])
 
-      // Fetch PRs (max weight per exercise)
-      const { data: logs } = await supabase
-        .from('workout_logs')
-        .select('exercise_id, weight, reps, exercises(name)')
-        .order('weight', { ascending: false })
+        // Fetch PRs (max weight per exercise)
+        const { data: logs } = await supabase
+          .from('workout_logs')
+          .select('exercise_id, weight, reps, exercises(name)')
+          .order('weight', { ascending: false })
 
-      // Deduplicate: keep highest weight per exercise
-      const prMap = {}
-      ;(logs || []).forEach((log) => {
-        if (!prMap[log.exercise_id] || log.weight > prMap[log.exercise_id].weight) {
-          prMap[log.exercise_id] = log
-        }
-      })
-      setPersonalRecords(Object.values(prMap).sort((a, b) => b.weight - a.weight))
+        // Deduplicate: keep highest weight per exercise
+        const prMap = {}
+        ;(logs || []).forEach((log) => {
+          if (!prMap[log.exercise_id] || log.weight > prMap[log.exercise_id].weight) {
+            prMap[log.exercise_id] = log
+          }
+        })
+        setPersonalRecords(Object.values(prMap).sort((a, b) => b.weight - a.weight))
 
-      setLoading(false)
+        setLoading(false)
+      } catch {
+        setLoading(false)
+      }
     }
     fetchData()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   // Get sessions for current week

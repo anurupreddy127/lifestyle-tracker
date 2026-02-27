@@ -80,6 +80,7 @@ export default function FinanceDashboard() {
   const [accountSpending, setAccountSpending] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [toast, setToast] = useState("");
+  const [saving, setSaving] = useState(false);
 
   // Transaction form
   const [txType, setTxType] = useState("expense");
@@ -109,66 +110,70 @@ export default function FinanceDashboard() {
   });
 
   async function fetchData() {
-    const now = new Date();
-    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
-      .toISOString()
-      .split("T")[0];
-    const today = now.toISOString().split("T")[0];
+    try {
+      const now = new Date();
+      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
+        .toISOString()
+        .split("T")[0];
+      const today = now.toISOString().split("T")[0];
 
-    const [accountsRes, incomeRes, expenseDetailRes, subsRes] =
-      await Promise.all([
-        supabase
-          .from("accounts")
-          .select("*")
-          .order("created_at", { ascending: true }),
-        supabase
-          .from("transactions")
-          .select("amount")
-          .eq("transaction_type", "income")
-          .gte("date", startOfMonth)
-          .lte("date", today),
-        supabase
-          .from("transactions")
-          .select("amount, category, account_id, accounts!transactions_account_id_fkey(name, account_type)")
-          .eq("transaction_type", "expense")
-          .gte("date", startOfMonth)
-          .lte("date", today),
-        supabase
-          .from("subscription_reminders")
-          .select("*, accounts(name)")
-          .order("next_billing_date", { ascending: true }),
-      ]);
+      const [accountsRes, incomeRes, expenseDetailRes, subsRes] =
+        await Promise.all([
+          supabase
+            .from("accounts")
+            .select("*")
+            .order("created_at", { ascending: true }),
+          supabase
+            .from("transactions")
+            .select("amount")
+            .eq("transaction_type", "income")
+            .gte("date", startOfMonth)
+            .lte("date", today),
+          supabase
+            .from("transactions")
+            .select("amount, category, account_id, accounts!transactions_account_id_fkey(name, account_type)")
+            .eq("transaction_type", "expense")
+            .gte("date", startOfMonth)
+            .lte("date", today),
+          supabase
+            .from("subscription_reminders")
+            .select("*, accounts(name)")
+            .order("next_billing_date", { ascending: true }),
+        ]);
 
-    setAccounts(accountsRes.data || []);
-    setSubscriptions(subsRes.data || []);
-    setTotalIncome(
-      (incomeRes.data || []).reduce((sum, r) => sum + Number(r.amount), 0),
-    );
+      setAccounts(accountsRes.data || []);
+      setSubscriptions(subsRes.data || []);
+      setTotalIncome(
+        (incomeRes.data || []).reduce((sum, r) => sum + Number(r.amount), 0),
+      );
 
-    const expenses = expenseDetailRes.data || [];
-    setTotalExpenses(expenses.reduce((s, r) => s + Number(r.amount), 0));
+      const expenses = expenseDetailRes.data || [];
+      setTotalExpenses(expenses.reduce((s, r) => s + Number(r.amount), 0));
 
-    const byCat = {};
-    expenses.forEach((r) => {
-      if (r.category) byCat[r.category] = (byCat[r.category] || 0) + Number(r.amount);
-    });
-    setCategorySpending(byCat);
+      const byCat = {};
+      expenses.forEach((r) => {
+        if (r.category) byCat[r.category] = (byCat[r.category] || 0) + Number(r.amount);
+      });
+      setCategorySpending(byCat);
 
-    const byAcc = {};
-    expenses.forEach((r) => {
-      if (!byAcc[r.account_id]) {
-        byAcc[r.account_id] = { name: r.accounts?.name, type: r.accounts?.account_type, total: 0 };
-      }
-      byAcc[r.account_id].total += Number(r.amount);
-    });
-    setAccountSpending(
-      Object.entries(byAcc)
-        .map(([id, v]) => ({ id, ...v }))
-        .sort((a, b) => b.total - a.total)
-        .slice(0, 3),
-    );
+      const byAcc = {};
+      expenses.forEach((r) => {
+        if (!byAcc[r.account_id]) {
+          byAcc[r.account_id] = { name: r.accounts?.name, type: r.accounts?.account_type, total: 0 };
+        }
+        byAcc[r.account_id].total += Number(r.amount);
+      });
+      setAccountSpending(
+        Object.entries(byAcc)
+          .map(([id, v]) => ({ id, ...v }))
+          .sort((a, b) => b.total - a.total)
+          .slice(0, 3),
+      );
 
-    setLoading(false);
+      setLoading(false);
+    } catch {
+      setLoading(false);
+    }
   }
 
   useEffect(() => {
@@ -176,6 +181,7 @@ export default function FinanceDashboard() {
       await fetchData();
     };
     fetchDataAsync();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   function openAddTransaction() {
@@ -204,50 +210,65 @@ export default function FinanceDashboard() {
     if (txType === "transfer" && !txToAccountId) return;
     if (txType === "transfer" && txAccountId === txToAccountId) return;
 
-    const row = {
-      transaction_type: txType,
-      amount,
-      date: txDate,
-      account_id: txAccountId,
-      to_account_id: txType === "transfer" ? txToAccountId : null,
-      category: txType === "expense" ? txCategory : null,
-      description: txDescription.trim() || null,
-      user_id: user.id,
-    };
+    setSaving(true);
+    try {
+      const row = {
+        transaction_type: txType,
+        amount,
+        date: txDate,
+        account_id: txAccountId,
+        to_account_id: txType === "transfer" ? txToAccountId : null,
+        category: txType === "expense" ? txCategory : null,
+        description: txDescription.trim() || null,
+        user_id: user.id,
+      };
 
-    await supabase.from("transactions").insert(row);
+      await supabase.from("transactions").insert(row);
 
-    if (txType === "expense") {
-      await adjustBalance(supabase, txAccountId, amount, "debit");
-    } else if (txType === "income") {
-      await adjustBalance(supabase, txAccountId, amount, "credit");
-    } else if (txType === "transfer") {
-      await adjustBalance(supabase, txAccountId, amount, "debit");
-      await adjustBalance(supabase, txToAccountId, amount, "credit");
+      if (txType === "expense") {
+        await adjustBalance(supabase, txAccountId, amount, "debit");
+      } else if (txType === "income") {
+        await adjustBalance(supabase, txAccountId, amount, "credit");
+      } else if (txType === "transfer") {
+        await adjustBalance(supabase, txAccountId, amount, "debit");
+        await adjustBalance(supabase, txToAccountId, amount, "credit");
+      }
+
+      setShowModal(false);
+      setToast("Transaction saved!");
+      fetchData();
+    } catch {
+      setToast("Failed to save transaction");
+    } finally {
+      setSaving(false);
     }
-
-    setShowModal(false);
-    setToast("Transaction saved!");
-    fetchData();
   }
 
   async function handleSubscriptionConfirm() {
     const sub = selectedSubscription;
     if (!sub) return;
-    await supabase.from("transactions").insert({
-      transaction_type: "expense",
-      amount: sub.amount,
-      date: new Date().toISOString().split("T")[0],
-      account_id: sub.account_id,
-      category: sub.category,
-      description: sub.name,
-      user_id: user.id,
-    });
-    await adjustBalance(supabase, sub.account_id, sub.amount, "debit");
-    setShowModal(false);
-    setSelectedSubscription(null);
-    setToast("Subscription transaction saved!");
-    fetchData();
+
+    setSaving(true);
+    try {
+      await supabase.from("transactions").insert({
+        transaction_type: "expense",
+        amount: sub.amount,
+        date: new Date().toISOString().split("T")[0],
+        account_id: sub.account_id,
+        category: sub.category,
+        description: sub.name,
+        user_id: user.id,
+      });
+      await adjustBalance(supabase, sub.account_id, sub.amount, "debit");
+      setShowModal(false);
+      setSelectedSubscription(null);
+      setToast("Subscription transaction saved!");
+      fetchData();
+    } catch {
+      setToast("Failed to save");
+    } finally {
+      setSaving(false);
+    }
   }
 
   async function handleSubSave() {
@@ -260,29 +281,33 @@ export default function FinanceDashboard() {
     )
       return;
 
-    await supabase.from("subscription_reminders").insert({
-      name: subFormName.trim(),
-      amount: parseFloat(subFormAmount),
-      billing_type: subFormBillingType,
-      next_billing_date: subFormNextDate,
-      account_id: subFormAccountId,
-      category: subFormCategory,
-      user_id: user.id,
-    });
+    try {
+      await supabase.from("subscription_reminders").insert({
+        name: subFormName.trim(),
+        amount: parseFloat(subFormAmount),
+        billing_type: subFormBillingType,
+        next_billing_date: subFormNextDate,
+        account_id: subFormAccountId,
+        category: subFormCategory,
+        user_id: user.id,
+      });
 
-    setShowSubForm(false);
-    setSubFormName("");
-    setSubFormAmount("");
-    setSubFormBillingType("monthly");
-    setSubFormNextDate("");
-    setSubFormAccountId(accounts[0]?.id || "");
-    setSubFormCategory("miscellaneous");
-    // Re-fetch subscriptions
-    const { data } = await supabase
-      .from("subscription_reminders")
-      .select("*, accounts(name)")
-      .order("next_billing_date", { ascending: true });
-    setSubscriptions(data || []);
+      setShowSubForm(false);
+      setSubFormName("");
+      setSubFormAmount("");
+      setSubFormBillingType("monthly");
+      setSubFormNextDate("");
+      setSubFormAccountId(accounts[0]?.id || "");
+      setSubFormCategory("miscellaneous");
+      // Re-fetch subscriptions
+      const { data } = await supabase
+        .from("subscription_reminders")
+        .select("*, accounts(name)")
+        .order("next_billing_date", { ascending: true });
+      setSubscriptions(data || []);
+    } catch {
+      // Silent fail for subscription save
+    }
   }
 
   function formatCurrency(amount) {
@@ -428,6 +453,7 @@ export default function FinanceDashboard() {
       {/* FAB */}
       <button
         onClick={openAddTransaction}
+        aria-label="Add new transaction"
         className="fixed bottom-20 right-5 w-14 h-14 bg-finance rounded-full flex items-center justify-center shadow-lg shadow-finance/30 z-20 active:bg-finance/90"
       >
         <span className="material-symbols-outlined text-white text-3xl">
@@ -614,9 +640,10 @@ export default function FinanceDashboard() {
                   </button>
                   <button
                     onClick={handleSubscriptionConfirm}
-                    className="flex-1 py-3 rounded-xl text-sm font-semibold bg-finance text-white active:bg-finance/90"
+                    disabled={saving}
+                    className="flex-1 py-3 rounded-xl text-sm font-semibold bg-finance text-white active:bg-finance/90 disabled:opacity-50"
                   >
-                    Confirm
+                    {saving ? "Saving..." : "Confirm"}
                   </button>
                 </div>
               </div>
@@ -793,12 +820,13 @@ export default function FinanceDashboard() {
 
               <button
                 onClick={handleSaveTransaction}
-                className="bg-finance text-white font-bold rounded-xl py-4 w-full text-base mt-1 flex items-center justify-center gap-2 active:bg-finance/90"
+                disabled={saving}
+                className="bg-finance text-white font-bold rounded-xl py-4 w-full text-base mt-1 flex items-center justify-center gap-2 active:bg-finance/90 disabled:opacity-50"
               >
                 <span className="material-symbols-outlined text-[18px]">
                   check_circle
                 </span>
-                Save Transaction
+                {saving ? "Saving..." : "Save Transaction"}
               </button>
             </>
           )}

@@ -37,21 +37,26 @@ export default function SubscriptionReminders() {
   const [formNextDate, setFormNextDate] = useState("");
   const [formAccountId, setFormAccountId] = useState("");
   const [formCategory, setFormCategory] = useState("miscellaneous");
+  const [saving, setSaving] = useState(false);
 
   async function fetchData() {
-    const [remindersRes, accountsRes] = await Promise.all([
-      supabase
-        .from("subscription_reminders")
-        .select("*, accounts(name)")
-        .order("next_billing_date", { ascending: true }),
-      supabase
-        .from("accounts")
-        .select("id, name")
-        .order("created_at", { ascending: true }),
-    ]);
-    setReminders(remindersRes.data || []);
-    setAccounts(accountsRes.data || []);
-    setLoading(false);
+    try {
+      const [remindersRes, accountsRes] = await Promise.all([
+        supabase
+          .from("subscription_reminders")
+          .select("*, accounts(name)")
+          .order("next_billing_date", { ascending: true }),
+        supabase
+          .from("accounts")
+          .select("id, name")
+          .order("created_at", { ascending: true }),
+      ]);
+      setReminders(remindersRes.data || []);
+      setAccounts(accountsRes.data || []);
+      setLoading(false);
+    } catch {
+      setLoading(false);
+    }
   }
 
   useEffect(() => {
@@ -59,6 +64,7 @@ export default function SubscriptionReminders() {
       await fetchData();
     };
     fetchDataAsync();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   function openAdd() {
@@ -93,33 +99,44 @@ export default function SubscriptionReminders() {
     )
       return;
 
-    const row = {
-      name: formName.trim(),
-      amount: parseFloat(formAmount),
-      billing_type: formBillingType,
-      next_billing_date: formNextDate,
-      account_id: formAccountId,
-      category: formCategory,
-    };
+    setSaving(true);
+    try {
+      const row = {
+        name: formName.trim(),
+        amount: parseFloat(formAmount),
+        billing_type: formBillingType,
+        next_billing_date: formNextDate,
+        account_id: formAccountId,
+        category: formCategory,
+      };
 
-    if (editingReminder) {
-      await supabase
-        .from("subscription_reminders")
-        .update(row)
-        .eq("id", editingReminder.id);
-    } else {
-      await supabase
-        .from("subscription_reminders")
-        .insert({ ...row, user_id: user.id });
+      if (editingReminder) {
+        await supabase
+          .from("subscription_reminders")
+          .update(row)
+          .eq("id", editingReminder.id);
+      } else {
+        await supabase
+          .from("subscription_reminders")
+          .insert({ ...row, user_id: user.id });
+      }
+
+      setShowModal(false);
+      fetchData();
+    } catch {
+      // Silent fail for subscription save
+    } finally {
+      setSaving(false);
     }
-
-    setShowModal(false);
-    fetchData();
   }
 
   async function handleDelete(id) {
-    await supabase.from("subscription_reminders").delete().eq("id", id);
-    fetchData();
+    try {
+      await supabase.from("subscription_reminders").delete().eq("id", id);
+      fetchData();
+    } catch {
+      // Silent fail for subscription delete
+    }
   }
 
   function isPastDue(dateStr) {
@@ -192,6 +209,7 @@ export default function SubscriptionReminders() {
                       e.stopPropagation();
                       handleDelete(rem.id);
                     }}
+                    aria-label="Delete subscription"
                     className="text-slate-400 active:text-rose-500 p-2 ml-2"
                   >
                     <span className="material-symbols-outlined text-[18px]">
@@ -207,6 +225,7 @@ export default function SubscriptionReminders() {
 
       <button
         onClick={openAdd}
+        aria-label="Add new subscription"
         className="bg-finance text-white font-bold rounded-xl py-4 w-full text-base mt-6 flex items-center justify-center gap-2 active:bg-finance/90 shadow-lg shadow-finance/20"
       >
         <span className="material-symbols-outlined text-[18px]">add</span>
@@ -306,9 +325,10 @@ export default function SubscriptionReminders() {
           </div>
           <button
             onClick={handleSave}
-            className="bg-finance text-white font-bold rounded-xl py-4 w-full text-base mt-1 active:bg-finance/90"
+            disabled={saving}
+            className="bg-finance text-white font-bold rounded-xl py-4 w-full text-base mt-1 active:bg-finance/90 disabled:opacity-50"
           >
-            {editingReminder ? "Save Changes" : "Add Subscription"}
+            {saving ? "Saving..." : editingReminder ? "Save Changes" : "Add Subscription"}
           </button>
         </div>
       </BottomSheet>

@@ -41,7 +41,9 @@ export default function BottomNav() {
     }
   }, [workspace])
 
-  const isFinance = workspace === 'finance' || (!workspace && localStorage.getItem('lastWorkspace') === 'finance')
+  let storedWorkspace = null
+  try { storedWorkspace = localStorage.getItem('lastWorkspace') } catch {}
+  const isFinance = workspace === 'finance' || (!workspace && storedWorkspace === 'finance')
   const tabs = isFinance ? FINANCE_TABS : GYM_TABS
   const activeColor = isFinance ? 'text-finance' : 'text-primary'
 

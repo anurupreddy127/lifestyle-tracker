@@ -22,14 +22,19 @@ export default function GymHome() {
 
   useEffect(() => {
     async function fetchDays() {
-      const { data } = await supabase
-        .from('workout_days')
-        .select('id, name, day_exercises(count)')
-        .order('created_at', { ascending: true })
-      setDays(data || [])
-      setLoading(false)
+      try {
+        const { data } = await supabase
+          .from('workout_days')
+          .select('id, name, day_exercises(count)')
+          .order('created_at', { ascending: true })
+        setDays(data || [])
+        setLoading(false)
+      } catch {
+        setLoading(false)
+      }
     }
     fetchDays()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   return (
@@ -70,6 +75,7 @@ export default function GymHome() {
                 <button
                   onClick={() => router.push(`/gym/workout/${day.id}`)}
                   className="bg-primary text-white font-semibold text-sm rounded-lg px-4 h-9 shrink-0 active:bg-primary/90"
+                  aria-label="Start workout"
                 >
                   Start
                 </button>
@@ -83,6 +89,7 @@ export default function GymHome() {
       <button
         onClick={() => router.push('/gym/builder')}
         className="border-2 border-dashed border-slate-300 bg-slate-100 rounded-xl h-14 w-full font-bold text-slate-600 text-sm mt-4 flex items-center justify-center gap-2 active:bg-slate-200"
+        aria-label="Create new workout day"
       >
         <span className="material-symbols-outlined text-[20px]">add_circle</span>
         Create New Day

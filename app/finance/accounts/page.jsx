@@ -43,43 +43,48 @@ export default function AccountManager() {
   const [formDueDate, setFormDueDate] = useState("");
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleteError, setDeleteError] = useState("");
+  const [saving, setSaving] = useState(false);
 
   async function fetchAccounts() {
-    const now = new Date();
-    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
-      .toISOString()
-      .split("T")[0];
-    const today = now.toISOString().split("T")[0];
+    try {
+      const now = new Date();
+      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
+        .toISOString()
+        .split("T")[0];
+      const today = now.toISOString().split("T")[0];
 
-    const [accountsRes, expenseRes] = await Promise.all([
-      supabase
-        .from("accounts")
-        .select("*")
-        .order("created_at", { ascending: true }),
-      supabase
-        .from("transactions")
-        .select("amount, account_id, accounts!transactions_account_id_fkey(name, account_type)")
-        .eq("transaction_type", "expense")
-        .gte("date", startOfMonth)
-        .lte("date", today),
-    ]);
+      const [accountsRes, expenseRes] = await Promise.all([
+        supabase
+          .from("accounts")
+          .select("*")
+          .order("created_at", { ascending: true }),
+        supabase
+          .from("transactions")
+          .select("amount, account_id, accounts!transactions_account_id_fkey(name, account_type)")
+          .eq("transaction_type", "expense")
+          .gte("date", startOfMonth)
+          .lte("date", today),
+      ]);
 
-    setAccounts(accountsRes.data || []);
+      setAccounts(accountsRes.data || []);
 
-    const expenses = expenseRes.data || [];
-    const byAcc = {};
-    expenses.forEach((r) => {
-      if (!byAcc[r.account_id]) {
-        byAcc[r.account_id] = { name: r.accounts?.name, type: r.accounts?.account_type, total: 0 };
-      }
-      byAcc[r.account_id].total += Number(r.amount);
-    });
-    setAccountSpending(
-      Object.entries(byAcc)
-        .map(([id, v]) => ({ id, ...v }))
-        .sort((a, b) => b.total - a.total)
-        .slice(0, 3),
-    );
+      const expenses = expenseRes.data || [];
+      const byAcc = {};
+      expenses.forEach((r) => {
+        if (!byAcc[r.account_id]) {
+          byAcc[r.account_id] = { name: r.accounts?.name, type: r.accounts?.account_type, total: 0 };
+        }
+        byAcc[r.account_id].total += Number(r.amount);
+      });
+      setAccountSpending(
+        Object.entries(byAcc)
+          .map(([id, v]) => ({ id, ...v }))
+          .sort((a, b) => b.total - a.total)
+          .slice(0, 3),
+      );
+    } catch {
+      setLoading(false);
+    }
   }
 
   useEffect(() => {
@@ -88,6 +93,7 @@ export default function AccountManager() {
       setLoading(false);
     };
     fetchData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   function getOrdinal(day) {
@@ -125,74 +131,85 @@ export default function AccountManager() {
   async function handleSave() {
     if (!formName.trim()) return;
 
-    if (editingAccount) {
-      const updateData = { name: formName.trim() };
+    setSaving(true);
+    try {
+      if (editingAccount) {
+        const updateData = { name: formName.trim() };
 
-      if (formType === "credit_card") {
-        const creditLimit = parseFloat(formCreditLimit) || 0;
-        const availableCredit = parseFloat(formAvailableCredit) || 0;
-        const dueDate = parseInt(formDueDate) || null;
-        updateData.credit_limit = creditLimit;
-        updateData.available_credit = availableCredit;
-        updateData.due_date = dueDate;
-        updateData.balance = creditLimit - availableCredit;
+        if (formType === "credit_card") {
+          const creditLimit = parseFloat(formCreditLimit) || 0;
+          const availableCredit = parseFloat(formAvailableCredit) || 0;
+          const dueDate = parseInt(formDueDate) || null;
+          updateData.credit_limit = creditLimit;
+          updateData.available_credit = availableCredit;
+          updateData.due_date = dueDate;
+          updateData.balance = creditLimit - availableCredit;
+        } else {
+          const bal = parseFloat(formStartingBalance) || 0;
+          updateData.balance = bal;
+        }
+
+        await supabase
+          .from("accounts")
+          .update(updateData)
+          .eq("id", editingAccount.id);
       } else {
-        const bal = parseFloat(formStartingBalance) || 0;
-        updateData.balance = bal;
+        if (formType === "credit_card") {
+          const creditLimit = parseFloat(formCreditLimit) || 0;
+          const availableCredit = parseFloat(formAvailableCredit) || 0;
+          const dueDate = parseInt(formDueDate) || null;
+          await supabase.from("accounts").insert({
+            name: formName.trim(),
+            account_type: formType,
+            credit_limit: creditLimit,
+            available_credit: availableCredit,
+            due_date: dueDate,
+            starting_balance: 0,
+            balance: creditLimit - availableCredit,
+            user_id: user.id,
+          });
+        } else {
+          const bal = parseFloat(formStartingBalance) || 0;
+          await supabase.from("accounts").insert({
+            name: formName.trim(),
+            account_type: formType,
+            starting_balance: bal,
+            balance: bal,
+            user_id: user.id,
+          });
+        }
       }
 
-      await supabase
-        .from("accounts")
-        .update(updateData)
-        .eq("id", editingAccount.id);
-    } else {
-      if (formType === "credit_card") {
-        const creditLimit = parseFloat(formCreditLimit) || 0;
-        const availableCredit = parseFloat(formAvailableCredit) || 0;
-        const dueDate = parseInt(formDueDate) || null;
-        await supabase.from("accounts").insert({
-          name: formName.trim(),
-          account_type: formType,
-          credit_limit: creditLimit,
-          available_credit: availableCredit,
-          due_date: dueDate,
-          starting_balance: 0,
-          balance: creditLimit - availableCredit,
-          user_id: user.id,
-        });
-      } else {
-        const bal = parseFloat(formStartingBalance) || 0;
-        await supabase.from("accounts").insert({
-          name: formName.trim(),
-          account_type: formType,
-          starting_balance: bal,
-          balance: bal,
-          user_id: user.id,
-        });
-      }
+      setShowModal(false);
+      fetchAccounts();
+    } catch {
+      // Silent fail for account save
+    } finally {
+      setSaving(false);
     }
-
-    setShowModal(false);
-    fetchAccounts();
   }
 
   async function handleDelete() {
     if (!editingAccount) return;
-    const { error } = await supabase
-      .from("accounts")
-      .delete()
-      .eq("id", editingAccount.id);
+    try {
+      const { error } = await supabase
+        .from("accounts")
+        .delete()
+        .eq("id", editingAccount.id);
 
-    if (error) {
-      setDeleteError("Remove linked transactions and subscriptions first.");
+      if (error) {
+        setDeleteError("Remove linked transactions and subscriptions first.");
+        setShowDeleteConfirm(false);
+        return;
+      }
+
+      setShowModal(false);
       setShowDeleteConfirm(false);
-      return;
+      setDeleteError("");
+      fetchAccounts();
+    } catch {
+      // Silent fail for account delete
     }
-
-    setShowModal(false);
-    setShowDeleteConfirm(false);
-    setDeleteError("");
-    fetchAccounts();
   }
 
   function formatBalance(amount) {
@@ -305,6 +322,7 @@ export default function AccountManager() {
 
       <button
         onClick={openAdd}
+        aria-label="Add new account"
         className="bg-finance text-white font-bold rounded-xl py-4 w-full text-base mt-6 flex items-center justify-center gap-2 active:bg-finance/90 shadow-lg shadow-finance/20"
       >
         <span className="material-symbols-outlined text-[18px]">add</span>
@@ -420,9 +438,10 @@ export default function AccountManager() {
 
           <button
             onClick={handleSave}
-            className="bg-finance text-white font-bold rounded-xl py-4 w-full text-base mt-1 active:bg-finance/90"
+            disabled={saving}
+            className="bg-finance text-white font-bold rounded-xl py-4 w-full text-base mt-1 active:bg-finance/90 disabled:opacity-50"
           >
-            {editingAccount ? "Save Changes" : "Add Account"}
+            {saving ? "Saving..." : editingAccount ? "Save Changes" : "Add Account"}
           </button>
 
           {editingAccount && (

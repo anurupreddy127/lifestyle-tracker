@@ -13,6 +13,20 @@ const AUTH_ROUTES = ['/login', '/signup']
 // Pages where Header is hidden (they render their own header)
 const NO_HEADER_ROUTES = ['/gym/workout']
 
+function getOrdinal(day) {
+  const s = ['th', 'st', 'nd', 'rd']
+  const v = day % 100
+  return day + (s[(v - 20) % 10] || s[v] || s[0])
+}
+
+function getFormattedDate() {
+  const now = new Date()
+  const day = now.getDate()
+  const month = now.toLocaleString('en-US', { month: 'long' })
+  const year = now.getFullYear()
+  return `${getOrdinal(day)} ${month} ${year}`
+}
+
 // Route → title mapping
 function getPageTitle(pathname) {
   if (pathname === '/gym') return 'My Workouts'
@@ -44,6 +58,8 @@ export default function AppShell({ children }) {
   }
 
   const title = getPageTitle(pathname)
+  const isFinancePage = pathname.startsWith('/finance')
+  const subtitle = isFinancePage ? getFormattedDate() : undefined
 
   return (
     <AuthProvider>
@@ -53,6 +69,7 @@ export default function AppShell({ children }) {
         {!hideHeader && (
           <Header
             title={title}
+            subtitle={subtitle}
             onMenuClick={() => setDrawerOpen(true)}
           />
         )}

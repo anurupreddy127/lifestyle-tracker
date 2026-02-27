@@ -79,6 +79,7 @@ export default function TransactionsPage() {
   const [showModal, setShowModal] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState(null);
   const [toast, setToast] = useState("");
+  const [saving, setSaving] = useState(false);
 
   // Transaction form
   const [txType, setTxType] = useState("expense");
@@ -105,49 +106,54 @@ export default function TransactionsPage() {
   const [subFormCategory, setSubFormCategory] = useState("miscellaneous");
 
   async function fetchData() {
-    const now = new Date();
-    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
-      .toISOString()
-      .split("T")[0];
-    const today = now.toISOString().split("T")[0];
+    try {
+      const now = new Date();
+      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
+        .toISOString()
+        .split("T")[0];
+      const today = now.toISOString().split("T")[0];
 
-    const [txRes, accountsRes, subsRes, expenseCatRes] = await Promise.all([
-      supabase
-        .from("transactions")
-        .select("*, accounts!transactions_account_id_fkey(name)")
-        .order("date", { ascending: false })
-        .order("created_at", { ascending: false })
-        .limit(100),
-      supabase
-        .from("accounts")
-        .select("*")
-        .order("created_at", { ascending: true }),
-      supabase
-        .from("subscription_reminders")
-        .select("*, accounts(name)")
-        .order("next_billing_date", { ascending: true }),
-      supabase
-        .from("transactions")
-        .select("amount, category")
-        .eq("transaction_type", "expense")
-        .gte("date", startOfMonth)
-        .lte("date", today),
-    ]);
-    setTransactions(txRes.data || []);
-    setAccounts(accountsRes.data || []);
-    setSubscriptions(subsRes.data || []);
+      const [txRes, accountsRes, subsRes, expenseCatRes] = await Promise.all([
+        supabase
+          .from("transactions")
+          .select("*, accounts!transactions_account_id_fkey(name)")
+          .order("date", { ascending: false })
+          .order("created_at", { ascending: false })
+          .limit(100),
+        supabase
+          .from("accounts")
+          .select("*")
+          .order("created_at", { ascending: true }),
+        supabase
+          .from("subscription_reminders")
+          .select("*, accounts(name)")
+          .order("next_billing_date", { ascending: true }),
+        supabase
+          .from("transactions")
+          .select("amount, category")
+          .eq("transaction_type", "expense")
+          .gte("date", startOfMonth)
+          .lte("date", today),
+      ]);
+      setTransactions(txRes.data || []);
+      setAccounts(accountsRes.data || []);
+      setSubscriptions(subsRes.data || []);
 
-    const byCat = {};
-    (expenseCatRes.data || []).forEach((r) => {
-      if (r.category) byCat[r.category] = (byCat[r.category] || 0) + Number(r.amount);
-    });
-    setCategorySpending(byCat);
+      const byCat = {};
+      (expenseCatRes.data || []).forEach((r) => {
+        if (r.category) byCat[r.category] = (byCat[r.category] || 0) + Number(r.amount);
+      });
+      setCategorySpending(byCat);
 
-    setLoading(false);
+      setLoading(false);
+    } catch {
+      setLoading(false);
+    }
   }
 
   useEffect(() => {
     fetchData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   function openAdd() {
@@ -193,107 +199,125 @@ export default function TransactionsPage() {
     if (txType === "transfer" && !txToAccountId) return;
     if (txType === "transfer" && txAccountId === txToAccountId) return;
 
-    const row = {
-      transaction_type: txType,
-      amount,
-      date: txDate,
-      account_id: txAccountId,
-      to_account_id: txType === "transfer" ? txToAccountId : null,
-      category: txType === "expense" ? txCategory : null,
-      description: txDescription.trim() || null,
-    };
+    setSaving(true);
+    try {
+      const row = {
+        transaction_type: txType,
+        amount,
+        date: txDate,
+        account_id: txAccountId,
+        to_account_id: txType === "transfer" ? txToAccountId : null,
+        category: txType === "expense" ? txCategory : null,
+        description: txDescription.trim() || null,
+      };
 
-    if (editingTransaction) {
-      // Reverse old transaction's effect on balances
-      const old = editingTransaction;
-      if (old.transaction_type === "expense") {
-        await adjustBalance(supabase, old.account_id, old.amount, "credit");
-      } else if (old.transaction_type === "income") {
-        await adjustBalance(supabase, old.account_id, old.amount, "debit");
-      } else if (old.transaction_type === "transfer") {
-        await adjustBalance(supabase, old.account_id, old.amount, "credit");
-        if (old.to_account_id) await adjustBalance(supabase, old.to_account_id, old.amount, "debit");
+      if (editingTransaction) {
+        // Reverse old transaction's effect on balances
+        const old = editingTransaction;
+        if (old.transaction_type === "expense") {
+          await adjustBalance(supabase, old.account_id, old.amount, "credit");
+        } else if (old.transaction_type === "income") {
+          await adjustBalance(supabase, old.account_id, old.amount, "debit");
+        } else if (old.transaction_type === "transfer") {
+          await adjustBalance(supabase, old.account_id, old.amount, "credit");
+          if (old.to_account_id) await adjustBalance(supabase, old.to_account_id, old.amount, "debit");
+        }
+
+        await supabase
+          .from("transactions")
+          .update(row)
+          .eq("id", editingTransaction.id);
+
+        // Apply new transaction's effect on balances
+        if (txType === "expense") {
+          await adjustBalance(supabase, txAccountId, amount, "debit");
+        } else if (txType === "income") {
+          await adjustBalance(supabase, txAccountId, amount, "credit");
+        } else if (txType === "transfer") {
+          await adjustBalance(supabase, txAccountId, amount, "debit");
+          await adjustBalance(supabase, txToAccountId, amount, "credit");
+        }
+
+        setToast("Transaction updated!");
+      } else {
+        await supabase
+          .from("transactions")
+          .insert({ ...row, user_id: user.id });
+
+        if (txType === "expense") {
+          await adjustBalance(supabase, txAccountId, amount, "debit");
+        } else if (txType === "income") {
+          await adjustBalance(supabase, txAccountId, amount, "credit");
+        } else if (txType === "transfer") {
+          await adjustBalance(supabase, txAccountId, amount, "debit");
+          await adjustBalance(supabase, txToAccountId, amount, "credit");
+        }
+
+        setToast("Transaction saved!");
       }
 
-      await supabase
-        .from("transactions")
-        .update(row)
-        .eq("id", editingTransaction.id);
-
-      // Apply new transaction's effect on balances
-      if (txType === "expense") {
-        await adjustBalance(supabase, txAccountId, amount, "debit");
-      } else if (txType === "income") {
-        await adjustBalance(supabase, txAccountId, amount, "credit");
-      } else if (txType === "transfer") {
-        await adjustBalance(supabase, txAccountId, amount, "debit");
-        await adjustBalance(supabase, txToAccountId, amount, "credit");
-      }
-
-      setToast("Transaction updated!");
-    } else {
-      await supabase
-        .from("transactions")
-        .insert({ ...row, user_id: user.id });
-
-      if (txType === "expense") {
-        await adjustBalance(supabase, txAccountId, amount, "debit");
-      } else if (txType === "income") {
-        await adjustBalance(supabase, txAccountId, amount, "credit");
-      } else if (txType === "transfer") {
-        await adjustBalance(supabase, txAccountId, amount, "debit");
-        await adjustBalance(supabase, txToAccountId, amount, "credit");
-      }
-
-      setToast("Transaction saved!");
+      setShowModal(false);
+      fetchData();
+    } catch {
+      setToast("Failed to save transaction");
+    } finally {
+      setSaving(false);
     }
-
-    setShowModal(false);
-    fetchData();
   }
 
   async function handleDelete() {
     if (!editingTransaction) return;
     const tx = editingTransaction;
 
-    await supabase
-      .from("transactions")
-      .delete()
-      .eq("id", tx.id);
+    setSaving(true);
+    try {
+      await supabase
+        .from("transactions")
+        .delete()
+        .eq("id", tx.id);
 
-    // Reverse the deleted transaction's effect on balances
-    if (tx.transaction_type === "expense") {
-      await adjustBalance(supabase, tx.account_id, tx.amount, "credit");
-    } else if (tx.transaction_type === "income") {
-      await adjustBalance(supabase, tx.account_id, tx.amount, "debit");
-    } else if (tx.transaction_type === "transfer") {
-      await adjustBalance(supabase, tx.account_id, tx.amount, "credit");
-      if (tx.to_account_id) await adjustBalance(supabase, tx.to_account_id, tx.amount, "debit");
+      // Reverse the deleted transaction's effect on balances
+      if (tx.transaction_type === "expense") {
+        await adjustBalance(supabase, tx.account_id, tx.amount, "credit");
+      } else if (tx.transaction_type === "income") {
+        await adjustBalance(supabase, tx.account_id, tx.amount, "debit");
+      } else if (tx.transaction_type === "transfer") {
+        await adjustBalance(supabase, tx.account_id, tx.amount, "credit");
+        if (tx.to_account_id) await adjustBalance(supabase, tx.to_account_id, tx.amount, "debit");
+      }
+
+      setShowModal(false);
+      setShowDeleteConfirm(false);
+      setToast("Transaction deleted!");
+      fetchData();
+    } catch {
+      setToast("Failed to delete");
+    } finally {
+      setSaving(false);
     }
-
-    setShowModal(false);
-    setShowDeleteConfirm(false);
-    setToast("Transaction deleted!");
-    fetchData();
   }
 
   async function handleSubscriptionConfirm() {
     const sub = selectedSubscription;
     if (!sub) return;
-    await supabase.from("transactions").insert({
-      transaction_type: "expense",
-      amount: sub.amount,
-      date: new Date().toISOString().split("T")[0],
-      account_id: sub.account_id,
-      category: sub.category,
-      description: sub.name,
-      user_id: user.id,
-    });
-    await adjustBalance(supabase, sub.account_id, sub.amount, "debit");
-    setShowModal(false);
-    setSelectedSubscription(null);
-    setToast("Subscription transaction saved!");
-    fetchData();
+    try {
+      await supabase.from("transactions").insert({
+        transaction_type: "expense",
+        amount: sub.amount,
+        date: new Date().toISOString().split("T")[0],
+        account_id: sub.account_id,
+        category: sub.category,
+        description: sub.name,
+        user_id: user.id,
+      });
+      await adjustBalance(supabase, sub.account_id, sub.amount, "debit");
+      setShowModal(false);
+      setSelectedSubscription(null);
+      setToast("Subscription transaction saved!");
+      fetchData();
+    } catch {
+      setToast("Failed to save");
+    }
   }
 
   async function handleSubSave() {
@@ -306,28 +330,32 @@ export default function TransactionsPage() {
     )
       return;
 
-    await supabase.from("subscription_reminders").insert({
-      name: subFormName.trim(),
-      amount: parseFloat(subFormAmount),
-      billing_type: subFormBillingType,
-      next_billing_date: subFormNextDate,
-      account_id: subFormAccountId,
-      category: subFormCategory,
-      user_id: user.id,
-    });
+    try {
+      await supabase.from("subscription_reminders").insert({
+        name: subFormName.trim(),
+        amount: parseFloat(subFormAmount),
+        billing_type: subFormBillingType,
+        next_billing_date: subFormNextDate,
+        account_id: subFormAccountId,
+        category: subFormCategory,
+        user_id: user.id,
+      });
 
-    setShowSubForm(false);
-    setSubFormName("");
-    setSubFormAmount("");
-    setSubFormBillingType("monthly");
-    setSubFormNextDate("");
-    setSubFormAccountId(accounts[0]?.id || "");
-    setSubFormCategory("miscellaneous");
-    const { data } = await supabase
-      .from("subscription_reminders")
-      .select("*, accounts(name)")
-      .order("next_billing_date", { ascending: true });
-    setSubscriptions(data || []);
+      setShowSubForm(false);
+      setSubFormName("");
+      setSubFormAmount("");
+      setSubFormBillingType("monthly");
+      setSubFormNextDate("");
+      setSubFormAccountId(accounts[0]?.id || "");
+      setSubFormCategory("miscellaneous");
+      const { data } = await supabase
+        .from("subscription_reminders")
+        .select("*, accounts(name)")
+        .order("next_billing_date", { ascending: true });
+      setSubscriptions(data || []);
+    } catch {
+      // Silent fail for subscription save
+    }
   }
 
   function formatCurrency(amount) {
@@ -441,6 +469,7 @@ export default function TransactionsPage() {
       {/* FAB */}
       <button
         onClick={openAdd}
+        aria-label="Add new transaction"
         className="fixed bottom-20 right-5 w-14 h-14 bg-finance rounded-full flex items-center justify-center shadow-lg shadow-finance/30 z-20 active:bg-finance/90"
       >
         <span className="material-symbols-outlined text-white text-3xl">
@@ -811,12 +840,13 @@ export default function TransactionsPage() {
 
               <button
                 onClick={handleSave}
-                className="bg-finance text-white font-bold rounded-xl py-4 w-full text-base mt-1 flex items-center justify-center gap-2 active:bg-finance/90"
+                disabled={saving}
+                className="bg-finance text-white font-bold rounded-xl py-4 w-full text-base mt-1 flex items-center justify-center gap-2 active:bg-finance/90 disabled:opacity-50"
               >
                 <span className="material-symbols-outlined text-[18px]">
                   check_circle
                 </span>
-                {editingTransaction ? "Save Changes" : "Save Transaction"}
+                {saving ? "Saving..." : editingTransaction ? "Save Changes" : "Save Transaction"}
               </button>
 
               {/* Delete button (edit mode only) */}
@@ -835,9 +865,10 @@ export default function TransactionsPage() {
                       </button>
                       <button
                         onClick={handleDelete}
-                        className="px-4 py-2.5 rounded-xl text-sm font-semibold bg-rose-500 text-white active:bg-rose-600"
+                        disabled={saving}
+                        className="px-4 py-2.5 rounded-xl text-sm font-semibold bg-rose-500 text-white active:bg-rose-600 disabled:opacity-50"
                       >
-                        Delete
+                        {saving ? "Deleting..." : "Delete"}
                       </button>
                     </div>
                   ) : (

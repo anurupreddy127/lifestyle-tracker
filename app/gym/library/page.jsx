@@ -38,14 +38,19 @@ export default function ExerciseLibrary() {
   const [filter, setFilter] = useState('all')
 
   async function fetchExercises() {
-    const { data } = await supabase
-      .from('exercises')
-      .select('*')
-      .order('name', { ascending: true })
-    setExercises(data || [])
-    setLoading(false)
+    try {
+      const { data } = await supabase
+        .from('exercises')
+        .select('*')
+        .order('name', { ascending: true })
+      setExercises(data || [])
+      setLoading(false)
+    } catch {
+      setLoading(false)
+    }
   }
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { fetchExercises() }, [])
 
   function openAddModal() {
@@ -65,35 +70,43 @@ export default function ExerciseLibrary() {
   async function handleSave() {
     if (!formName.trim()) return
 
-    if (editingExercise) {
-      await supabase
-        .from('exercises')
-        .update({ name: formName.trim(), equipment_type: formEquipmentType })
-        .eq('id', editingExercise.id)
-    } else {
-      await supabase
-        .from('exercises')
-        .insert({ name: formName.trim(), equipment_type: formEquipmentType, user_id: user.id })
-    }
+    try {
+      if (editingExercise) {
+        await supabase
+          .from('exercises')
+          .update({ name: formName.trim(), equipment_type: formEquipmentType })
+          .eq('id', editingExercise.id)
+      } else {
+        await supabase
+          .from('exercises')
+          .insert({ name: formName.trim(), equipment_type: formEquipmentType, user_id: user.id })
+      }
 
-    setShowModal(false)
-    fetchExercises()
+      setShowModal(false)
+      fetchExercises()
+    } catch {
+      // Supabase error handled silently
+    }
   }
 
   async function handleDelete(exerciseId) {
     setDeleteError('')
-    const { count } = await supabase
-      .from('day_exercises')
-      .select('*', { count: 'exact', head: true })
-      .eq('exercise_id', exerciseId)
+    try {
+      const { count } = await supabase
+        .from('day_exercises')
+        .select('*', { count: 'exact', head: true })
+        .eq('exercise_id', exerciseId)
 
-    if (count > 0) {
-      setDeleteError(`This exercise is used in ${count} Day(s). Remove it from those Days first.`)
-      return
+      if (count > 0) {
+        setDeleteError(`This exercise is used in ${count} Day(s). Remove it from those Days first.`)
+        return
+      }
+
+      await supabase.from('exercises').delete().eq('id', exerciseId)
+      fetchExercises()
+    } catch {
+      // Supabase error handled silently
     }
-
-    await supabase.from('exercises').delete().eq('id', exerciseId)
-    fetchExercises()
   }
 
   const filteredExercises = filter === 'all'
@@ -162,6 +175,7 @@ export default function ExerciseLibrary() {
                     <button
                       onClick={() => handleDelete(exercise.id)}
                       className="text-slate-400 active:text-rose-500 p-2"
+                      aria-label="Delete exercise"
                     >
                       <span className="material-symbols-outlined text-[20px]">delete</span>
                     </button>
@@ -178,6 +192,7 @@ export default function ExerciseLibrary() {
         <button
           onClick={openAddModal}
           className="bg-primary text-white font-bold rounded-xl py-4 w-full text-base shadow-lg shadow-primary/20 flex items-center justify-center gap-2 active:bg-primary/90"
+          aria-label="Add new exercise"
         >
           <span className="material-symbols-outlined text-[20px]">add</span>
           Add Exercise
