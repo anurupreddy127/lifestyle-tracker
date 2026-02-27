@@ -48,32 +48,31 @@ export default function BottomNav() {
   const activeColor = isFinance ? 'text-finance' : 'text-primary'
 
   return (
-    <nav
-      className="fixed bottom-0 w-full bg-white border-t border-slate-200 flex z-50"
-      style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
-    >
-      {tabs.map((tab) => {
-        const active = isTabActive(pathname, tab.href)
-        return (
-          <Link
-            key={tab.href}
-            href={tab.href}
-            className={`flex-1 flex flex-col items-center pt-2 pb-1 gap-0.5 ${
-              active ? activeColor : 'text-slate-400'
-            }`}
-          >
-            <span
-              className="material-symbols-outlined text-[22px]"
-              style={active ? { fontVariationSettings: "'FILL' 1" } : undefined}
+    <div className="fixed bottom-0 left-0 right-0 z-50 px-4 pb-4" style={{ paddingBottom: `calc(env(safe-area-inset-bottom) + 12px)` }}>
+      <nav className="bg-white/90 backdrop-blur-md border border-slate-200 rounded-2xl shadow-lg shadow-black/5 flex">
+        {tabs.map((tab) => {
+          const active = isTabActive(pathname, tab.href)
+          return (
+            <Link
+              key={tab.href}
+              href={tab.href}
+              className={`flex-1 flex flex-col items-center py-2.5 gap-0.5 ${
+                active ? activeColor : 'text-slate-400'
+              }`}
             >
-              {tab.icon}
-            </span>
-            <span className={`text-[10px] uppercase tracking-wide ${active ? 'font-bold' : 'font-medium'}`}>
-              {tab.label}
-            </span>
-          </Link>
-        )
-      })}
-    </nav>
+              <span
+                className="material-symbols-outlined text-[22px]"
+                style={active ? { fontVariationSettings: "'FILL' 1" } : undefined}
+              >
+                {tab.icon}
+              </span>
+              <span className={`text-[10px] uppercase tracking-wide ${active ? 'font-bold' : 'font-medium'}`}>
+                {tab.label}
+              </span>
+            </Link>
+          )
+        })}
+      </nav>
+    </div>
   )
 }
