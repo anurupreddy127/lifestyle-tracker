@@ -68,8 +68,8 @@ export function useCategories() {
       } else {
         setCategories(data);
       }
-    } catch {
-      // Silent fail
+    } catch (err) {
+      console.error("Fetch categories error:", err);
     } finally {
       setLoading(false);
     }
@@ -80,7 +80,7 @@ export function useCategories() {
   }, [fetchCategories]);
 
   async function addCategory(name, emoji) {
-    if (!user || !name.trim() || !emoji) return null;
+    if (!user || !name.trim() || !emoji) return { data: null, error: "Missing fields" };
 
     try {
       const { data, error } = await supabase
@@ -89,12 +89,16 @@ export function useCategories() {
         .select("*")
         .single();
 
-      if (!error && data) {
-        setCategories((prev) => [...prev, data]);
+      if (error) {
+        console.error("Add category error:", error);
+        return { data: null, error: error.message };
       }
-      return data;
-    } catch {
-      return null;
+
+      setCategories((prev) => [...prev, data]);
+      return { data, error: null };
+    } catch (err) {
+      console.error("Add category exception:", err);
+      return { data: null, error: "Failed to add category" };
     }
   }
 

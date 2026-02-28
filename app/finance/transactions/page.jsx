@@ -725,50 +725,50 @@ export default function TransactionsPage() {
             )
           ) : (
             <>
-              {/* Amount */}
-              <div>
-                <label className="text-sm font-medium text-slate-500 mb-1.5 block">
-                  Amount
-                </label>
-                <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-lg">
-                    $
-                  </span>
-                  <input
-                    type="text"
-                    inputMode="decimal"
-                    value={txAmount}
-                    onChange={(e) => setTxAmount(e.target.value)}
-                    placeholder="0.00"
-                    className="bg-slate-50 border border-slate-200 rounded-xl pl-8 pr-4 py-3 text-2xl font-bold text-slate-900 placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-finance/20 focus:border-finance w-full"
-                  />
-                </div>
-              </div>
-
-              {/* Your Share (expense only) */}
-              {txType === "expense" && (
+              {/* Amount + Your Share grouped */}
+              <div className="flex flex-col gap-2">
                 <div>
                   <label className="text-sm font-medium text-slate-500 mb-1.5 block">
-                    Your Share
+                    {txType === "expense" ? "Total Amount" : "Amount"}
                   </label>
                   <div className="relative">
-                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-base">
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-lg">
                       $
                     </span>
                     <input
                       type="text"
                       inputMode="decimal"
-                      value={txPersonalAmount}
-                      onChange={(e) => setTxPersonalAmount(e.target.value)}
-                      placeholder={txAmount || "Same as total"}
-                      className="bg-slate-50 border border-slate-200 rounded-xl pl-8 pr-4 py-2.5 text-base font-semibold text-slate-900 placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-finance/20 focus:border-finance w-full"
+                      value={txAmount}
+                      onChange={(e) => setTxAmount(e.target.value)}
+                      placeholder="0.00"
+                      className="bg-slate-50 border border-slate-200 rounded-xl pl-8 pr-4 py-3 text-2xl font-bold text-slate-900 placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-finance/20 focus:border-finance w-full"
                     />
                   </div>
-                  <p className="text-[10px] text-slate-400 mt-1">
-                    Leave empty if you paid for yourself only
-                  </p>
                 </div>
-              )}
+                {txType === "expense" && (
+                  <div>
+                    <label className="text-sm font-medium text-slate-500 mb-1.5 block">
+                      Your Share
+                    </label>
+                    <div className="relative">
+                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-base">
+                        $
+                      </span>
+                      <input
+                        type="text"
+                        inputMode="decimal"
+                        value={txPersonalAmount}
+                        onChange={(e) => setTxPersonalAmount(e.target.value)}
+                        placeholder={txAmount || "Same as total"}
+                        className="bg-slate-50 border border-slate-200 rounded-xl pl-8 pr-4 py-2.5 text-base font-semibold text-slate-900 placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-finance/20 focus:border-finance w-full"
+                      />
+                    </div>
+                    <p className="text-[10px] text-slate-400 mt-1">
+                      Leave empty if you paid for yourself only
+                    </p>
+                  </div>
+                )}
+              </div>
 
               {/* Date + Account */}
               <div className="grid grid-cols-2 gap-3">
@@ -924,10 +924,12 @@ export default function TransactionsPage() {
                         <button
                           onClick={async () => {
                             if (newCatName.trim()) {
-                              const added = await addCategory(newCatName, newCatEmoji);
-                              if (added) {
-                                setTxCategory(added.name);
+                              const result = await addCategory(newCatName, newCatEmoji);
+                              if (result.data) {
+                                setTxCategory(result.data.name);
                                 setShowAddCategory(false);
+                              } else {
+                                setToast(result.error || "Failed to add category");
                               }
                             }
                           }}
