@@ -97,7 +97,7 @@ export default function AccountManager() {
           .order("created_at", { ascending: true }),
         supabase
           .from("transactions")
-          .select("amount, account_id, accounts!transactions_account_id_fkey(name, account_type)")
+          .select("amount, personal_amount, account_id, accounts!transactions_account_id_fkey(name, account_type)")
           .eq("transaction_type", "expense")
           .gte("date", startOfMonth)
           .lte("date", today),
@@ -111,7 +111,7 @@ export default function AccountManager() {
         if (!byAcc[r.account_id]) {
           byAcc[r.account_id] = { name: r.accounts?.name, type: r.accounts?.account_type, total: 0 };
         }
-        byAcc[r.account_id].total += Number(r.amount);
+        byAcc[r.account_id].total += Number(r.personal_amount ?? r.amount);
       });
       setAccountSpending(
         Object.entries(byAcc)

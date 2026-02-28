@@ -59,6 +59,7 @@ export default function FinanceDashboard() {
   const [txToAccountId, setTxToAccountId] = useState("");
   const [txCategory, setTxCategory] = useState("food");
   const [txDescription, setTxDescription] = useState("");
+  const [txPersonalAmount, setTxPersonalAmount] = useState("");
 
   // Subscription quick-pay
   const [subscriptions, setSubscriptions] = useState([]);
@@ -98,7 +99,7 @@ export default function FinanceDashboard() {
             .lte("date", today),
           supabase
             .from("transactions")
-            .select("amount, category, account_id, accounts!transactions_account_id_fkey(name, account_type)")
+            .select("amount, personal_amount, category, account_id, accounts!transactions_account_id_fkey(name, account_type)")
             .eq("transaction_type", "expense")
             .gte("date", startOfMonth)
             .lte("date", today),
@@ -115,11 +116,11 @@ export default function FinanceDashboard() {
       );
 
       const expenses = expenseDetailRes.data || [];
-      setTotalExpenses(expenses.reduce((s, r) => s + Number(r.amount), 0));
+      setTotalExpenses(expenses.reduce((s, r) => s + Number(r.personal_amount ?? r.amount), 0));
 
       const byCat = {};
       expenses.forEach((r) => {
-        if (r.category) byCat[r.category] = (byCat[r.category] || 0) + Number(r.amount);
+        if (r.category) byCat[r.category] = (byCat[r.category] || 0) + Number(r.personal_amount ?? r.amount);
       });
       setCategorySpending(byCat);
 
@@ -128,7 +129,7 @@ export default function FinanceDashboard() {
         if (!byAcc[r.account_id]) {
           byAcc[r.account_id] = { name: r.accounts?.name, type: r.accounts?.account_type, total: 0 };
         }
-        byAcc[r.account_id].total += Number(r.amount);
+        byAcc[r.account_id].total += Number(r.personal_amount ?? r.amount);
       });
       setAccountSpending(
         Object.entries(byAcc)
@@ -159,6 +160,7 @@ export default function FinanceDashboard() {
     setTxToAccountId("");
     setTxCategory(categories[0]?.name || "");
     setTxDescription("");
+    setTxPersonalAmount("");
     setSelectedSubscription(null);
     setShowSubForm(false);
     setSubFormName("");
@@ -177,6 +179,14 @@ export default function FinanceDashboard() {
     if (txType === "transfer" && !txToAccountId) return;
     if (txType === "transfer" && txAccountId === txToAccountId) return;
 
+    // Validate personal amount for expenses
+    let personalAmount = amount;
+    if (txType === "expense" && txPersonalAmount.trim() !== "") {
+      personalAmount = parseFloat(txPersonalAmount);
+      if (isNaN(personalAmount) || personalAmount < 0) return;
+      if (personalAmount > amount) return;
+    }
+
     setSaving(true);
     try {
       const row = {
@@ -187,6 +197,7 @@ export default function FinanceDashboard() {
         to_account_id: txType === "transfer" ? txToAccountId : null,
         category: txType === "expense" ? txCategory : null,
         description: txDescription.trim() || null,
+        personal_amount: txType === "expense" ? personalAmount : null,
         user_id: user.id,
       };
 
@@ -220,6 +231,7 @@ export default function FinanceDashboard() {
       await supabase.from("transactions").insert({
         transaction_type: "expense",
         amount: sub.amount,
+        personal_amount: sub.amount,
         date: new Date().toISOString().split("T")[0],
         account_id: sub.account_id,
         category: sub.category,
@@ -686,6 +698,31 @@ export default function FinanceDashboard() {
                   />
                 </div>
               </div>
+
+              {/* Your Share (expense only) */}
+              {txType === "expense" && (
+                <div>
+                  <label className="text-sm font-medium text-slate-500 mb-1.5 block">
+                    Your Share
+                  </label>
+                  <div className="relative">
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-base">
+                      $
+                    </span>
+                    <input
+                      type="text"
+                      inputMode="decimal"
+                      value={txPersonalAmount}
+                      onChange={(e) => setTxPersonalAmount(e.target.value)}
+                      placeholder={txAmount || "Same as total"}
+                      className="bg-slate-50 border border-slate-200 rounded-xl pl-8 pr-4 py-2.5 text-base font-semibold text-slate-900 placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-finance/20 focus:border-finance w-full"
+                    />
+                  </div>
+                  <p className="text-[10px] text-slate-400 mt-1">
+                    Leave empty if you paid for yourself only
+                  </p>
+                </div>
+              )}
 
               {/* Date + Account */}
               <div className="grid grid-cols-2 gap-3">

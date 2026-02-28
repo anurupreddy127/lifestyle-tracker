@@ -7,6 +7,7 @@ import Toast from "@/components/Toast";
 import LoadingSkeleton from "@/components/LoadingSkeleton";
 import { adjustBalance } from "@/lib/balanceUtils";
 import { useCategories, EMOJI_OPTIONS } from "@/hooks/useCategories";
+import SwipeableCard from "@/components/SwipeableCard";
 
 function groupByDate(transactions) {
   const groups = {};
@@ -60,6 +61,7 @@ export default function TransactionsPage() {
   const [newCatEmoji, setNewCatEmoji] = useState("📦");
   const [editingCategories, setEditingCategories] = useState(false);
   const [txDescription, setTxDescription] = useState("");
+  const [txPersonalAmount, setTxPersonalAmount] = useState("");
 
   // Delete confirmation
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -99,7 +101,7 @@ export default function TransactionsPage() {
           .order("next_billing_date", { ascending: true }),
         supabase
           .from("transactions")
-          .select("amount, category")
+          .select("amount, personal_amount, category")
           .eq("transaction_type", "expense")
           .gte("date", startOfMonth)
           .lte("date", today),
@@ -110,7 +112,7 @@ export default function TransactionsPage() {
 
       const byCat = {};
       (expenseCatRes.data || []).forEach((r) => {
-        if (r.category) byCat[r.category] = (byCat[r.category] || 0) + Number(r.amount);
+        if (r.category) byCat[r.category] = (byCat[r.category] || 0) + Number(r.personal_amount ?? r.amount);
       });
       setCategorySpending(byCat);
 
@@ -134,6 +136,7 @@ export default function TransactionsPage() {
     setTxToAccountId("");
     setTxCategory(categories[0]?.name || "");
     setTxDescription("");
+    setTxPersonalAmount("");
     setShowDeleteConfirm(false);
     setSelectedSubscription(null);
     setShowSubForm(false);
@@ -155,6 +158,11 @@ export default function TransactionsPage() {
     setTxToAccountId(tx.to_account_id || "");
     setTxCategory(tx.category || categories[0]?.name || "");
     setTxDescription(tx.description || "");
+    setTxPersonalAmount(
+      tx.transaction_type === "expense" && tx.personal_amount != null && tx.personal_amount !== tx.amount
+        ? String(tx.personal_amount)
+        : ""
+    );
     setShowDeleteConfirm(false);
     setSelectedSubscription(null);
     setShowSubForm(false);
@@ -168,6 +176,14 @@ export default function TransactionsPage() {
     if (txType === "transfer" && !txToAccountId) return;
     if (txType === "transfer" && txAccountId === txToAccountId) return;
 
+    // Validate personal amount for expenses
+    let personalAmount = amount;
+    if (txType === "expense" && txPersonalAmount.trim() !== "") {
+      personalAmount = parseFloat(txPersonalAmount);
+      if (isNaN(personalAmount) || personalAmount < 0) return;
+      if (personalAmount > amount) return;
+    }
+
     setSaving(true);
     try {
       const row = {
@@ -178,6 +194,7 @@ export default function TransactionsPage() {
         to_account_id: txType === "transfer" ? txToAccountId : null,
         category: txType === "expense" ? txCategory : null,
         description: txDescription.trim() || null,
+        personal_amount: txType === "expense" ? personalAmount : null,
       };
 
       if (editingTransaction) {
@@ -273,6 +290,7 @@ export default function TransactionsPage() {
       await supabase.from("transactions").insert({
         transaction_type: "expense",
         amount: sub.amount,
+        personal_amount: sub.amount,
         date: new Date().toISOString().split("T")[0],
         account_id: sub.account_id,
         category: sub.category,
@@ -387,46 +405,61 @@ export default function TransactionsPage() {
               </p>
               <div className="flex flex-col gap-2">
                 {items.map((tx) => (
-                  <div
+                  <SwipeableCard
                     key={tx.id}
-                    onClick={() => openEdit(tx)}
-                    className="bg-white border border-slate-200 rounded-xl px-4 py-3 flex items-center gap-3 cursor-pointer active:bg-slate-50"
+                    id={`tx-${tx.id}`}
+                    onEdit={() => openEdit(tx)}
+                    onDelete={() => {
+                      openEdit(tx);
+                      setTimeout(() => setShowDeleteConfirm(true), 100);
+                    }}
                   >
-                    <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center shrink-0">
-                      {tx.category ? (
-                        <span className="text-lg">{getCategoryEmoji(tx.category)}</span>
-                      ) : (
-                        <span className="material-symbols-outlined text-slate-500 text-[20px]">
-                          {tx.transaction_type === "income"
-                            ? "work"
-                            : tx.transaction_type === "transfer"
-                              ? "swap_horiz"
-                              : "receipt"}
-                        </span>
-                      )}
+                    <div className="bg-white border border-slate-200 rounded-xl px-4 py-3 flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center shrink-0">
+                        {tx.category ? (
+                          <span className="text-lg">{getCategoryEmoji(tx.category)}</span>
+                        ) : (
+                          <span className="material-symbols-outlined text-slate-500 text-[20px]">
+                            {tx.transaction_type === "income"
+                              ? "work"
+                              : tx.transaction_type === "transfer"
+                                ? "swap_horiz"
+                                : "receipt"}
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-slate-900 truncate">
+                          {tx.description ||
+                            tx.category ||
+                            tx.transaction_type.charAt(0).toUpperCase() +
+                              tx.transaction_type.slice(1)}
+                        </p>
+                        <p className="text-xs text-slate-500 mt-0.5">
+                          {tx.accounts?.name || ""}
+                        </p>
+                      </div>
+                      <div className="text-right ml-2">
+                        <p
+                          className={`text-sm font-bold ${tx.transaction_type === "expense" ? "text-rose-500" : tx.transaction_type === "income" ? "text-finance" : "text-slate-500"}`}
+                        >
+                          {tx.transaction_type === "expense"
+                            ? "-"
+                            : tx.transaction_type === "income"
+                              ? "+"
+                              : ""}
+                          {formatCurrency(tx.amount)}
+                        </p>
+                        {tx.transaction_type === "expense" &&
+                          tx.personal_amount != null &&
+                          tx.personal_amount !== tx.amount && (
+                          <p className="text-[10px] text-slate-400 mt-0.5">
+                            You: {formatCurrency(tx.personal_amount)}
+                          </p>
+                        )}
+                      </div>
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-slate-900 truncate">
-                        {tx.description ||
-                          tx.category ||
-                          tx.transaction_type.charAt(0).toUpperCase() +
-                            tx.transaction_type.slice(1)}
-                      </p>
-                      <p className="text-xs text-slate-500 mt-0.5">
-                        {tx.accounts?.name || ""}
-                      </p>
-                    </div>
-                    <p
-                      className={`text-sm font-bold ml-2 ${tx.transaction_type === "expense" ? "text-rose-500" : tx.transaction_type === "income" ? "text-finance" : "text-slate-500"}`}
-                    >
-                      {tx.transaction_type === "expense"
-                        ? "-"
-                        : tx.transaction_type === "income"
-                          ? "+"
-                          : ""}
-                      {formatCurrency(tx.amount)}
-                    </p>
-                  </div>
+                  </SwipeableCard>
                 ))}
               </div>
             </div>
@@ -711,6 +744,31 @@ export default function TransactionsPage() {
                   />
                 </div>
               </div>
+
+              {/* Your Share (expense only) */}
+              {txType === "expense" && (
+                <div>
+                  <label className="text-sm font-medium text-slate-500 mb-1.5 block">
+                    Your Share
+                  </label>
+                  <div className="relative">
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-base">
+                      $
+                    </span>
+                    <input
+                      type="text"
+                      inputMode="decimal"
+                      value={txPersonalAmount}
+                      onChange={(e) => setTxPersonalAmount(e.target.value)}
+                      placeholder={txAmount || "Same as total"}
+                      className="bg-slate-50 border border-slate-200 rounded-xl pl-8 pr-4 py-2.5 text-base font-semibold text-slate-900 placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-finance/20 focus:border-finance w-full"
+                    />
+                  </div>
+                  <p className="text-[10px] text-slate-400 mt-1">
+                    Leave empty if you paid for yourself only
+                  </p>
+                </div>
+              )}
 
               {/* Date + Account */}
               <div className="grid grid-cols-2 gap-3">

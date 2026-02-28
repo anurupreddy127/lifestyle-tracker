@@ -5,6 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import BottomSheet from "@/components/BottomSheet";
 import LoadingSkeleton from "@/components/LoadingSkeleton";
 import { useCategories } from "@/hooks/useCategories";
+import SwipeableCard from "@/components/SwipeableCard";
 
 export default function SubscriptionReminders() {
   const { supabase, user } = useAuth();
@@ -154,13 +155,14 @@ export default function SubscriptionReminders() {
           {reminders.map((rem) => {
             const pastDue = isPastDue(rem.next_billing_date);
             return (
-              <div
+              <SwipeableCard
                 key={rem.id}
-                className={`bg-white rounded-xl p-4 border shadow-sm ${pastDue ? "border-amber-400" : "border-slate-200"}`}
+                id={`sub-${rem.id}`}
+                onEdit={() => openEdit(rem)}
+                onDelete={() => handleDelete(rem.id)}
               >
                 <div
-                  className="flex items-start justify-between"
-                  onClick={() => openEdit(rem)}
+                  className={`bg-white rounded-xl p-4 border shadow-sm ${pastDue ? "border-amber-400" : "border-slate-200"}`}
                 >
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between mb-1">
@@ -187,20 +189,8 @@ export default function SubscriptionReminders() {
                       </span>
                     </div>
                   </div>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleDelete(rem.id);
-                    }}
-                    aria-label="Delete subscription"
-                    className="text-slate-400 active:text-rose-500 p-2 ml-2"
-                  >
-                    <span className="material-symbols-outlined text-[18px]">
-                      delete
-                    </span>
-                  </button>
                 </div>
-              </div>
+              </SwipeableCard>
             );
           })}
         </div>
