@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import BottomSheet from "@/components/BottomSheet";
 import LoadingSkeleton from "@/components/LoadingSkeleton";
+import SwipeableCard from "@/components/SwipeableCard";
 
 const TYPE_LABELS = {
   checking: "Checking",
@@ -316,9 +317,7 @@ export default function AccountManager() {
 
     return (
       <div
-        key={acc.id}
-        onClick={() => openEdit(acc)}
-        className={`relative rounded-2xl overflow-hidden h-44 cursor-pointer active:opacity-90 transition-opacity ${
+        className={`relative rounded-2xl overflow-hidden h-44 ${
           hasImage ? "" : "bg-white border border-slate-200 shadow-sm"
         }`}
       >
@@ -355,40 +354,36 @@ export default function AccountManager() {
             </h3>
           </div>
 
-          <div className="flex items-end justify-between">
-            <div>
-              {acc.account_type === "credit_card" ? (
-                <>
-                  <p className={`text-xs ${hasImage ? "text-white/70" : "text-slate-500"}`}>
-                    Current Balance
-                  </p>
-                  <p className={`text-xl font-bold ${hasImage ? "text-white" : "text-rose-500"}`}>
-                    -{formatBalance((acc.credit_limit || 0) - (acc.available_credit || 0))}
-                  </p>
-                  <p className={`text-[10px] mt-0.5 ${hasImage ? "text-white/60" : "text-slate-400"}`}>
-                    {formatBalance(acc.available_credit || 0)} of{" "}
-                    {formatBalance(acc.credit_limit || 0)}
-                    {acc.due_date && ` · Due: ${getOrdinal(acc.due_date)}`}
-                  </p>
-                </>
-              ) : (
-                <>
-                  <p className={`text-xs ${hasImage ? "text-white/70" : "text-slate-500"}`}>
-                    Available Balance
-                  </p>
-                  <p className={`text-xl font-bold ${hasImage ? "text-white" : "text-slate-900"}`}>
-                    {formatBalance(acc.balance)}
-                  </p>
-                </>
-              )}
-            </div>
-            <span
-              className={`material-symbols-outlined text-[20px] ${
-                hasImage ? "text-white/60" : "text-slate-400"
-              }`}
-            >
-              chevron_right
-            </span>
+          <div>
+            {acc.account_type === "credit_card" ? (
+              (() => {
+                const ccBalance = (acc.credit_limit || 0) - (acc.available_credit || 0);
+                return (
+                  <>
+                    <p className={`text-xs ${hasImage ? "text-white/70" : "text-slate-500"}`}>
+                      Current Balance
+                    </p>
+                    <p className={`text-2xl font-bold ${hasImage ? "text-white" : "text-rose-500"}`}>
+                      {ccBalance > 0 ? "-" : ""}{formatBalance(ccBalance)}
+                    </p>
+                    <p className={`text-[10px] mt-0.5 ${hasImage ? "text-white/60" : "text-slate-400"}`}>
+                      {formatBalance(acc.available_credit || 0)} of{" "}
+                      {formatBalance(acc.credit_limit || 0)}
+                      {acc.due_date && ` · Due: ${getOrdinal(acc.due_date)}`}
+                    </p>
+                  </>
+                );
+              })()
+            ) : (
+              <>
+                <p className={`text-xs ${hasImage ? "text-white/70" : "text-slate-500"}`}>
+                  Available Balance
+                </p>
+                <p className={`text-2xl font-bold ${hasImage ? "text-white" : "text-slate-900"}`}>
+                  {formatBalance(acc.balance)}
+                </p>
+              </>
+            )}
           </div>
         </div>
       </div>
@@ -449,7 +444,19 @@ export default function AccountManager() {
             All Accounts
           </h2>
           <div className="flex flex-col gap-3">
-            {accounts.map((acc) => renderAccountCard(acc))}
+            {accounts.map((acc) => (
+              <SwipeableCard
+                key={acc.id}
+                id={`account-${acc.id}`}
+                onEdit={() => openEdit(acc)}
+                onDelete={() => {
+                  openEdit(acc);
+                  setTimeout(() => setShowDeleteConfirm(true), 100);
+                }}
+              >
+                {renderAccountCard(acc)}
+              </SwipeableCard>
+            ))}
           </div>
         </>
       )}

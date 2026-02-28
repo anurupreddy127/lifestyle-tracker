@@ -7,36 +7,7 @@ import BottomSheet from "@/components/BottomSheet";
 import Toast from "@/components/Toast";
 import LoadingSkeleton from "@/components/LoadingSkeleton";
 import { adjustBalance } from "@/lib/balanceUtils";
-
-const CATEGORIES = [
-  "housing",
-  "food",
-  "electricity",
-  "health",
-  "shopping",
-  "studying",
-  "miscellaneous",
-];
-
-const CATEGORY_LABELS = {
-  housing: "Housing",
-  food: "Food",
-  electricity: "Electricity",
-  health: "Health",
-  shopping: "Shopping",
-  studying: "Studying",
-  miscellaneous: "Miscellaneous",
-};
-
-const CATEGORY_ICONS = {
-  housing: "home",
-  food: "restaurant",
-  electricity: "bolt",
-  health: "favorite",
-  shopping: "shopping_bag",
-  studying: "school",
-  miscellaneous: "more_horiz",
-};
+import { useCategories, EMOJI_OPTIONS } from "@/hooks/useCategories";
 
 const ACCOUNT_TYPE_ICONS = {
   checking: "account_balance",
@@ -52,15 +23,6 @@ const ACCOUNT_TYPE_COLORS = {
   cash: "bg-emerald-100 text-emerald-600",
 };
 
-const CATEGORY_COLORS = {
-  housing: "bg-blue-100 text-blue-600",
-  food: "bg-orange-100 text-orange-600",
-  electricity: "bg-yellow-100 text-yellow-600",
-  health: "bg-rose-100 text-rose-600",
-  shopping: "bg-purple-100 text-purple-600",
-  studying: "bg-indigo-100 text-indigo-600",
-  miscellaneous: "bg-slate-100 text-slate-600",
-};
 
 const TYPE_LABELS = {
   checking: "Checking",
@@ -72,6 +34,7 @@ const TYPE_LABELS = {
 export default function FinanceDashboard() {
   const router = useRouter();
   const { supabase, user } = useAuth();
+  const { categories, addCategory, deleteCategory, getCategoryColor, getCategoryEmoji } = useCategories();
   const [loading, setLoading] = useState(true);
   const [accounts, setAccounts] = useState([]);
   const [totalIncome, setTotalIncome] = useState(0);
@@ -81,6 +44,10 @@ export default function FinanceDashboard() {
   const [showModal, setShowModal] = useState(false);
   const [toast, setToast] = useState("");
   const [saving, setSaving] = useState(false);
+  const [showAddCategory, setShowAddCategory] = useState(false);
+  const [newCatName, setNewCatName] = useState("");
+  const [newCatEmoji, setNewCatEmoji] = useState("📦");
+  const [editingCategories, setEditingCategories] = useState(false);
 
   // Transaction form
   const [txType, setTxType] = useState("expense");
@@ -190,7 +157,7 @@ export default function FinanceDashboard() {
     setTxAmount("");
     setTxAccountId(accounts[0]?.id || "");
     setTxToAccountId("");
-    setTxCategory("food");
+    setTxCategory(categories[0]?.name || "");
     setTxDescription("");
     setSelectedSubscription(null);
     setShowSubForm(false);
@@ -199,7 +166,7 @@ export default function FinanceDashboard() {
     setSubFormBillingType("monthly");
     setSubFormNextDate("");
     setSubFormAccountId(accounts[0]?.id || "");
-    setSubFormCategory("miscellaneous");
+    setSubFormCategory(categories[categories.length - 1]?.name || "");
     setShowModal(true);
   }
 
@@ -298,7 +265,7 @@ export default function FinanceDashboard() {
       setSubFormBillingType("monthly");
       setSubFormNextDate("");
       setSubFormAccountId(accounts[0]?.id || "");
-      setSubFormCategory("miscellaneous");
+      setSubFormCategory(categories[categories.length - 1]?.name || "");
       // Re-fetch subscriptions
       const { data } = await supabase
         .from("subscription_reminders")
@@ -388,13 +355,11 @@ export default function FinanceDashboard() {
                     key={cat}
                     className="min-w-[100px] w-[100px] bg-white border border-slate-200 rounded-xl p-3 flex flex-col items-center gap-2 shrink-0"
                   >
-                    <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${CATEGORY_COLORS[cat] || "bg-slate-100 text-slate-600"}`}>
-                      <span className="material-symbols-outlined text-[18px]">
-                        {CATEGORY_ICONS[cat] || "more_horiz"}
-                      </span>
+                    <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${getCategoryColor(cat)}`}>
+                      <span className="text-lg">{getCategoryEmoji(cat)}</span>
                     </div>
                     <p className="text-[11px] text-slate-500 text-center leading-tight">
-                      {CATEGORY_LABELS[cat] || cat}
+                      {cat}
                     </p>
                     <p className="text-sm font-bold text-slate-900">
                       {formatCurrency(amount)}
@@ -599,9 +564,9 @@ export default function FinanceDashboard() {
                     onChange={(e) => setSubFormCategory(e.target.value)}
                     className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-finance/20 w-full"
                   >
-                    {CATEGORIES.map((c) => (
-                      <option key={c} value={c}>
-                        {CATEGORY_LABELS[c]}
+                    {categories.map((cat) => (
+                      <option key={cat.id} value={cat.name}>
+                        {cat.emoji} {cat.name}
                       </option>
                     ))}
                   </select>
@@ -724,7 +689,7 @@ export default function FinanceDashboard() {
 
               {/* Date + Account */}
               <div className="grid grid-cols-2 gap-3">
-                <div>
+                <div className="min-w-0">
                   <label className="text-sm font-medium text-slate-500 mb-1.5 block">
                     Date
                   </label>
@@ -732,10 +697,10 @@ export default function FinanceDashboard() {
                     type="date"
                     value={txDate}
                     onChange={(e) => setTxDate(e.target.value)}
-                    className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-3 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-finance/20 w-full"
+                    className="bg-slate-50 border border-slate-200 rounded-xl px-2 py-3 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-finance/20 w-full min-w-0"
                   />
                 </div>
-                <div>
+                <div className="min-w-0">
                   <label className="text-sm font-medium text-slate-500 mb-1.5 block">
                     {txType === "transfer" ? "From" : "Account"}
                   </label>
@@ -780,27 +745,116 @@ export default function FinanceDashboard() {
               {/* Category (expense only) */}
               {txType === "expense" && (
                 <div>
-                  <label className="text-sm font-medium text-slate-500 mb-2 block">
-                    Category
-                  </label>
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="text-sm font-medium text-slate-500">
+                      Category
+                    </label>
+                    <button
+                      onClick={() => setEditingCategories(!editingCategories)}
+                      className="text-xs font-semibold text-finance"
+                    >
+                      {editingCategories ? "Done" : "Edit"}
+                    </button>
+                  </div>
                   <div className="grid grid-cols-4 gap-2">
-                    {CATEGORIES.map((c) => (
+                    {categories.map((cat) => (
                       <button
-                        key={c}
-                        onClick={() => setTxCategory(c)}
-                        className={`flex flex-col items-center gap-1 py-2.5 rounded-xl text-[10px] font-semibold border-2 ${
-                          txCategory === c
+                        key={cat.id}
+                        onClick={() => {
+                          if (editingCategories) {
+                            deleteCategory(cat.id);
+                            if (txCategory === cat.name) setTxCategory(categories[0]?.name || "");
+                          } else {
+                            setTxCategory(cat.name);
+                          }
+                        }}
+                        className={`relative flex flex-col items-center gap-1 py-2.5 rounded-xl text-[10px] font-semibold border-2 ${
+                          !editingCategories && txCategory === cat.name
                             ? "border-finance bg-finance/5 text-finance"
                             : "border-transparent bg-slate-50 text-slate-500"
                         }`}
                       >
-                        <span className="material-symbols-outlined text-[18px]">
-                          {CATEGORY_ICONS[c]}
-                        </span>
-                        {CATEGORY_LABELS[c]}
+                        {editingCategories && (
+                          <div className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-rose-500 rounded-full flex items-center justify-center">
+                            <span className="text-white text-[10px] font-bold">✕</span>
+                          </div>
+                        )}
+                        <span className="text-lg">{cat.emoji}</span>
+                        {cat.name}
                       </button>
                     ))}
+                    {!editingCategories && (
+                      <button
+                        onClick={() => {
+                          setNewCatName("");
+                          setNewCatEmoji("📦");
+                          setShowAddCategory(true);
+                        }}
+                        className="flex flex-col items-center gap-1 py-2.5 rounded-xl text-[10px] font-semibold border-2 border-dashed border-slate-300 bg-slate-50 text-slate-400"
+                      >
+                        <span className="text-lg">+</span>
+                        Add
+                      </button>
+                    )}
                   </div>
+                  {showAddCategory && (
+                    <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 mt-3 flex flex-col gap-3">
+                      <div>
+                        <label className="text-xs font-medium text-slate-500 mb-1 block">
+                          Category Name
+                        </label>
+                        <input
+                          type="text"
+                          value={newCatName}
+                          onChange={(e) => setNewCatName(e.target.value)}
+                          placeholder="e.g., Pets"
+                          className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-finance/20 w-full"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs font-medium text-slate-500 mb-1 block">
+                          Choose Emoji
+                        </label>
+                        <div className="grid grid-cols-10 gap-1">
+                          {EMOJI_OPTIONS.map((emoji) => (
+                            <button
+                              key={emoji}
+                              onClick={() => setNewCatEmoji(emoji)}
+                              className={`w-8 h-8 rounded-lg text-base flex items-center justify-center ${
+                                newCatEmoji === emoji
+                                  ? "bg-finance/10 ring-2 ring-finance"
+                                  : "bg-white"
+                              }`}
+                            >
+                              {emoji}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => setShowAddCategory(false)}
+                          className="flex-1 py-2.5 rounded-xl text-sm font-semibold bg-slate-100 text-slate-600"
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          onClick={async () => {
+                            if (newCatName.trim()) {
+                              const added = await addCategory(newCatName, newCatEmoji);
+                              if (added) {
+                                setTxCategory(added.name);
+                                setShowAddCategory(false);
+                              }
+                            }
+                          }}
+                          className="flex-1 py-2.5 rounded-xl text-sm font-semibold bg-finance text-white"
+                        >
+                          Add
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
 

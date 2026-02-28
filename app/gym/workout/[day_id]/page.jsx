@@ -131,14 +131,17 @@ export default function ActiveWorkout() {
     exercises.forEach((ex) => {
       const sets = inputValues[ex.exercise_id] || {}
       const totalSets = ex.target_sets || 3
+      const isBodyweight = ex.exercises.equipment_type === 'no_equipment'
       for (let i = 0; i < totalSets; i++) {
         const setData = sets[i]
-        if (setData?.weight && setData?.reps) {
+        const hasReps = setData?.reps
+        const hasWeight = setData?.weight
+        if (isBodyweight ? hasReps : (hasWeight && hasReps)) {
           logs.push({
             session_id: newSession.id,
             exercise_id: ex.exercise_id,
-            weight: parseFloat(setData.weight),
-            weight_type: ex.exercises.equipment_type === 'barbell_dumbbell' ? 'per_side' : 'total',
+            weight: isBodyweight ? 0 : parseFloat(setData.weight),
+            weight_type: isBodyweight ? 'bodyweight' : ex.exercises.equipment_type === 'barbell_dumbbell' ? 'per_side' : 'total',
             reps: parseInt(setData.reps),
             set_number: i + 1,
             user_id: user.id,
@@ -237,15 +240,17 @@ export default function ActiveWorkout() {
                         <span className="text-xs font-bold text-slate-500">{setIdx + 1}</span>
                       </div>
 
-                      {/* Weight input */}
-                      <input
-                        type="text"
-                        inputMode="decimal"
-                        placeholder="lbs"
-                        value={setData.weight || ''}
-                        onChange={(e) => updateSetInput(ex.exercise_id, setIdx, 'weight', e.target.value)}
-                        className="flex-1 bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary min-w-0"
-                      />
+                      {/* Weight input (hidden for bodyweight exercises) */}
+                      {ex.exercises.equipment_type !== 'no_equipment' && (
+                        <input
+                          type="text"
+                          inputMode="decimal"
+                          placeholder="lbs"
+                          value={setData.weight || ''}
+                          onChange={(e) => updateSetInput(ex.exercise_id, setIdx, 'weight', e.target.value)}
+                          className="flex-1 bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary min-w-0"
+                        />
+                      )}
 
                       {/* Reps input */}
                       <input

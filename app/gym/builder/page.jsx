@@ -212,7 +212,7 @@ export default function DayBuilder() {
                 <div className="flex-1 min-w-0">
                   <span className="text-sm font-semibold text-slate-900 block truncate">{ex.name}</span>
                   <span className="text-[10px] font-bold uppercase text-primary/60">
-                    {ex.equipment_type === 'barbell_dumbbell' ? 'Barbell/Dumbbell' : 'Machine'}
+                    {ex.equipment_type === 'barbell_dumbbell' ? 'Barbell/Dumbbell' : ex.equipment_type === 'no_equipment' ? 'No Equipment' : 'Machine'}
                   </span>
                 </div>
               </button>

@@ -4,28 +4,11 @@ import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import BottomSheet from "@/components/BottomSheet";
 import LoadingSkeleton from "@/components/LoadingSkeleton";
-
-const CATEGORIES = [
-  "housing",
-  "food",
-  "electricity",
-  "health",
-  "shopping",
-  "studying",
-  "miscellaneous",
-];
-const CATEGORY_LABELS = {
-  housing: "Housing",
-  food: "Food",
-  electricity: "Electricity",
-  health: "Health",
-  shopping: "Shopping",
-  studying: "Studying",
-  miscellaneous: "Miscellaneous",
-};
+import { useCategories } from "@/hooks/useCategories";
 
 export default function SubscriptionReminders() {
   const { supabase, user } = useAuth();
+  const { categories } = useCategories();
   const [reminders, setReminders] = useState([]);
   const [accounts, setAccounts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -36,7 +19,7 @@ export default function SubscriptionReminders() {
   const [formBillingType, setFormBillingType] = useState("monthly");
   const [formNextDate, setFormNextDate] = useState("");
   const [formAccountId, setFormAccountId] = useState("");
-  const [formCategory, setFormCategory] = useState("miscellaneous");
+  const [formCategory, setFormCategory] = useState("");
   const [saving, setSaving] = useState(false);
 
   async function fetchData() {
@@ -74,7 +57,7 @@ export default function SubscriptionReminders() {
     setFormBillingType("monthly");
     setFormNextDate("");
     setFormAccountId(accounts[0]?.id || "");
-    setFormCategory("miscellaneous");
+    setFormCategory(categories[categories.length - 1]?.name || "");
     setShowModal(true);
   }
 
@@ -316,9 +299,9 @@ export default function SubscriptionReminders() {
               onChange={(e) => setFormCategory(e.target.value)}
               className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-finance/20 w-full"
             >
-              {CATEGORIES.map((c) => (
-                <option key={c} value={c}>
-                  {CATEGORY_LABELS[c]}
+              {categories.map((cat) => (
+                <option key={cat.id} value={cat.name}>
+                  {cat.emoji} {cat.name}
                 </option>
               ))}
             </select>

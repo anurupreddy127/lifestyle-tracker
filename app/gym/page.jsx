@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
 import LoadingSkeleton from '@/components/LoadingSkeleton'
+import SwipeableCard from '@/components/SwipeableCard'
 
 const GRADIENTS = [
   'from-blue-500 to-indigo-600',
@@ -20,22 +21,31 @@ export default function GymHome() {
   const [days, setDays] = useState([])
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    async function fetchDays() {
-      try {
-        const { data } = await supabase
-          .from('workout_days')
-          .select('id, name, day_exercises(count)')
-          .order('created_at', { ascending: true })
-        setDays(data || [])
-        setLoading(false)
-      } catch {
-        setLoading(false)
-      }
+  async function fetchDays() {
+    try {
+      const { data } = await supabase
+        .from('workout_days')
+        .select('id, name, day_exercises(count)')
+        .order('created_at', { ascending: true })
+      setDays(data || [])
+      setLoading(false)
+    } catch {
+      setLoading(false)
     }
-    fetchDays()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => { fetchDays() }, [])
+
+  async function handleDeleteDay(dayId) {
+    try {
+      await supabase.from('day_exercises').delete().eq('day_id', dayId)
+      await supabase.from('workout_days').delete().eq('id', dayId)
+      fetchDays()
+    } catch {
+      // Silent fail
+    }
+  }
 
   return (
     <div className="px-4 pt-4 pb-4">
@@ -53,33 +63,37 @@ export default function GymHome() {
             const exerciseCount = day.day_exercises?.[0]?.count ?? 0
             const gradient = GRADIENTS[index % GRADIENTS.length]
             return (
-              <div
+              <SwipeableCard
                 key={day.id}
-                className="bg-white border border-slate-200 rounded-xl shadow-sm p-3 flex items-center gap-3"
+                id={`day-${day.id}`}
+                onEdit={() => router.push(`/gym/builder/${day.id}`)}
+                onDelete={() => handleDeleteDay(day.id)}
               >
-                {/* Thumbnail */}
-                <div className={`w-20 h-20 rounded-lg bg-gradient-to-br ${gradient} flex items-center justify-center shrink-0`}>
-                  <span className="material-symbols-outlined text-white/80 text-3xl">fitness_center</span>
-                </div>
-
-                {/* Info */}
-                <div className="flex-1 min-w-0">
-                  <h3 className="text-base font-bold text-slate-900 truncate">{day.name}</h3>
-                  <div className="flex items-center gap-1 mt-1 text-slate-500">
-                    <span className="material-symbols-outlined text-[14px]">exercise</span>
-                    <span className="text-xs font-medium">{exerciseCount} {exerciseCount === 1 ? 'exercise' : 'exercises'}</span>
+                <div className="bg-white border border-slate-200 rounded-xl shadow-sm p-3 flex items-center gap-3">
+                  {/* Thumbnail */}
+                  <div className={`w-20 h-20 rounded-lg bg-gradient-to-br ${gradient} flex items-center justify-center shrink-0`}>
+                    <span className="material-symbols-outlined text-white/80 text-3xl">fitness_center</span>
                   </div>
-                </div>
 
-                {/* Start button */}
-                <button
-                  onClick={() => router.push(`/gym/workout/${day.id}`)}
-                  className="bg-primary text-white font-semibold text-sm rounded-lg px-4 h-9 shrink-0 active:bg-primary/90"
-                  aria-label="Start workout"
-                >
-                  Start
-                </button>
-              </div>
+                  {/* Info */}
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-base font-bold text-slate-900 truncate">{day.name}</h3>
+                    <div className="flex items-center gap-1 mt-1 text-slate-500">
+                      <span className="material-symbols-outlined text-[14px]">exercise</span>
+                      <span className="text-xs font-medium">{exerciseCount} {exerciseCount === 1 ? 'exercise' : 'exercises'}</span>
+                    </div>
+                  </div>
+
+                  {/* Start button */}
+                  <button
+                    onClick={() => router.push(`/gym/workout/${day.id}`)}
+                    className="bg-primary text-white font-semibold text-sm rounded-lg px-4 h-9 shrink-0 active:bg-primary/90"
+                    aria-label="Start workout"
+                  >
+                    Start
+                  </button>
+                </div>
+              </SwipeableCard>
             )
           })}
         </div>

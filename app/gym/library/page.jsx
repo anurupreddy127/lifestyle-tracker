@@ -4,16 +4,19 @@ import { useState, useEffect } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import BottomSheet from '@/components/BottomSheet'
 import LoadingSkeleton from '@/components/LoadingSkeleton'
+import SwipeableCard from '@/components/SwipeableCard'
 
 const EQUIPMENT_LABELS = {
   barbell_dumbbell: 'Barbell/Dumbbell',
   machine: 'Machine',
+  no_equipment: 'No Equipment',
 }
 
 const FILTERS = [
   { label: 'All', value: 'all' },
   { label: 'Barbell', value: 'barbell_dumbbell' },
   { label: 'Machine', value: 'machine' },
+  { label: 'No Equipment', value: 'no_equipment' },
 ]
 
 function groupByLetter(exercises) {
@@ -154,32 +157,27 @@ export default function ExerciseLibrary() {
               <p className="text-xs font-bold text-primary uppercase tracking-widest px-1 pt-4 pb-2">{letter}</p>
               <div className="flex flex-col gap-2">
                 {items.map((exercise) => (
-                  <div
+                  <SwipeableCard
                     key={exercise.id}
-                    className="bg-white border border-slate-100 rounded-xl p-3 flex items-center gap-3"
+                    id={`exercise-${exercise.id}`}
+                    onEdit={() => openEditModal(exercise)}
+                    onDelete={() => handleDelete(exercise.id)}
                   >
-                    {/* Icon */}
-                    <div className="w-14 h-14 bg-slate-100 rounded-lg flex items-center justify-center shrink-0">
-                      <span className="material-symbols-outlined text-slate-400 text-xl">fitness_center</span>
-                    </div>
+                    <div className="bg-white border border-slate-100 rounded-xl p-3 flex items-center gap-3">
+                      {/* Icon */}
+                      <div className="w-14 h-14 bg-slate-100 rounded-lg flex items-center justify-center shrink-0">
+                        <span className="material-symbols-outlined text-slate-400 text-xl">fitness_center</span>
+                      </div>
 
-                    {/* Info */}
-                    <div className="flex-1 min-w-0" onClick={() => openEditModal(exercise)}>
-                      <p className="text-base font-semibold text-slate-900 truncate">{exercise.name}</p>
-                      <span className="text-[10px] font-bold uppercase bg-primary/10 text-primary rounded px-2 py-0.5 mt-1 inline-block">
-                        {EQUIPMENT_LABELS[exercise.equipment_type] || exercise.equipment_type}
-                      </span>
+                      {/* Info */}
+                      <div className="flex-1 min-w-0">
+                        <p className="text-base font-semibold text-slate-900 truncate">{exercise.name}</p>
+                        <span className="text-[10px] font-bold uppercase bg-primary/10 text-primary rounded px-2 py-0.5 mt-1 inline-block">
+                          {EQUIPMENT_LABELS[exercise.equipment_type] || exercise.equipment_type}
+                        </span>
+                      </div>
                     </div>
-
-                    {/* Delete */}
-                    <button
-                      onClick={() => handleDelete(exercise.id)}
-                      className="text-slate-400 active:text-rose-500 p-2"
-                      aria-label="Delete exercise"
-                    >
-                      <span className="material-symbols-outlined text-[20px]">delete</span>
-                    </button>
-                  </div>
+                  </SwipeableCard>
                 ))}
               </div>
             </div>
@@ -219,27 +217,20 @@ export default function ExerciseLibrary() {
 
           <div>
             <label className="text-sm font-medium text-slate-500 mb-2 block">Equipment Type</label>
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                onClick={() => setFormEquipmentType('barbell_dumbbell')}
-                className={`py-3 rounded-xl text-sm font-semibold border-2 ${
-                  formEquipmentType === 'barbell_dumbbell'
-                    ? 'border-primary bg-primary/10 text-primary'
-                    : 'border-transparent bg-slate-100 text-slate-600'
-                }`}
-              >
-                Barbell / Dumbbell
-              </button>
-              <button
-                onClick={() => setFormEquipmentType('machine')}
-                className={`py-3 rounded-xl text-sm font-semibold border-2 ${
-                  formEquipmentType === 'machine'
-                    ? 'border-primary bg-primary/10 text-primary'
-                    : 'border-transparent bg-slate-100 text-slate-600'
-                }`}
-              >
-                Machine
-              </button>
+            <div className="grid grid-cols-3 gap-2">
+              {Object.entries(EQUIPMENT_LABELS).map(([key, label]) => (
+                <button
+                  key={key}
+                  onClick={() => setFormEquipmentType(key)}
+                  className={`py-3 rounded-xl text-xs font-semibold border-2 ${
+                    formEquipmentType === key
+                      ? 'border-primary bg-primary/10 text-primary'
+                      : 'border-transparent bg-slate-100 text-slate-600'
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
             </div>
           </div>
 
