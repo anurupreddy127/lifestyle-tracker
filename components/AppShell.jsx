@@ -47,9 +47,18 @@ export default function AppShell({ children }) {
   const [drawerOpen, setDrawerOpen] = useState(false)
 
   const isAuthPage = AUTH_ROUTES.includes(pathname)
+  const isHubPage = pathname === '/'
   const hideHeader = NO_HEADER_ROUTES.some((r) => pathname.startsWith(r))
 
   if (isAuthPage) {
+    return (
+      <AuthProvider>
+        <AuthGuard>{children}</AuthGuard>
+      </AuthProvider>
+    )
+  }
+
+  if (isHubPage) {
     return (
       <AuthProvider>
         <AuthGuard>{children}</AuthGuard>
