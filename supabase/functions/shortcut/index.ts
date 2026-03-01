@@ -153,9 +153,13 @@ Deno.serve(async (req) => {
         .order("created_at"),
     ]);
 
+    // Return simple string arrays so iPhone Shortcuts can use "Choose from List" directly
+    const accountNames = (accountsRes.data || []).map((a: { name: string }) => a.name);
+    const categoryNames = (categoriesRes.data || []).map((c: { name: string; emoji: string }) => `${c.name}`);
+
     return jsonResponse({
-      accounts: accountsRes.data || [],
-      categories: categoriesRes.data || [],
+      accounts: accountNames,
+      categories: categoryNames,
     });
   }
 
