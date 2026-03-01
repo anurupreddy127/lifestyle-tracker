@@ -117,3 +117,25 @@ ALTER TABLE accounts ADD COLUMN IF NOT EXISTS due_date INTEGER;
 ALTER TABLE transactions DROP CONSTRAINT IF EXISTS transactions_transaction_type_check;
 ALTER TABLE transactions ADD CONSTRAINT transactions_transaction_type_check
   CHECK (transaction_type IN ('expense', 'income', 'transfer', 'subscription', 'received'));
+
+-- =============================================================================
+-- Phase 4: API Keys for iPhone Shortcut integration
+-- =============================================================================
+
+CREATE TABLE IF NOT EXISTS api_keys (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+  key_hash TEXT NOT NULL,
+  key_prefix TEXT NOT NULL,
+  name TEXT DEFAULT 'iPhone Shortcut',
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_api_keys_key_hash ON api_keys(key_hash);
+CREATE INDEX IF NOT EXISTS idx_api_keys_user_id ON api_keys(user_id);
+
+ALTER TABLE api_keys ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can view own api_keys" ON api_keys FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "Users can insert own api_keys" ON api_keys FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "Users can delete own api_keys" ON api_keys FOR DELETE USING (auth.uid() = user_id);

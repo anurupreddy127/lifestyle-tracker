@@ -82,6 +82,9 @@
 │   └── balanceUtils.js                 # recalculateBalance() — atomic idempotent balance computation
 ├── utils/
 │   └── supabase-browser.js             # Browser Supabase client factory
+├── supabase/
+│   └── functions/
+│       └── shortcut/index.ts           # Edge Function: iPhone Shortcut API (GET accounts, POST transaction)
 ├── public/
 │   ├── manifest.json                   # PWA manifest (standalone, dark bg, app icons)
 │   ├── icon-192.png                    # PWA icon 192x192
@@ -143,7 +146,7 @@
 3. User signs in at `/login`
 4. `AuthContext` stores `user`, `session`, `supabase` client
 5. `AuthGuard` wraps all routes — redirects to `/login` if no user
-6. Public routes: `/login`, `/signup` (redirect to `/gym` if already signed in)
+6. Public routes: `/login`, `/signup` (redirect to `/` hub if already signed in)
 7. Hub page `/` renders without header/nav (just auth wrapper)
 
 ### Auth Context API
@@ -382,11 +385,25 @@ categories (
 )
 ```
 
+### API Keys Table
+
+```sql
+api_keys (
+  id         UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id    UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+  key_hash   TEXT NOT NULL,      -- SHA-256 hash of the raw key
+  key_prefix TEXT NOT NULL,      -- First 10 chars for display (e.g., "lt_a3f9b2...")
+  name       TEXT DEFAULT 'iPhone Shortcut',
+  created_at TIMESTAMPTZ DEFAULT now()
+)
+```
+
 ### Security
 
 - **Row Level Security (RLS)** enabled on ALL tables
 - Each table has 4 policies: SELECT, INSERT, UPDATE, DELETE — all scoped to `auth.uid() = user_id`
 - Indexes on `user_id` for all tables
+- `api_keys` has index on `key_hash` for fast lookup + RLS policies (SELECT, INSERT, DELETE)
 
 ### Constraints
 
@@ -518,7 +535,7 @@ Both `finance/page.jsx` and `finance/transactions/page.jsx` have transaction mod
   "display": "standalone",
   "background_color": "#020617",
   "theme_color": "#020617",
-  "start_url": "/gym",
+  "start_url": "/",
   "icons": [
     { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
     { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" }
@@ -537,6 +554,48 @@ Both `finance/page.jsx` and `finance/transactions/page.jsx` have transaction mod
 
 ---
 
+## iPhone Shortcut API (Supabase Edge Function)
+
+Allows adding transactions from an iPhone Shortcut without opening the app. Runs as a **Supabase Edge Function** (`supabase/functions/shortcut/index.ts`) — the service role key is automatically available in the Deno runtime, no need to expose it to Vercel.
+
+### URL
+
+`https://<project-ref>.supabase.co/functions/v1/shortcut`
+
+### Authentication
+
+- User generates an API key on the Profile page → raw key shown once, SHA-256 hash stored in `api_keys` table
+- Key format: `lt_` + 32 random hex chars (e.g., `lt_a3f9b2c4d5e6f7a8b9c0d1e2f3a4b5c6`)
+- Sent as `Authorization: Bearer <key>` header
+- Edge function hashes the key and looks up `api_keys.key_hash` to find the `user_id`
+
+### Endpoints
+
+**GET** — Returns user's accounts and categories for building the shortcut form
+
+**POST** — Creates a transaction
+- Body: `{ type, amount, personal_amount?, account, to_account?, category?, description?, date? }`
+- `account` and `to_account` are account **names** (not UUIDs) — resolved server-side via case-insensitive match
+- `date` defaults to today if omitted
+- Calls `recalculateBalance()` after insert
+
+### Deployment
+
+```bash
+supabase functions deploy shortcut --no-verify-jwt
+```
+
+The `--no-verify-jwt` flag allows custom API key auth instead of Supabase JWT.
+
+### Profile Page API Key Management
+
+- "API Keys" card section with Generate button
+- BottomSheet modal: enter key name → generate → shows raw key once with copy button
+- Lists existing keys (prefix + name + date)
+- Delete button per key
+
+---
+
 ## Environment Variables
 
 ```env
@@ -544,7 +603,7 @@ NEXT_PUBLIC_SUPABASE_URL=<your-supabase-project-url>
 NEXT_PUBLIC_SUPABASE_ANON_KEY=<your-supabase-anon-key>
 ```
 
-Both are public (client-side). Security is enforced via Supabase RLS policies, not key secrecy.
+Both are public (client-side). Security is enforced via Supabase RLS policies, not key secrecy. The service role key is only used inside the Supabase Edge Function (automatically available, not stored in the app).
 
 ---
 
