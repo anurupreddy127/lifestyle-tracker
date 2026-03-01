@@ -1,4 +1,5 @@
 import { Manrope } from "next/font/google";
+import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 import AppShell from "@/components/AppShell";
 
@@ -24,6 +25,7 @@ export default function RootLayout({ children }) {
       </head>
       <body className="bg-slate-50 text-slate-900 select-none overscroll-none">
         <AppShell>{children}</AppShell>
+        <Analytics />
       </body>
     </html>
   );
