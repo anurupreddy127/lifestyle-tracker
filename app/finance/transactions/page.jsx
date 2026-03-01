@@ -1,11 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import BottomSheet from "@/components/BottomSheet";
 import Toast from "@/components/Toast";
 import LoadingSkeleton from "@/components/LoadingSkeleton";
-import { adjustBalance } from "@/lib/balanceUtils";
+import { recalculateBalance } from "@/lib/balanceUtils";
 import { useCategories, EMOJI_OPTIONS } from "@/hooks/useCategories";
 import SwipeableCard from "@/components/SwipeableCard";
 
@@ -46,6 +46,7 @@ export default function TransactionsPage() {
   const [editingTransaction, setEditingTransaction] = useState(null);
   const [toast, setToast] = useState("");
   const [saving, setSaving] = useState(false);
+  const savingRef = useRef(false);
 
   // Transaction form
   const [txType, setTxType] = useState("expense");
@@ -170,6 +171,7 @@ export default function TransactionsPage() {
   }
 
   async function handleSave() {
+    if (savingRef.current) return;
     const amount = parseFloat(txAmount);
     if (!amount || amount <= 0) return;
     if (!txAccountId) return;
@@ -184,6 +186,7 @@ export default function TransactionsPage() {
       if (personalAmount > amount) return;
     }
 
+    savingRef.current = true;
     setSaving(true);
     try {
       const row = {
@@ -198,31 +201,10 @@ export default function TransactionsPage() {
       };
 
       if (editingTransaction) {
-        // Reverse old transaction's effect on balances
-        const old = editingTransaction;
-        if (old.transaction_type === "expense") {
-          await adjustBalance(supabase, old.account_id, old.amount, "credit");
-        } else if (old.transaction_type === "income") {
-          await adjustBalance(supabase, old.account_id, old.amount, "debit");
-        } else if (old.transaction_type === "transfer") {
-          await adjustBalance(supabase, old.account_id, old.amount, "credit");
-          if (old.to_account_id) await adjustBalance(supabase, old.to_account_id, old.amount, "debit");
-        }
-
         await supabase
           .from("transactions")
           .update(row)
           .eq("id", editingTransaction.id);
-
-        // Apply new transaction's effect on balances
-        if (txType === "expense") {
-          await adjustBalance(supabase, txAccountId, amount, "debit");
-        } else if (txType === "income") {
-          await adjustBalance(supabase, txAccountId, amount, "credit");
-        } else if (txType === "transfer") {
-          await adjustBalance(supabase, txAccountId, amount, "debit");
-          await adjustBalance(supabase, txToAccountId, amount, "credit");
-        }
 
         setToast("Transaction updated!");
       } else {
@@ -230,17 +212,19 @@ export default function TransactionsPage() {
           .from("transactions")
           .insert({ ...row, user_id: user.id });
 
-        if (txType === "expense") {
-          await adjustBalance(supabase, txAccountId, amount, "debit");
-        } else if (txType === "income") {
-          await adjustBalance(supabase, txAccountId, amount, "credit");
-        } else if (txType === "transfer") {
-          await adjustBalance(supabase, txAccountId, amount, "debit");
-          await adjustBalance(supabase, txToAccountId, amount, "credit");
-        }
-
         setToast("Transaction saved!");
       }
+
+      // Recalculate balances from scratch for all affected accounts
+      const accountsToRecalc = new Set([txAccountId]);
+      if (txType === "transfer" && txToAccountId) accountsToRecalc.add(txToAccountId);
+      if (editingTransaction) {
+        accountsToRecalc.add(editingTransaction.account_id);
+        if (editingTransaction.to_account_id) accountsToRecalc.add(editingTransaction.to_account_id);
+      }
+      await Promise.all(
+        [...accountsToRecalc].map((id) => recalculateBalance(supabase, id))
+      );
 
       setShowModal(false);
       fetchData();
@@ -248,6 +232,7 @@ export default function TransactionsPage() {
       setToast("Failed to save transaction");
     } finally {
       setSaving(false);
+      savingRef.current = false;
     }
   }
 
@@ -262,15 +247,12 @@ export default function TransactionsPage() {
         .delete()
         .eq("id", tx.id);
 
-      // Reverse the deleted transaction's effect on balances
-      if (tx.transaction_type === "expense") {
-        await adjustBalance(supabase, tx.account_id, tx.amount, "credit");
-      } else if (tx.transaction_type === "income") {
-        await adjustBalance(supabase, tx.account_id, tx.amount, "debit");
-      } else if (tx.transaction_type === "transfer") {
-        await adjustBalance(supabase, tx.account_id, tx.amount, "credit");
-        if (tx.to_account_id) await adjustBalance(supabase, tx.to_account_id, tx.amount, "debit");
-      }
+      // Recalculate balances for affected accounts
+      const accountsToRecalc = [tx.account_id];
+      if (tx.to_account_id) accountsToRecalc.push(tx.to_account_id);
+      await Promise.all(
+        accountsToRecalc.map((id) => recalculateBalance(supabase, id))
+      );
 
       setShowModal(false);
       setShowDeleteConfirm(false);
@@ -297,7 +279,7 @@ export default function TransactionsPage() {
         description: sub.name,
         user_id: user.id,
       });
-      await adjustBalance(supabase, sub.account_id, sub.amount, "debit");
+      await recalculateBalance(supabase, sub.account_id);
       setShowModal(false);
       setSelectedSubscription(null);
       setToast("Subscription transaction saved!");

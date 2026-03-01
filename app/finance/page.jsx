@@ -1,12 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import BottomSheet from "@/components/BottomSheet";
 import Toast from "@/components/Toast";
 import LoadingSkeleton from "@/components/LoadingSkeleton";
-import { adjustBalance } from "@/lib/balanceUtils";
+import { recalculateBalance } from "@/lib/balanceUtils";
 import { useCategories, EMOJI_OPTIONS } from "@/hooks/useCategories";
 
 const ACCOUNT_TYPE_ICONS = {
@@ -44,6 +44,7 @@ export default function FinanceDashboard() {
   const [showModal, setShowModal] = useState(false);
   const [toast, setToast] = useState("");
   const [saving, setSaving] = useState(false);
+  const savingRef = useRef(false);
   const [showAddCategory, setShowAddCategory] = useState(false);
   const [newCatName, setNewCatName] = useState("");
   const [newCatEmoji, setNewCatEmoji] = useState("📦");
@@ -173,6 +174,7 @@ export default function FinanceDashboard() {
   }
 
   async function handleSaveTransaction() {
+    if (savingRef.current) return;
     const amount = parseFloat(txAmount);
     if (!amount || amount <= 0) return;
     if (!txAccountId) return;
@@ -187,6 +189,7 @@ export default function FinanceDashboard() {
       if (personalAmount > amount) return;
     }
 
+    savingRef.current = true;
     setSaving(true);
     try {
       const row = {
@@ -203,14 +206,12 @@ export default function FinanceDashboard() {
 
       await supabase.from("transactions").insert(row);
 
-      if (txType === "expense") {
-        await adjustBalance(supabase, txAccountId, amount, "debit");
-      } else if (txType === "income") {
-        await adjustBalance(supabase, txAccountId, amount, "credit");
-      } else if (txType === "transfer") {
-        await adjustBalance(supabase, txAccountId, amount, "debit");
-        await adjustBalance(supabase, txToAccountId, amount, "credit");
-      }
+      // Recalculate balances from scratch for all affected accounts
+      const accountsToRecalc = new Set([txAccountId]);
+      if (txType === "transfer" && txToAccountId) accountsToRecalc.add(txToAccountId);
+      await Promise.all(
+        [...accountsToRecalc].map((id) => recalculateBalance(supabase, id))
+      );
 
       setShowModal(false);
       setToast("Transaction saved!");
@@ -219,6 +220,7 @@ export default function FinanceDashboard() {
       setToast("Failed to save transaction");
     } finally {
       setSaving(false);
+      savingRef.current = false;
     }
   }
 
@@ -238,7 +240,7 @@ export default function FinanceDashboard() {
         description: sub.name,
         user_id: user.id,
       });
-      await adjustBalance(supabase, sub.account_id, sub.amount, "debit");
+      await recalculateBalance(supabase, sub.account_id);
       setShowModal(false);
       setSelectedSubscription(null);
       setToast("Subscription transaction saved!");

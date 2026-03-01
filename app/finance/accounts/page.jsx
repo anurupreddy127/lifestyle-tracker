@@ -5,6 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import BottomSheet from "@/components/BottomSheet";
 import LoadingSkeleton from "@/components/LoadingSkeleton";
 import SwipeableCard from "@/components/SwipeableCard";
+import { recalculateBalance } from "@/lib/balanceUtils";
 
 const TYPE_LABELS = {
   checking: "Checking",
@@ -170,7 +171,7 @@ export default function AccountManager() {
     setEditingAccount(account);
     setFormName(account.name);
     setFormType(account.account_type);
-    setFormStartingBalance(account.balance != null ? String(account.balance) : "");
+    setFormStartingBalance(account.starting_balance != null ? String(account.starting_balance) : "");
     setFormCreditLimit(account.credit_limit != null ? String(account.credit_limit) : "");
     setFormAvailableCredit(account.available_credit != null ? String(account.available_credit) : "");
     setFormDueDate(account.due_date != null ? String(account.due_date) : "");
@@ -212,18 +213,20 @@ export default function AccountManager() {
           const availableCredit = parseFloat(formAvailableCredit) || 0;
           const dueDate = parseInt(formDueDate) || null;
           updateData.credit_limit = creditLimit;
-          updateData.available_credit = availableCredit;
           updateData.due_date = dueDate;
-          updateData.balance = creditLimit - availableCredit;
+          updateData.starting_balance = creditLimit - availableCredit;
         } else {
           const bal = parseFloat(formStartingBalance) || 0;
-          updateData.balance = bal;
+          updateData.starting_balance = bal;
         }
 
         await supabase
           .from("accounts")
           .update(updateData)
           .eq("id", editingAccount.id);
+
+        // Recalculate balance from starting_balance + all transactions
+        await recalculateBalance(supabase, editingAccount.id);
       } else {
         let insertData;
         if (formType === "credit_card") {
@@ -236,7 +239,7 @@ export default function AccountManager() {
             credit_limit: creditLimit,
             available_credit: availableCredit,
             due_date: dueDate,
-            starting_balance: 0,
+            starting_balance: creditLimit - availableCredit,
             balance: creditLimit - availableCredit,
             user_id: user.id,
           };
