@@ -359,24 +359,19 @@ export default function AccountManager() {
 
           <div>
             {acc.account_type === "credit_card" ? (
-              (() => {
-                const ccBalance = (acc.credit_limit || 0) - (acc.available_credit || 0);
-                return (
-                  <>
-                    <p className={`text-xs ${hasImage ? "text-white/70" : "text-slate-500"}`}>
-                      Current Balance
-                    </p>
-                    <p className={`text-2xl font-bold ${hasImage ? "text-white" : "text-rose-500"}`}>
-                      {ccBalance > 0 ? "-" : ""}{formatBalance(ccBalance)}
-                    </p>
-                    <p className={`text-[10px] mt-0.5 ${hasImage ? "text-white/60" : "text-slate-400"}`}>
-                      {formatBalance(acc.available_credit || 0)} of{" "}
-                      {formatBalance(acc.credit_limit || 0)}
-                      {acc.due_date && ` · Due: ${getOrdinal(acc.due_date)}`}
-                    </p>
-                  </>
-                );
-              })()
+              <>
+                <p className={`text-xs ${hasImage ? "text-white/70" : "text-slate-500"}`}>
+                  Current Balance
+                </p>
+                <p className={`text-2xl font-bold ${hasImage ? "text-white" : "text-rose-500"}`}>
+                  {acc.balance > 0 ? "-" : ""}{formatBalance(acc.balance)}
+                </p>
+                <p className={`text-[10px] mt-0.5 ${hasImage ? "text-white/60" : "text-slate-400"}`}>
+                  {formatBalance(acc.available_credit || 0)} of{" "}
+                  {formatBalance(acc.credit_limit || 0)}
+                  {acc.due_date && ` · Due: ${getOrdinal(acc.due_date)}`}
+                </p>
+              </>
             ) : (
               <>
                 <p className={`text-xs ${hasImage ? "text-white/70" : "text-slate-500"}`}>
