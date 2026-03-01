@@ -95,7 +95,7 @@ export default function FinanceDashboard() {
           supabase
             .from("transactions")
             .select("amount")
-            .eq("transaction_type", "income")
+            .in("transaction_type", ["income", "received"])
             .gte("date", startOfMonth)
             .lte("date", today),
           supabase
@@ -204,7 +204,8 @@ export default function FinanceDashboard() {
         user_id: user.id,
       };
 
-      await supabase.from("transactions").insert(row);
+      const { error } = await supabase.from("transactions").insert(row);
+      if (error) throw error;
 
       // Recalculate balances from scratch for all affected accounts
       const accountsToRecalc = new Set([txAccountId]);
@@ -448,14 +449,15 @@ export default function FinanceDashboard() {
       >
         <div className="flex flex-col gap-4">
           {/* Type tabs */}
-          <div className="grid grid-cols-4 gap-2">
+          <div className="grid grid-cols-5 gap-2">
             {[
               { value: "expense", label: "Expense", icon: "outbox" },
-              { value: "income", label: "Income", icon: "move_to_inbox" },
+              { value: "received", label: "Received", icon: "move_to_inbox" },
+              { value: "income", label: "Income", icon: "work" },
               { value: "transfer", label: "Transfer", icon: "swap_horiz" },
               {
                 value: "subscription",
-                label: "Subscription",
+                label: "Subscribe",
                 icon: "subscriptions",
               },
             ].map((t) => (
@@ -468,7 +470,7 @@ export default function FinanceDashboard() {
                     setShowSubForm(false);
                   }
                 }}
-                className={`flex flex-col items-center gap-1 py-2.5 rounded-xl text-[10px] font-semibold border-2 ${
+                className={`flex flex-col items-center gap-1 py-2 rounded-xl text-[9px] font-semibold border-2 ${
                   txType === t.value
                     ? "border-finance bg-finance/5 text-finance"
                     : "border-transparent bg-slate-100 text-slate-500"
@@ -679,86 +681,86 @@ export default function FinanceDashboard() {
               </>
             )
           ) : (
-            /* --- Normal Transaction Form (Expense/Income/Transfer) --- */
+            /* --- Normal Transaction Form (Expense/Received/Income/Transfer) --- */
             <>
-              {/* Amount + Your Share grouped */}
-              <div className="flex flex-col gap-2">
+              {/* Amount */}
+              <div>
+                <label className="text-sm font-medium text-slate-500 mb-1.5 block">
+                  {txType === "expense" ? "Total Amount" : "Amount"}
+                </label>
+                <div className="relative">
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-lg">
+                    $
+                  </span>
+                  <input
+                    type="text"
+                    inputMode="decimal"
+                    value={txAmount}
+                    onChange={(e) => setTxAmount(e.target.value)}
+                    placeholder="0.00"
+                    className="bg-slate-50 border border-slate-200 rounded-xl pl-8 pr-4 py-3 text-2xl font-bold text-slate-900 placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-finance/20 focus:border-finance w-full"
+                  />
+                </div>
+              </div>
+
+              {/* Your Share (expense only) */}
+              {txType === "expense" && (
                 <div>
                   <label className="text-sm font-medium text-slate-500 mb-1.5 block">
-                    {txType === "expense" ? "Total Amount" : "Amount"}
+                    Your Share
                   </label>
                   <div className="relative">
-                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-lg">
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-base">
                       $
                     </span>
                     <input
                       type="text"
                       inputMode="decimal"
-                      value={txAmount}
-                      onChange={(e) => setTxAmount(e.target.value)}
-                      placeholder="0.00"
-                      className="bg-slate-50 border border-slate-200 rounded-xl pl-8 pr-4 py-3 text-2xl font-bold text-slate-900 placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-finance/20 focus:border-finance w-full"
+                      value={txPersonalAmount}
+                      onChange={(e) => setTxPersonalAmount(e.target.value)}
+                      placeholder={txAmount || "Same as total"}
+                      className="bg-slate-50 border border-slate-200 rounded-xl pl-8 pr-4 py-2.5 text-base font-semibold text-slate-900 placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-finance/20 focus:border-finance w-full"
                     />
                   </div>
+                  <p className="text-[10px] text-slate-400 mt-1">
+                    Leave empty if you paid for yourself only
+                  </p>
                 </div>
-                {txType === "expense" && (
-                  <div>
-                    <label className="text-sm font-medium text-slate-500 mb-1.5 block">
-                      Your Share
-                    </label>
-                    <div className="relative">
-                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-base">
-                        $
-                      </span>
-                      <input
-                        type="text"
-                        inputMode="decimal"
-                        value={txPersonalAmount}
-                        onChange={(e) => setTxPersonalAmount(e.target.value)}
-                        placeholder={txAmount || "Same as total"}
-                        className="bg-slate-50 border border-slate-200 rounded-xl pl-8 pr-4 py-2.5 text-base font-semibold text-slate-900 placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-finance/20 focus:border-finance w-full"
-                      />
-                    </div>
-                    <p className="text-[10px] text-slate-400 mt-1">
-                      Leave empty if you paid for yourself only
-                    </p>
-                  </div>
-                )}
+              )}
+
+              {/* Date — full width */}
+              <div>
+                <label className="text-sm font-medium text-slate-500 mb-1.5 block">
+                  Date
+                </label>
+                <input
+                  type="date"
+                  value={txDate}
+                  onChange={(e) => setTxDate(e.target.value)}
+                  className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-base text-slate-900 focus:outline-none focus:ring-2 focus:ring-finance/20 w-full"
+                />
               </div>
 
-              {/* Date + Account */}
-              <div className="grid grid-cols-2 gap-3">
-                <div className="min-w-0">
-                  <label className="text-sm font-medium text-slate-500 mb-1.5 block">
-                    Date
-                  </label>
-                  <input
-                    type="date"
-                    value={txDate}
-                    onChange={(e) => setTxDate(e.target.value)}
-                    className="bg-slate-50 border border-slate-200 rounded-xl px-2 py-3 text-base text-slate-900 focus:outline-none focus:ring-2 focus:ring-finance/20 w-full min-w-0"
-                  />
-                </div>
-                <div className="min-w-0">
-                  <label className="text-sm font-medium text-slate-500 mb-1.5 block">
-                    {txType === "transfer" ? "From" : "Account"}
-                  </label>
-                  <select
-                    value={txAccountId}
-                    onChange={(e) => setTxAccountId(e.target.value)}
-                    className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-3 text-base text-slate-900 focus:outline-none focus:ring-2 focus:ring-finance/20 w-full"
-                  >
-                    <option value="">Select</option>
-                    {accounts.map((acc) => (
-                      <option key={acc.id} value={acc.id}>
-                        {acc.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+              {/* Account — full width */}
+              <div>
+                <label className="text-sm font-medium text-slate-500 mb-1.5 block">
+                  {txType === "transfer" ? "From" : "Account"}
+                </label>
+                <select
+                  value={txAccountId}
+                  onChange={(e) => setTxAccountId(e.target.value)}
+                  className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-base text-slate-900 focus:outline-none focus:ring-2 focus:ring-finance/20 w-full"
+                >
+                  <option value="">Select</option>
+                  {accounts.map((acc) => (
+                    <option key={acc.id} value={acc.id}>
+                      {acc.name}
+                    </option>
+                  ))}
+                </select>
               </div>
 
-              {/* To Account (transfer) */}
+              {/* To Account (transfer only) */}
               {txType === "transfer" && (
                 <div>
                   <label className="text-sm font-medium text-slate-500 mb-1.5 block">
@@ -767,7 +769,7 @@ export default function FinanceDashboard() {
                   <select
                     value={txToAccountId}
                     onChange={(e) => setTxToAccountId(e.target.value)}
-                    className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-3 text-base text-slate-900 focus:outline-none focus:ring-2 focus:ring-finance/20 w-full"
+                    className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-base text-slate-900 focus:outline-none focus:ring-2 focus:ring-finance/20 w-full"
                   >
                     <option value="">Select</option>
                     {accounts
@@ -847,7 +849,7 @@ export default function FinanceDashboard() {
                           value={newCatName}
                           onChange={(e) => setNewCatName(e.target.value)}
                           placeholder="e.g., Pets"
-                          className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-finance/20 w-full"
+                          className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-base text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-finance/20 w-full"
                         />
                       </div>
                       <div>
@@ -904,12 +906,18 @@ export default function FinanceDashboard() {
                 <label className="text-sm font-medium text-slate-500 mb-1.5 block">
                   Description
                 </label>
-                <textarea
+                <input
+                  type="text"
                   value={txDescription}
                   onChange={(e) => setTxDescription(e.target.value)}
-                  placeholder="What was this for?"
-                  rows={2}
-                  className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-finance/20 w-full resize-none"
+                  placeholder={
+                    txType === "received"
+                      ? "Who sent it?"
+                      : txType === "transfer"
+                        ? "Transfer note"
+                        : "What was this for?"
+                  }
+                  className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-base text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-finance/20 w-full"
                 />
               </div>
 

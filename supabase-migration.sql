@@ -109,3 +109,11 @@ ALTER TABLE workout_sessions ADD COLUMN IF NOT EXISTS duration_minutes INTEGER;
 ALTER TABLE accounts ADD COLUMN IF NOT EXISTS credit_limit NUMERIC;
 ALTER TABLE accounts ADD COLUMN IF NOT EXISTS available_credit NUMERIC;
 ALTER TABLE accounts ADD COLUMN IF NOT EXISTS due_date INTEGER;
+
+-- =============================================================================
+-- Phase 3: Add 'received' transaction type
+-- =============================================================================
+-- Drop existing CHECK constraint on transaction_type (if any) and recreate with 'received'
+ALTER TABLE transactions DROP CONSTRAINT IF EXISTS transactions_transaction_type_check;
+ALTER TABLE transactions ADD CONSTRAINT transactions_transaction_type_check
+  CHECK (transaction_type IN ('expense', 'income', 'transfer', 'subscription', 'received'));

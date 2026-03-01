@@ -201,17 +201,19 @@ export default function TransactionsPage() {
       };
 
       if (editingTransaction) {
-        await supabase
+        const { error } = await supabase
           .from("transactions")
           .update(row)
           .eq("id", editingTransaction.id);
 
+        if (error) throw error;
         setToast("Transaction updated!");
       } else {
-        await supabase
+        const { error } = await supabase
           .from("transactions")
           .insert({ ...row, user_id: user.id });
 
+        if (error) throw error;
         setToast("Transaction saved!");
       }
 
@@ -404,9 +406,11 @@ export default function TransactionsPage() {
                           <span className="material-symbols-outlined text-slate-500 text-[20px]">
                             {tx.transaction_type === "income"
                               ? "work"
-                              : tx.transaction_type === "transfer"
-                                ? "swap_horiz"
-                                : "receipt"}
+                              : tx.transaction_type === "received"
+                                ? "move_to_inbox"
+                                : tx.transaction_type === "transfer"
+                                  ? "swap_horiz"
+                                  : "receipt"}
                           </span>
                         )}
                       </div>
@@ -423,11 +427,11 @@ export default function TransactionsPage() {
                       </div>
                       <div className="text-right ml-2">
                         <p
-                          className={`text-sm font-bold ${tx.transaction_type === "expense" ? "text-rose-500" : tx.transaction_type === "income" ? "text-finance" : "text-slate-500"}`}
+                          className={`text-sm font-bold ${tx.transaction_type === "expense" ? "text-rose-500" : (tx.transaction_type === "income" || tx.transaction_type === "received") ? "text-finance" : "text-slate-500"}`}
                         >
                           {tx.transaction_type === "expense"
                             ? "-"
-                            : tx.transaction_type === "income"
+                            : (tx.transaction_type === "income" || tx.transaction_type === "received")
                               ? "+"
                               : ""}
                           {formatCurrency(tx.amount)}
@@ -474,17 +478,18 @@ export default function TransactionsPage() {
         <div className="flex flex-col gap-4">
           {/* Type tabs */}
           <div
-            className={`grid gap-2 ${editingTransaction ? "grid-cols-3" : "grid-cols-4"}`}
+            className={`grid gap-2 ${editingTransaction ? "grid-cols-4" : "grid-cols-5"}`}
           >
             {[
               { value: "expense", label: "Expense", icon: "outbox" },
-              { value: "income", label: "Income", icon: "move_to_inbox" },
+              { value: "received", label: "Received", icon: "move_to_inbox" },
+              { value: "income", label: "Income", icon: "work" },
               { value: "transfer", label: "Transfer", icon: "swap_horiz" },
               ...(!editingTransaction
                 ? [
                     {
                       value: "subscription",
-                      label: "Subscription",
+                      label: "Subscribe",
                       icon: "subscriptions",
                     },
                   ]
@@ -499,7 +504,7 @@ export default function TransactionsPage() {
                     setShowSubForm(false);
                   }
                 }}
-                className={`flex flex-col items-center gap-1 py-2.5 rounded-xl text-[10px] font-semibold border-2 ${
+                className={`flex flex-col items-center gap-1 py-2 rounded-xl text-[9px] font-semibold border-2 ${
                   txType === t.value
                     ? "border-finance bg-finance/5 text-finance"
                     : "border-transparent bg-slate-100 text-slate-500"
@@ -707,84 +712,84 @@ export default function TransactionsPage() {
             )
           ) : (
             <>
-              {/* Amount + Your Share grouped */}
-              <div className="flex flex-col gap-2">
+              {/* Amount */}
+              <div>
+                <label className="text-sm font-medium text-slate-500 mb-1.5 block">
+                  {txType === "expense" ? "Total Amount" : "Amount"}
+                </label>
+                <div className="relative">
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-lg">
+                    $
+                  </span>
+                  <input
+                    type="text"
+                    inputMode="decimal"
+                    value={txAmount}
+                    onChange={(e) => setTxAmount(e.target.value)}
+                    placeholder="0.00"
+                    className="bg-slate-50 border border-slate-200 rounded-xl pl-8 pr-4 py-3 text-2xl font-bold text-slate-900 placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-finance/20 focus:border-finance w-full"
+                  />
+                </div>
+              </div>
+
+              {/* Your Share (expense only) */}
+              {txType === "expense" && (
                 <div>
                   <label className="text-sm font-medium text-slate-500 mb-1.5 block">
-                    {txType === "expense" ? "Total Amount" : "Amount"}
+                    Your Share
                   </label>
                   <div className="relative">
-                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-lg">
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-base">
                       $
                     </span>
                     <input
                       type="text"
                       inputMode="decimal"
-                      value={txAmount}
-                      onChange={(e) => setTxAmount(e.target.value)}
-                      placeholder="0.00"
-                      className="bg-slate-50 border border-slate-200 rounded-xl pl-8 pr-4 py-3 text-2xl font-bold text-slate-900 placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-finance/20 focus:border-finance w-full"
+                      value={txPersonalAmount}
+                      onChange={(e) => setTxPersonalAmount(e.target.value)}
+                      placeholder={txAmount || "Same as total"}
+                      className="bg-slate-50 border border-slate-200 rounded-xl pl-8 pr-4 py-2.5 text-base font-semibold text-slate-900 placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-finance/20 focus:border-finance w-full"
                     />
                   </div>
+                  <p className="text-[10px] text-slate-400 mt-1">
+                    Leave empty if you paid for yourself only
+                  </p>
                 </div>
-                {txType === "expense" && (
-                  <div>
-                    <label className="text-sm font-medium text-slate-500 mb-1.5 block">
-                      Your Share
-                    </label>
-                    <div className="relative">
-                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-base">
-                        $
-                      </span>
-                      <input
-                        type="text"
-                        inputMode="decimal"
-                        value={txPersonalAmount}
-                        onChange={(e) => setTxPersonalAmount(e.target.value)}
-                        placeholder={txAmount || "Same as total"}
-                        className="bg-slate-50 border border-slate-200 rounded-xl pl-8 pr-4 py-2.5 text-base font-semibold text-slate-900 placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-finance/20 focus:border-finance w-full"
-                      />
-                    </div>
-                    <p className="text-[10px] text-slate-400 mt-1">
-                      Leave empty if you paid for yourself only
-                    </p>
-                  </div>
-                )}
+              )}
+
+              {/* Date — full width */}
+              <div>
+                <label className="text-sm font-medium text-slate-500 mb-1.5 block">
+                  Date
+                </label>
+                <input
+                  type="date"
+                  value={txDate}
+                  onChange={(e) => setTxDate(e.target.value)}
+                  className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-base text-slate-900 focus:outline-none focus:ring-2 focus:ring-finance/20 w-full"
+                />
               </div>
 
-              {/* Date + Account */}
-              <div className="grid grid-cols-2 gap-3">
-                <div className="min-w-0">
-                  <label className="text-sm font-medium text-slate-500 mb-1.5 block">
-                    Date
-                  </label>
-                  <input
-                    type="date"
-                    value={txDate}
-                    onChange={(e) => setTxDate(e.target.value)}
-                    className="bg-slate-50 border border-slate-200 rounded-xl px-2 py-3 text-base text-slate-900 focus:outline-none focus:ring-2 focus:ring-finance/20 w-full min-w-0"
-                  />
-                </div>
-                <div className="min-w-0">
-                  <label className="text-sm font-medium text-slate-500 mb-1.5 block">
-                    {txType === "transfer" ? "From" : "Account"}
-                  </label>
-                  <select
-                    value={txAccountId}
-                    onChange={(e) => setTxAccountId(e.target.value)}
-                    className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-3 text-base text-slate-900 focus:outline-none focus:ring-2 focus:ring-finance/20 w-full"
-                  >
-                    <option value="">Select</option>
-                    {accounts.map((acc) => (
-                      <option key={acc.id} value={acc.id}>
-                        {acc.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+              {/* Account — full width */}
+              <div>
+                <label className="text-sm font-medium text-slate-500 mb-1.5 block">
+                  {txType === "transfer" ? "From" : "Account"}
+                </label>
+                <select
+                  value={txAccountId}
+                  onChange={(e) => setTxAccountId(e.target.value)}
+                  className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-base text-slate-900 focus:outline-none focus:ring-2 focus:ring-finance/20 w-full"
+                >
+                  <option value="">Select</option>
+                  {accounts.map((acc) => (
+                    <option key={acc.id} value={acc.id}>
+                      {acc.name}
+                    </option>
+                  ))}
+                </select>
               </div>
 
-              {/* To Account (transfer) */}
+              {/* To Account (transfer only) */}
               {txType === "transfer" && (
                 <div>
                   <label className="text-sm font-medium text-slate-500 mb-1.5 block">
@@ -793,7 +798,7 @@ export default function TransactionsPage() {
                   <select
                     value={txToAccountId}
                     onChange={(e) => setTxToAccountId(e.target.value)}
-                    className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-3 text-base text-slate-900 focus:outline-none focus:ring-2 focus:ring-finance/20 w-full"
+                    className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-base text-slate-900 focus:outline-none focus:ring-2 focus:ring-finance/20 w-full"
                   >
                     <option value="">Select</option>
                     {accounts
@@ -930,12 +935,12 @@ export default function TransactionsPage() {
                 <label className="text-sm font-medium text-slate-500 mb-1.5 block">
                   Description
                 </label>
-                <textarea
+                <input
+                  type="text"
                   value={txDescription}
                   onChange={(e) => setTxDescription(e.target.value)}
-                  placeholder="What was this for?"
-                  rows={2}
-                  className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-base text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-finance/20 w-full resize-none"
+                  placeholder={txType === "received" ? "Who sent it?" : "What was this for?"}
+                  className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-base text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-finance/20 w-full"
                 />
               </div>
 
