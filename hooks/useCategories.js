@@ -66,7 +66,25 @@ export function useCategories() {
           .select("*");
         setCategories(seeded || []);
       } else {
-        setCategories(data);
+        // Deduplicate by name — keep the oldest entry for each name
+        const seen = new Map();
+        const dupeIds = [];
+        for (const cat of data) {
+          if (seen.has(cat.name)) {
+            dupeIds.push(cat.id);
+          } else {
+            seen.set(cat.name, cat);
+          }
+        }
+        // Clean up duplicates from DB in background
+        if (dupeIds.length > 0) {
+          supabase
+            .from("categories")
+            .delete()
+            .in("id", dupeIds)
+            .then(() => {});
+        }
+        setCategories(Array.from(seen.values()));
       }
     } catch (err) {
       console.error("Fetch categories error:", err);
@@ -81,6 +99,8 @@ export function useCategories() {
 
   async function addCategory(name, emoji) {
     if (!user || !name.trim() || !emoji) return { data: null, error: "Missing fields" };
+    if (categories.some((c) => c.name.toLowerCase() === name.trim().toLowerCase()))
+      return { data: null, error: "Category already exists" };
 
     try {
       const { data, error } = await supabase

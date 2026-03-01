@@ -597,7 +597,7 @@ export default function TransactionsPage() {
                     type="date"
                     value={subFormNextDate}
                     onChange={(e) => setSubFormNextDate(e.target.value)}
-                    className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-finance/20 w-full"
+                    className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-base text-slate-900 focus:outline-none focus:ring-2 focus:ring-finance/20 w-full"
                   />
                 </div>
                 <div>
@@ -607,7 +607,7 @@ export default function TransactionsPage() {
                   <select
                     value={subFormAccountId}
                     onChange={(e) => setSubFormAccountId(e.target.value)}
-                    className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-finance/20 w-full"
+                    className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-base text-slate-900 focus:outline-none focus:ring-2 focus:ring-finance/20 w-full"
                   >
                     <option value="">Select account</option>
                     {accounts.map((acc) => (
@@ -624,7 +624,7 @@ export default function TransactionsPage() {
                   <select
                     value={subFormCategory}
                     onChange={(e) => setSubFormCategory(e.target.value)}
-                    className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-finance/20 w-full"
+                    className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-base text-slate-900 focus:outline-none focus:ring-2 focus:ring-finance/20 w-full"
                   >
                     {categories.map((cat) => (
                       <option key={cat.id} value={cat.name}>
@@ -780,7 +780,7 @@ export default function TransactionsPage() {
                     type="date"
                     value={txDate}
                     onChange={(e) => setTxDate(e.target.value)}
-                    className="bg-slate-50 border border-slate-200 rounded-xl px-2 py-3 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-finance/20 w-full min-w-0"
+                    className="bg-slate-50 border border-slate-200 rounded-xl px-2 py-3 text-base text-slate-900 focus:outline-none focus:ring-2 focus:ring-finance/20 w-full min-w-0"
                   />
                 </div>
                 <div className="min-w-0">
@@ -790,7 +790,7 @@ export default function TransactionsPage() {
                   <select
                     value={txAccountId}
                     onChange={(e) => setTxAccountId(e.target.value)}
-                    className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-3 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-finance/20 w-full"
+                    className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-3 text-base text-slate-900 focus:outline-none focus:ring-2 focus:ring-finance/20 w-full"
                   >
                     <option value="">Select</option>
                     {accounts.map((acc) => (
@@ -811,7 +811,7 @@ export default function TransactionsPage() {
                   <select
                     value={txToAccountId}
                     onChange={(e) => setTxToAccountId(e.target.value)}
-                    className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-3 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-finance/20 w-full"
+                    className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-3 text-base text-slate-900 focus:outline-none focus:ring-2 focus:ring-finance/20 w-full"
                   >
                     <option value="">Select</option>
                     {accounts
@@ -891,7 +891,7 @@ export default function TransactionsPage() {
                           value={newCatName}
                           onChange={(e) => setNewCatName(e.target.value)}
                           placeholder="e.g., Pets"
-                          className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-finance/20 w-full"
+                          className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-base text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-finance/20 w-full"
                         />
                       </div>
                       <div>
@@ -953,7 +953,7 @@ export default function TransactionsPage() {
                   onChange={(e) => setTxDescription(e.target.value)}
                   placeholder="What was this for?"
                   rows={2}
-                  className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-finance/20 w-full resize-none"
+                  className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-base text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-finance/20 w-full resize-none"
                 />
               </div>
 

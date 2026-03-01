@@ -547,7 +547,7 @@ export default function FinanceDashboard() {
                     type="date"
                     value={subFormNextDate}
                     onChange={(e) => setSubFormNextDate(e.target.value)}
-                    className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-finance/20 w-full"
+                    className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-base text-slate-900 focus:outline-none focus:ring-2 focus:ring-finance/20 w-full"
                   />
                 </div>
                 <div>
@@ -557,7 +557,7 @@ export default function FinanceDashboard() {
                   <select
                     value={subFormAccountId}
                     onChange={(e) => setSubFormAccountId(e.target.value)}
-                    className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-finance/20 w-full"
+                    className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-base text-slate-900 focus:outline-none focus:ring-2 focus:ring-finance/20 w-full"
                   >
                     <option value="">Select account</option>
                     {accounts.map((acc) => (
@@ -574,7 +574,7 @@ export default function FinanceDashboard() {
                   <select
                     value={subFormCategory}
                     onChange={(e) => setSubFormCategory(e.target.value)}
-                    className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-finance/20 w-full"
+                    className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-base text-slate-900 focus:outline-none focus:ring-2 focus:ring-finance/20 w-full"
                   >
                     {categories.map((cat) => (
                       <option key={cat.id} value={cat.name}>
@@ -734,7 +734,7 @@ export default function FinanceDashboard() {
                     type="date"
                     value={txDate}
                     onChange={(e) => setTxDate(e.target.value)}
-                    className="bg-slate-50 border border-slate-200 rounded-xl px-2 py-3 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-finance/20 w-full min-w-0"
+                    className="bg-slate-50 border border-slate-200 rounded-xl px-2 py-3 text-base text-slate-900 focus:outline-none focus:ring-2 focus:ring-finance/20 w-full min-w-0"
                   />
                 </div>
                 <div className="min-w-0">
@@ -744,7 +744,7 @@ export default function FinanceDashboard() {
                   <select
                     value={txAccountId}
                     onChange={(e) => setTxAccountId(e.target.value)}
-                    className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-3 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-finance/20 w-full"
+                    className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-3 text-base text-slate-900 focus:outline-none focus:ring-2 focus:ring-finance/20 w-full"
                   >
                     <option value="">Select</option>
                     {accounts.map((acc) => (
@@ -765,7 +765,7 @@ export default function FinanceDashboard() {
                   <select
                     value={txToAccountId}
                     onChange={(e) => setTxToAccountId(e.target.value)}
-                    className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-3 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-finance/20 w-full"
+                    className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-3 text-base text-slate-900 focus:outline-none focus:ring-2 focus:ring-finance/20 w-full"
                   >
                     <option value="">Select</option>
                     {accounts

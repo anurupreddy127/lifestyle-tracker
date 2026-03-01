@@ -13,8 +13,8 @@ export default function BottomSheet({ isOpen, onClose, title, children }) {
 
       {/* Sheet */}
       <div
-        className="fixed inset-x-0 bottom-0 z-50 rounded-t-3xl bg-white border-t border-slate-200 shadow-2xl max-h-[85vh] overflow-y-auto"
-        style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 5rem)' }}
+        className="fixed inset-x-0 bottom-0 z-50 rounded-t-3xl bg-white border-t border-slate-200 shadow-2xl max-h-[85dvh] overflow-y-auto overscroll-contain"
+        style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 5rem)', WebkitOverflowScrolling: 'touch' }}
       >
         {/* Drag handle */}
         <div className="w-12 h-1.5 bg-slate-300 rounded-full mx-auto mt-3 mb-4" />
