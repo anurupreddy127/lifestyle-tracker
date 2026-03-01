@@ -21,7 +21,7 @@ export default function AuthGuard({ children }) {
     }
 
     if (user && isPublicRoute) {
-      router.push('/gym')
+      router.push('/')
     }
   }, [user, loading, isPublicRoute, router])
 
