@@ -62,6 +62,7 @@
 │       ├── page.jsx                    # Dashboard (income/expense/net, category spending, top accounts)
 │       ├── accounts/page.jsx           # Manage accounts (CRUD, card images, balance display)
 │       ├── transactions/page.jsx       # Transaction history (grouped by date, edit/delete)
+│       ├── people/page.jsx             # People & lending (track loans, net balances)
 │       └── subscriptions/page.jsx      # Subscription reminders (CRUD, due dates)
 ├── components/
 │   ├── AppShell.jsx                    # Root wrapper — auth, header, nav, routing logic
@@ -229,6 +230,7 @@ Root wrapper that handles 3 layout modes:
 | `/finance`               | Dashboard — income/expense/net cards, spending by category, top accounts; also has transaction form modal |
 | `/finance/accounts`      | Account management — CRUD, card background images, balance display                                        |
 | `/finance/transactions`  | Transaction list grouped by date (Today/Yesterday/Date), spending by category, full CRUD                  |
+| `/finance/people`        | People & lending — track money lent/received, net balances per person, transaction history                |
 | `/finance/subscriptions` | Subscription reminder management — name, amount, billing cycle, due date                                  |
 
 ### Account Types
@@ -245,7 +247,7 @@ Root wrapper that handles 3 layout modes:
 | `expense`      | Deducts from account                                     | `receipt`       | Rose/Red |
 | `received`     | Adds to account (money from friends/repayments)          | `move_to_inbox` | Green    |
 | `income`       | Adds to account (salary/work)                            | `work`          | Green    |
-| `transfer`     | Deducts from source, adds to destination                 | `swap_horiz`    | Slate    |
+| `transfer`     | Deducts from source, adds to destination (or lent to person if person_id set) | `swap_horiz` / `person` | Slate    |
 | `subscription` | Deducts from account (logged via subscription reminders) | `subscriptions` | —        |
 
 ### Split Expenses
@@ -358,7 +360,8 @@ transactions (
   amount          NUMERIC NOT NULL,
   personal_amount NUMERIC,        -- For split expenses (your share)
   account_id      UUID REFERENCES accounts(id),
-  to_account_id   UUID REFERENCES accounts(id),  -- For transfers only
+  to_account_id   UUID REFERENCES accounts(id),  -- For account-to-account transfers
+  person_id       UUID REFERENCES people(id) ON DELETE SET NULL,  -- For person transfers/received
   category        TEXT,
   description     TEXT,
   created_at      TIMESTAMPTZ DEFAULT now()
@@ -381,6 +384,17 @@ categories (
   user_id    UUID REFERENCES auth.users(id),
   name       TEXT NOT NULL,
   emoji      TEXT,
+  created_at TIMESTAMPTZ DEFAULT now()
+)
+```
+
+### People Table
+
+```sql
+people (
+  id         UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id    UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+  name       TEXT NOT NULL,
   created_at TIMESTAMPTZ DEFAULT now()
 )
 ```
@@ -517,9 +531,12 @@ Both `finance/page.jsx` and `finance/transactions/page.jsx` have transaction mod
 3. **Your Share** — (expense only) Full width, with helper text
 4. **Date** — Full width `<input type="date">`
 5. **Account** — Full width `<select>`
-6. **To Account** — (transfer only) Full width `<select>`
-7. **Category** — (expense only) Grid of emoji buttons + add custom
-8. **Description** — Full width `<input type="text">` with context-aware placeholder
+6. **Transfer Target** — (transfer only) Segmented control: "To Account" | "To Person"
+   - **To Account** — existing `<select>` for inter-account transfers
+   - **To Person** — Person `<select>` with inline "Add New Person" form
+7. **From Person** — (received only, optional) `<select>` to track who paid you back
+8. **Category** — (expense only) Grid of emoji buttons + add custom
+9. **Description** — Full width `<input type="text">` with context-aware placeholder
 9. **Save button** — Full width green button with double-tap guard
 
 ---
@@ -552,6 +569,17 @@ Both `finance/page.jsx` and `finance/transactions/page.jsx` have transaction mod
 <meta name="theme-color" content="#f8fafc" />
 ```
 
+### People & Lending
+
+Track money lent to friends/family. Uses existing transaction types with a `person_id` column — no new transaction types needed.
+
+- **Lend money**: Transfer tab → "To Person" toggle → select person → money leaves account
+  - `transaction_type = 'transfer'`, `person_id` set, `to_account_id = null`
+- **Receive payback**: Received tab → "From Person" selector → money enters account
+  - `transaction_type = 'received'`, `person_id` set
+- **People page** (`/finance/people`): Shows all people with net amounts (who owes what), tap for transaction history
+- **Balance impact**: No changes to `recalculateBalance()` — transfers deduct from source, received adds to destination
+
 ---
 
 ## iPhone Shortcut API (Supabase Edge Function)
@@ -571,11 +599,12 @@ Allows adding transactions from an iPhone Shortcut without opening the app. Runs
 
 ### Endpoints
 
-**GET** — Returns user's accounts and categories for building the shortcut form
+**GET** — Returns user's accounts, categories, and people for building the shortcut form
 
 **POST** — Creates a transaction
-- Body: `{ type, amount, personal_amount?, account, to_account?, category?, description?, date? }`
-- `account` and `to_account` are account **names** (not UUIDs) — resolved server-side via case-insensitive match
+- Body: `{ type, amount, personal_amount?, account, to_account?, person?, category?, description?, date? }`
+- `account`, `to_account`, and `person` are **names** (not UUIDs) — resolved server-side via case-insensitive match
+- For transfers: provide either `to_account` (account transfer) or `person` (lend to person)
 - `date` defaults to today if omitted
 - Calls `recalculateBalance()` after insert
 

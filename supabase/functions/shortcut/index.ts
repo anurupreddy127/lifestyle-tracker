@@ -140,7 +140,7 @@ Deno.serve(async (req) => {
   // GET — return user's accounts + categories
   // -----------------------------------------------------------------------
   if (req.method === "GET") {
-    const [accountsRes, categoriesRes] = await Promise.all([
+    const [accountsRes, categoriesRes, peopleRes] = await Promise.all([
       supabase
         .from("accounts")
         .select("id, name, account_type")
@@ -151,15 +151,22 @@ Deno.serve(async (req) => {
         .select("name, emoji")
         .eq("user_id", userId)
         .order("created_at"),
+      supabase
+        .from("people")
+        .select("name")
+        .eq("user_id", userId)
+        .order("name"),
     ]);
 
     // Return simple string arrays so iPhone Shortcuts can use "Choose from List" directly
     const accountNames = (accountsRes.data || []).map((a: { name: string }) => a.name);
     const categoryNames = (categoriesRes.data || []).map((c: { name: string; emoji: string }) => `${c.name}`);
+    const personNames = (peopleRes.data || []).map((p: { name: string }) => p.name);
 
     return jsonResponse({
       accounts: accountNames,
       categories: categoryNames,
+      people: personNames,
     });
   }
 
@@ -174,7 +181,7 @@ Deno.serve(async (req) => {
       return jsonResponse({ error: "Invalid JSON body" }, 400);
     }
 
-    const { type, amount, personal_amount, account, to_account, category, description, date } = body;
+    const { type, amount, personal_amount, account, to_account, person, category, description, date } = body;
 
     // --- Validation ---
     if (!type || !amount || !account) {
@@ -203,23 +210,42 @@ Deno.serve(async (req) => {
       return jsonResponse({ error: `Account "${account}" not found` }, 404);
     }
 
-    // --- Resolve to_account for transfers ---
+    // --- Resolve to_account or person for transfers ---
     let toAccountId: string | null = null;
+    let personId: string | null = null;
+
     if (type === "transfer") {
-      if (!to_account) {
-        return jsonResponse({ error: "to_account is required for transfers" }, 400);
+      if (!to_account && !person) {
+        return jsonResponse({ error: "Either to_account or person is required for transfers" }, 400);
       }
-      const { data: toAccountRow } = await supabase
-        .from("accounts")
+      if (to_account) {
+        const { data: toAccountRow } = await supabase
+          .from("accounts")
+          .select("id")
+          .eq("user_id", userId)
+          .ilike("name", to_account)
+          .single();
+
+        if (!toAccountRow) {
+          return jsonResponse({ error: `To account "${to_account}" not found` }, 404);
+        }
+        toAccountId = toAccountRow.id;
+      }
+    }
+
+    // --- Resolve person name -> ID (for transfers to person or received from person) ---
+    if (person) {
+      const { data: personRow } = await supabase
+        .from("people")
         .select("id")
         .eq("user_id", userId)
-        .ilike("name", to_account)
+        .ilike("name", person)
         .single();
 
-      if (!toAccountRow) {
-        return jsonResponse({ error: `To account "${to_account}" not found` }, 404);
+      if (!personRow) {
+        return jsonResponse({ error: `Person "${person}" not found` }, 404);
       }
-      toAccountId = toAccountRow.id;
+      personId = personRow.id;
     }
 
     // --- Build and insert transaction ---
@@ -236,6 +262,7 @@ Deno.serve(async (req) => {
       to_account_id: toAccountId,
       category: type === "expense" ? (category || null) : null,
       description: description || null,
+      person_id: personId,
     };
 
     const { data: transaction, error: insertError } = await supabase

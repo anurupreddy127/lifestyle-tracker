@@ -64,6 +64,14 @@ export default function TransactionsPage() {
   const [txDescription, setTxDescription] = useState("");
   const [txPersonalAmount, setTxPersonalAmount] = useState("");
 
+  // People / lending
+  const [people, setPeople] = useState([]);
+  const [txTransferTarget, setTxTransferTarget] = useState("account");
+  const [txPersonId, setTxPersonId] = useState("");
+  const [txFromPersonId, setTxFromPersonId] = useState("");
+  const [showAddPerson, setShowAddPerson] = useState(false);
+  const [newPersonName, setNewPersonName] = useState("");
+
   // Delete confirmation
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
@@ -85,10 +93,10 @@ export default function TransactionsPage() {
         .split("T")[0];
       const today = now.toISOString().split("T")[0];
 
-      const [txRes, accountsRes, subsRes, expenseCatRes] = await Promise.all([
+      const [txRes, accountsRes, subsRes, expenseCatRes, peopleRes] = await Promise.all([
         supabase
           .from("transactions")
-          .select("*, accounts!transactions_account_id_fkey(name)")
+          .select("*, accounts!transactions_account_id_fkey(name), people(name)")
           .order("date", { ascending: false })
           .order("created_at", { ascending: false })
           .limit(100),
@@ -106,10 +114,15 @@ export default function TransactionsPage() {
           .eq("transaction_type", "expense")
           .gte("date", startOfMonth)
           .lte("date", today),
+        supabase
+          .from("people")
+          .select("id, name")
+          .order("name"),
       ]);
       setTransactions(txRes.data || []);
       setAccounts(accountsRes.data || []);
       setSubscriptions(subsRes.data || []);
+      setPeople(peopleRes.data || []);
 
       const byCat = {};
       (expenseCatRes.data || []).forEach((r) => {
@@ -147,6 +160,11 @@ export default function TransactionsPage() {
     setSubFormNextDate("");
     setSubFormAccountId(accounts[0]?.id || "");
     setSubFormCategory(categories[categories.length - 1]?.name || "");
+    setTxTransferTarget("account");
+    setTxPersonId("");
+    setTxFromPersonId("");
+    setShowAddPerson(false);
+    setNewPersonName("");
     setShowModal(true);
   }
 
@@ -167,7 +185,33 @@ export default function TransactionsPage() {
     setShowDeleteConfirm(false);
     setSelectedSubscription(null);
     setShowSubForm(false);
+    if (tx.transaction_type === "transfer" && tx.person_id) {
+      setTxTransferTarget("person");
+      setTxPersonId(tx.person_id);
+    } else {
+      setTxTransferTarget("account");
+      setTxPersonId("");
+    }
+    setTxFromPersonId(
+      tx.transaction_type === "received" && tx.person_id ? tx.person_id : ""
+    );
+    setShowAddPerson(false);
+    setNewPersonName("");
     setShowModal(true);
+  }
+
+  async function handleAddPerson() {
+    if (!newPersonName.trim()) return;
+    const { data, error } = await supabase
+      .from("people")
+      .insert({ name: newPersonName.trim(), user_id: user.id })
+      .select("id, name")
+      .single();
+    if (error) return;
+    setPeople((prev) => [...prev, data].sort((a, b) => a.name.localeCompare(b.name)));
+    setTxPersonId(data.id);
+    setShowAddPerson(false);
+    setNewPersonName("");
   }
 
   async function handleSave() {
@@ -175,8 +219,9 @@ export default function TransactionsPage() {
     const amount = parseFloat(txAmount);
     if (!amount || amount <= 0) return;
     if (!txAccountId) return;
-    if (txType === "transfer" && !txToAccountId) return;
-    if (txType === "transfer" && txAccountId === txToAccountId) return;
+    if (txType === "transfer" && txTransferTarget === "account" && !txToAccountId) return;
+    if (txType === "transfer" && txTransferTarget === "person" && !txPersonId) return;
+    if (txType === "transfer" && txTransferTarget === "account" && txAccountId === txToAccountId) return;
 
     // Validate personal amount for expenses
     let personalAmount = amount;
@@ -194,10 +239,14 @@ export default function TransactionsPage() {
         amount,
         date: txDate,
         account_id: txAccountId,
-        to_account_id: txType === "transfer" ? txToAccountId : null,
+        to_account_id: (txType === "transfer" && txTransferTarget === "account") ? txToAccountId : null,
         category: txType === "expense" ? txCategory : null,
         description: txDescription.trim() || null,
         personal_amount: txType === "expense" ? personalAmount : null,
+        person_id:
+          (txType === "transfer" && txTransferTarget === "person") ? txPersonId
+          : (txType === "received" && txFromPersonId) ? txFromPersonId
+          : null,
       };
 
       if (editingTransaction) {
@@ -408,9 +457,11 @@ export default function TransactionsPage() {
                               ? "work"
                               : tx.transaction_type === "received"
                                 ? "move_to_inbox"
-                                : tx.transaction_type === "transfer"
-                                  ? "swap_horiz"
-                                  : "receipt"}
+                                : tx.transaction_type === "transfer" && tx.person_id
+                                  ? "person"
+                                  : tx.transaction_type === "transfer"
+                                    ? "swap_horiz"
+                                    : "receipt"}
                           </span>
                         )}
                       </div>
@@ -422,7 +473,9 @@ export default function TransactionsPage() {
                               tx.transaction_type.slice(1)}
                         </p>
                         <p className="text-xs text-slate-500 mt-0.5">
-                          {tx.accounts?.name || ""}
+                          {tx.person_id && tx.people?.name
+                            ? `${tx.transaction_type === "transfer" ? "Lent to" : "From"} ${tx.people.name}`
+                            : tx.accounts?.name || ""}
                         </p>
                       </div>
                       <div className="text-right ml-2">
@@ -789,25 +842,112 @@ export default function TransactionsPage() {
                 </select>
               </div>
 
-              {/* To Account (transfer only) */}
+              {/* Transfer destination: Account or Person */}
               {txType === "transfer" && (
+                <>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      onClick={() => { setTxTransferTarget("account"); setTxPersonId(""); }}
+                      className={`py-2.5 rounded-xl text-sm font-semibold border-2 ${
+                        txTransferTarget === "account"
+                          ? "border-finance bg-finance/10 text-finance"
+                          : "border-transparent bg-slate-100 text-slate-600"
+                      }`}
+                    >
+                      To Account
+                    </button>
+                    <button
+                      onClick={() => { setTxTransferTarget("person"); setTxToAccountId(""); }}
+                      className={`py-2.5 rounded-xl text-sm font-semibold border-2 ${
+                        txTransferTarget === "person"
+                          ? "border-finance bg-finance/10 text-finance"
+                          : "border-transparent bg-slate-100 text-slate-600"
+                      }`}
+                    >
+                      To Person
+                    </button>
+                  </div>
+
+                  {txTransferTarget === "account" ? (
+                    <div>
+                      <label className="text-sm font-medium text-slate-500 mb-1.5 block">
+                        To Account
+                      </label>
+                      <select
+                        value={txToAccountId}
+                        onChange={(e) => setTxToAccountId(e.target.value)}
+                        className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-base text-slate-900 focus:outline-none focus:ring-2 focus:ring-finance/20 w-full"
+                      >
+                        <option value="">Select</option>
+                        {accounts
+                          .filter((a) => a.id !== txAccountId)
+                          .map((acc) => (
+                            <option key={acc.id} value={acc.id}>
+                              {acc.name}
+                            </option>
+                          ))}
+                      </select>
+                    </div>
+                  ) : (
+                    <div>
+                      <label className="text-sm font-medium text-slate-500 mb-1.5 block">
+                        Person
+                      </label>
+                      <select
+                        value={txPersonId}
+                        onChange={(e) => setTxPersonId(e.target.value)}
+                        className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-base text-slate-900 focus:outline-none focus:ring-2 focus:ring-finance/20 w-full"
+                      >
+                        <option value="">Select person</option>
+                        {people.map((p) => (
+                          <option key={p.id} value={p.id}>{p.name}</option>
+                        ))}
+                      </select>
+                      {!showAddPerson ? (
+                        <button
+                          onClick={() => { setNewPersonName(""); setShowAddPerson(true); }}
+                          className="flex items-center gap-1 mt-2 text-xs font-semibold text-finance"
+                        >
+                          <span className="material-symbols-outlined text-[14px]">add</span>
+                          Add New Person
+                        </button>
+                      ) : (
+                        <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 mt-2 flex gap-2">
+                          <input
+                            type="text"
+                            value={newPersonName}
+                            onChange={(e) => setNewPersonName(e.target.value)}
+                            placeholder="Name"
+                            className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-base flex-1 focus:outline-none focus:ring-2 focus:ring-finance/20"
+                          />
+                          <button
+                            onClick={handleAddPerson}
+                            className="px-4 py-2 rounded-lg text-sm font-semibold bg-finance text-white"
+                          >
+                            Add
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </>
+              )}
+
+              {/* From Person (received only, optional) */}
+              {txType === "received" && people.length > 0 && (
                 <div>
                   <label className="text-sm font-medium text-slate-500 mb-1.5 block">
-                    To Account
+                    From Person <span className="text-slate-400 font-normal">(optional)</span>
                   </label>
                   <select
-                    value={txToAccountId}
-                    onChange={(e) => setTxToAccountId(e.target.value)}
+                    value={txFromPersonId}
+                    onChange={(e) => setTxFromPersonId(e.target.value)}
                     className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-base text-slate-900 focus:outline-none focus:ring-2 focus:ring-finance/20 w-full"
                   >
-                    <option value="">Select</option>
-                    {accounts
-                      .filter((a) => a.id !== txAccountId)
-                      .map((acc) => (
-                        <option key={acc.id} value={acc.id}>
-                          {acc.name}
-                        </option>
-                      ))}
+                    <option value="">None</option>
+                    {people.map((p) => (
+                      <option key={p.id} value={p.id}>{p.name}</option>
+                    ))}
                   </select>
                 </div>
               )}

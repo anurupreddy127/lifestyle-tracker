@@ -14,6 +14,7 @@ const FINANCE_LINKS = [
   { label: 'Dashboard', href: '/finance', icon: 'home' },
   { label: 'Accounts', href: '/finance/accounts', icon: 'account_balance_wallet' },
   { label: 'Transactions', href: '/finance/transactions', icon: 'receipt_long' },
+  { label: 'People', href: '/finance/people', icon: 'people' },
   { label: 'Subscriptions', href: '/finance/subscriptions', icon: 'subscriptions' },
 ]
 
