@@ -140,7 +140,7 @@ Deno.serve(async (req) => {
   // GET — return user's accounts + categories
   // -----------------------------------------------------------------------
   if (req.method === "GET") {
-    const [accountsRes, categoriesRes, peopleRes] = await Promise.all([
+    const [accountsRes, categoriesRes] = await Promise.all([
       supabase
         .from("accounts")
         .select("id, name, account_type")
@@ -151,22 +151,15 @@ Deno.serve(async (req) => {
         .select("name, emoji")
         .eq("user_id", userId)
         .order("created_at"),
-      supabase
-        .from("people")
-        .select("name")
-        .eq("user_id", userId)
-        .order("name"),
     ]);
 
     // Return simple string arrays so iPhone Shortcuts can use "Choose from List" directly
     const accountNames = (accountsRes.data || []).map((a: { name: string }) => a.name);
     const categoryNames = (categoriesRes.data || []).map((c: { name: string; emoji: string }) => `${c.name}`);
-    const personNames = (peopleRes.data || []).map((p: { name: string }) => p.name);
 
     return jsonResponse({
       accounts: accountNames,
       categories: categoryNames,
-      people: personNames,
     });
   }
 
@@ -210,9 +203,8 @@ Deno.serve(async (req) => {
       return jsonResponse({ error: `Account "${account}" not found` }, 404);
     }
 
-    // --- Resolve to_account or person for transfers ---
+    // --- Resolve to_account for transfers ---
     let toAccountId: string | null = null;
-    let personId: string | null = null;
 
     if (type === "transfer") {
       if (!to_account && !person) {
@@ -233,21 +225,6 @@ Deno.serve(async (req) => {
       }
     }
 
-    // --- Resolve person name -> ID (for transfers to person or received from person) ---
-    if (person) {
-      const { data: personRow } = await supabase
-        .from("people")
-        .select("id")
-        .eq("user_id", userId)
-        .ilike("name", person)
-        .single();
-
-      if (!personRow) {
-        return jsonResponse({ error: `Person "${person}" not found` }, 404);
-      }
-      personId = personRow.id;
-    }
-
     // --- Build and insert transaction ---
     const txDate = date || new Date().toISOString().split("T")[0];
     const parsedPersonal = personal_amount ? parseFloat(personal_amount) : parsedAmount;
@@ -262,7 +239,7 @@ Deno.serve(async (req) => {
       to_account_id: toAccountId,
       category: type === "expense" ? (category || null) : null,
       description: description || null,
-      person_id: personId,
+      person_name: person || null,
     };
 
     const { data: transaction, error: insertError } = await supabase

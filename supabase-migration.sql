@@ -141,26 +141,8 @@ CREATE POLICY "Users can insert own api_keys" ON api_keys FOR INSERT WITH CHECK 
 CREATE POLICY "Users can delete own api_keys" ON api_keys FOR DELETE USING (auth.uid() = user_id);
 
 -- =============================================================================
--- Phase 5: People / Lending Feature
+-- Phase 5: People / Lending Feature (simplified — just a text field)
 -- =============================================================================
 
--- Step 5.1: Create people table
-CREATE TABLE IF NOT EXISTS people (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
-  name TEXT NOT NULL,
-  created_at TIMESTAMPTZ DEFAULT now()
-);
-
-CREATE INDEX IF NOT EXISTS idx_people_user_id ON people(user_id);
-
-ALTER TABLE people ENABLE ROW LEVEL SECURITY;
-
-CREATE POLICY "Users can view own people" ON people FOR SELECT USING (auth.uid() = user_id);
-CREATE POLICY "Users can insert own people" ON people FOR INSERT WITH CHECK (auth.uid() = user_id);
-CREATE POLICY "Users can update own people" ON people FOR UPDATE USING (auth.uid() = user_id);
-CREATE POLICY "Users can delete own people" ON people FOR DELETE USING (auth.uid() = user_id);
-
--- Step 5.2: Add person_id to transactions (ON DELETE SET NULL preserves history)
-ALTER TABLE transactions ADD COLUMN IF NOT EXISTS person_id UUID REFERENCES people(id) ON DELETE SET NULL;
-CREATE INDEX IF NOT EXISTS idx_transactions_person_id ON transactions(person_id);
+-- Store person name directly on transaction (no separate people table needed)
+ALTER TABLE transactions ADD COLUMN IF NOT EXISTS person_name TEXT;

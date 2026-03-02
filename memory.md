@@ -247,7 +247,7 @@ Root wrapper that handles 3 layout modes:
 | `expense`      | Deducts from account                                     | `receipt`       | Rose/Red |
 | `received`     | Adds to account (money from friends/repayments)          | `move_to_inbox` | Green    |
 | `income`       | Adds to account (salary/work)                            | `work`          | Green    |
-| `transfer`     | Deducts from source, adds to destination (or lent to person if person_id set) | `swap_horiz` / `person` | Slate    |
+| `transfer`     | Deducts from source, adds to destination (or lent to person if person_name set) | `swap_horiz` / `person` | Slate    |
 | `subscription` | Deducts from account (logged via subscription reminders) | `subscriptions` | —        |
 
 ### Split Expenses
@@ -361,7 +361,7 @@ transactions (
   personal_amount NUMERIC,        -- For split expenses (your share)
   account_id      UUID REFERENCES accounts(id),
   to_account_id   UUID REFERENCES accounts(id),  -- For account-to-account transfers
-  person_id       UUID REFERENCES people(id) ON DELETE SET NULL,  -- For person transfers/received
+  person_name     TEXT,           -- For lending (person transfers/received)
   category        TEXT,
   description     TEXT,
   created_at      TIMESTAMPTZ DEFAULT now()
@@ -384,17 +384,6 @@ categories (
   user_id    UUID REFERENCES auth.users(id),
   name       TEXT NOT NULL,
   emoji      TEXT,
-  created_at TIMESTAMPTZ DEFAULT now()
-)
-```
-
-### People Table
-
-```sql
-people (
-  id         UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id    UUID REFERENCES auth.users(id) ON DELETE CASCADE,
-  name       TEXT NOT NULL,
   created_at TIMESTAMPTZ DEFAULT now()
 )
 ```
@@ -571,13 +560,13 @@ Both `finance/page.jsx` and `finance/transactions/page.jsx` have transaction mod
 
 ### People & Lending
 
-Track money lent to friends/family. Uses existing transaction types with a `person_id` column — no new transaction types needed.
+Track money lent to friends/family. Uses existing transaction types with a `person_name` text column — no separate people table needed. Just type the person's name.
 
-- **Lend money**: Transfer tab → "To Person" toggle → select person → money leaves account
-  - `transaction_type = 'transfer'`, `person_id` set, `to_account_id = null`
-- **Receive payback**: Received tab → "From Person" selector → money enters account
-  - `transaction_type = 'received'`, `person_id` set
-- **People page** (`/finance/people`): Shows all people with net amounts (who owes what), tap for transaction history
+- **Lend money**: Transfer tab → "To Person" toggle → type person name → money leaves account
+  - `transaction_type = 'transfer'`, `person_name` set, `to_account_id = null`
+- **Receive payback**: Received tab → "From Person" text input → money enters account
+  - `transaction_type = 'received'`, `person_name` set
+- **People page** (`/finance/people`): Derives unique people from transactions, shows net amounts (who owes what), tap for transaction history
 - **Balance impact**: No changes to `recalculateBalance()` — transfers deduct from source, received adds to destination
 
 ---
@@ -599,11 +588,12 @@ Allows adding transactions from an iPhone Shortcut without opening the app. Runs
 
 ### Endpoints
 
-**GET** — Returns user's accounts, categories, and people for building the shortcut form
+**GET** — Returns user's accounts and categories for building the shortcut form
 
 **POST** — Creates a transaction
 - Body: `{ type, amount, personal_amount?, account, to_account?, person?, category?, description?, date? }`
-- `account`, `to_account`, and `person` are **names** (not UUIDs) — resolved server-side via case-insensitive match
+- `account` and `to_account` are **names** (not UUIDs) — resolved server-side via case-insensitive match
+- `person` is stored directly as `person_name` text on the transaction
 - For transfers: provide either `to_account` (account transfer) or `person` (lend to person)
 - `date` defaults to today if omitted
 - Calls `recalculateBalance()` after insert
