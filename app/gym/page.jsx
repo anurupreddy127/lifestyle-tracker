@@ -20,6 +20,14 @@ export default function GymHome() {
   const { supabase } = useAuth()
   const [days, setDays] = useState([])
   const [loading, setLoading] = useState(true)
+  const [activeWorkout, setActiveWorkout] = useState(null)
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem('activeWorkout')
+      if (raw) setActiveWorkout(JSON.parse(raw))
+    } catch {}
+  }, [])
 
   async function fetchDays() {
     try {
@@ -49,6 +57,23 @@ export default function GymHome() {
 
   return (
     <div className="px-4 pt-4 pb-4">
+      {/* In-progress workout banner */}
+      {activeWorkout && (
+        <button
+          onClick={() => router.push(`/gym/workout/${activeWorkout.day_id}`)}
+          className="w-full mb-4 bg-gradient-to-r from-primary to-blue-600 rounded-xl p-4 flex items-center gap-3 shadow-lg shadow-primary/20 active:opacity-90"
+        >
+          <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center shrink-0">
+            <span className="material-symbols-outlined text-white text-[22px]">play_arrow</span>
+          </div>
+          <div className="flex-1 min-w-0 text-left">
+            <p className="text-xs font-semibold text-white/70 uppercase tracking-wider">In Progress</p>
+            <p className="text-base font-bold text-white truncate">{activeWorkout.day_name}</p>
+          </div>
+          <span className="material-symbols-outlined text-white/70 text-[22px] shrink-0">arrow_forward</span>
+        </button>
+      )}
+
       {/* Content */}
       {loading ? (
         <LoadingSkeleton count={4} height="h-24" />
@@ -84,13 +109,17 @@ export default function GymHome() {
                     </div>
                   </div>
 
-                  {/* Start button */}
+                  {/* Start / Resume button */}
                   <button
                     onClick={() => router.push(`/gym/workout/${day.id}`)}
-                    className="bg-primary text-white font-semibold text-sm rounded-lg px-4 h-9 shrink-0 active:bg-primary/90"
-                    aria-label="Start workout"
+                    className={`font-semibold text-sm rounded-lg px-4 h-9 shrink-0 ${
+                      activeWorkout?.day_id === day.id
+                        ? 'bg-amber-500 text-white active:bg-amber-600'
+                        : 'bg-primary text-white active:bg-primary/90'
+                    }`}
+                    aria-label={activeWorkout?.day_id === day.id ? 'Resume workout' : 'Start workout'}
                   >
-                    Start
+                    {activeWorkout?.day_id === day.id ? 'Resume' : 'Start'}
                   </button>
                 </div>
               </SwipeableCard>
