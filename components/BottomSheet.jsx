@@ -13,7 +13,7 @@ export default function BottomSheet({ isOpen, onClose, title, children }) {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50"
+            className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[60]"
             onClick={onClose}
           />
 
@@ -23,7 +23,7 @@ export default function BottomSheet({ isOpen, onClose, title, children }) {
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
             transition={{ type: 'spring', stiffness: 350, damping: 35, mass: 0.5 }}
-            className="fixed inset-x-0 bottom-0 z-50 rounded-t-3xl bg-white border-t border-slate-100 shadow-2xl max-h-[85dvh] overflow-y-auto overflow-x-hidden overscroll-contain"
+            className="fixed inset-x-0 bottom-0 z-[60] rounded-t-3xl bg-white border-t border-slate-100 shadow-2xl max-h-[85dvh] overflow-y-auto overflow-x-hidden overscroll-contain"
             style={{ WebkitOverflowScrolling: 'touch' }}
           >
             {/* Drag handle */}

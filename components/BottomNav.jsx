@@ -52,8 +52,8 @@ export default function BottomNav() {
   const activeColor = isFinance ? 'text-finance' : 'text-primary'
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 px-3" style={{ paddingBottom: `calc(env(safe-area-inset-bottom) + 8px)` }}>
-      <nav className="bg-white/90 backdrop-blur-md border border-slate-200/80 rounded-2xl shadow-lg shadow-black/5 flex">
+    <div className="fixed bottom-0 left-0 right-0 z-50 px-3 pointer-events-none" style={{ paddingBottom: `calc(env(safe-area-inset-bottom) + 8px)` }}>
+      <nav className="bg-white/90 backdrop-blur-md border border-slate-200/80 rounded-2xl shadow-lg shadow-black/5 flex pointer-events-auto">
         {tabs.map((tab) => {
           const active = isTabActive(pathname, tab.href)
           return (
