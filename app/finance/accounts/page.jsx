@@ -171,7 +171,7 @@ export default function AccountManager() {
     setEditingAccount(account);
     setFormName(account.name);
     setFormType(account.account_type);
-    setFormStartingBalance(account.starting_balance != null ? String(account.starting_balance) : "");
+    setFormStartingBalance(account.balance != null ? String(account.balance) : "");
     setFormCreditLimit(account.credit_limit != null ? String(account.credit_limit) : "");
     setFormAvailableCredit(account.available_credit != null ? String(account.available_credit) : "");
     setFormDueDate(account.due_date != null ? String(account.due_date) : "");
@@ -216,8 +216,10 @@ export default function AccountManager() {
           updateData.due_date = dueDate;
           updateData.starting_balance = creditLimit - availableCredit;
         } else {
-          const bal = parseFloat(formStartingBalance) || 0;
-          updateData.starting_balance = bal;
+          const enteredBalance = parseFloat(formStartingBalance) || 0;
+          // Form shows current balance; adjust starting_balance so recalculation yields entered value
+          const txEffect = (editingAccount.balance || 0) - (editingAccount.starting_balance || 0);
+          updateData.starting_balance = enteredBalance - txEffect;
         }
 
         await supabase

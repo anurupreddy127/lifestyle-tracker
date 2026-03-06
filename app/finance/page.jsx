@@ -100,7 +100,7 @@ export default function FinanceDashboard() {
           supabase
             .from("transactions")
             .select("amount")
-            .in("transaction_type", ["income", "received"])
+            .eq("transaction_type", "income")
             .gte("date", startOfMonth)
             .lte("date", today),
           supabase
@@ -162,7 +162,7 @@ export default function FinanceDashboard() {
     setTxType("expense");
     setTxDate(new Date().toISOString().split("T")[0]);
     setTxAmount("");
-    setTxAccountId(accounts[0]?.id || "");
+    setTxAccountId("");
     setTxToAccountId("");
     setTxCategory(categories[0]?.name || "");
     setTxDescription("");
@@ -184,11 +184,11 @@ export default function FinanceDashboard() {
   async function handleSaveTransaction() {
     if (savingRef.current) return;
     const amount = parseFloat(txAmount);
-    if (!amount || amount <= 0) return;
-    if (!txAccountId) return;
-    if (txType === "transfer" && txTransferTarget === "account" && !txToAccountId) return;
-    if (txType === "transfer" && txTransferTarget === "person" && !txPersonName.trim()) return;
-    if (txType === "transfer" && txTransferTarget === "account" && txAccountId === txToAccountId) return;
+    if (!amount || amount <= 0) { setToast("Please enter a valid amount"); return; }
+    if (!txAccountId) { setToast("Please select an account"); return; }
+    if (txType === "transfer" && txTransferTarget === "account" && !txToAccountId) { setToast("Please select a destination account"); return; }
+    if (txType === "transfer" && txTransferTarget === "person" && !txPersonName.trim()) { setToast("Please enter a person name"); return; }
+    if (txType === "transfer" && txTransferTarget === "account" && txAccountId === txToAccountId) { setToast("Cannot transfer to the same account"); return; }
 
     // Validate personal amount for expenses
     let personalAmount = amount;

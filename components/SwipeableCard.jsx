@@ -1,98 +1,130 @@
 'use client'
 
 import { useRef, useEffect, useCallback } from 'react'
+import { motion, useMotionValue, useTransform, animate } from 'motion/react'
+
+const SPRING = { stiffness: 400, damping: 35, mass: 0.5 }
+const VELOCITY_THRESHOLD = 500
+const RUBBER_BAND = 0.15
 
 export default function SwipeableCard({ children, onEdit, onDelete, id }) {
-  const cardRef = useRef(null)
+  const contentRef = useRef(null)
   const startXRef = useRef(0)
   const startYRef = useRef(0)
-  const currentXRef = useRef(0)
   const directionLockedRef = useRef(null)
   const isOpenRef = useRef(false)
+  const startTimeRef = useRef(0)
 
   const hasEdit = typeof onEdit === 'function'
   const hasDelete = typeof onDelete === 'function'
   const buttonCount = (hasEdit ? 1 : 0) + (hasDelete ? 1 : 0)
-  const ACTION_WIDTH = buttonCount * 70
+  const ACTION_WIDTH = buttonCount * 75
 
-  const snapClosed = useCallback(() => {
-    if (cardRef.current) {
-      cardRef.current.style.transition = 'transform 0.3s ease'
-      cardRef.current.style.transform = 'translateX(0)'
-    }
-    currentXRef.current = 0
-    isOpenRef.current = false
-  }, [])
+  const x = useMotionValue(0)
 
-  const snapOpen = useCallback(() => {
-    if (cardRef.current) {
-      cardRef.current.style.transition = 'transform 0.3s ease'
-      cardRef.current.style.transform = `translateX(-${ACTION_WIDTH}px)`
-    }
-    currentXRef.current = -ACTION_WIDTH
-    isOpenRef.current = true
-  }, [ACTION_WIDTH])
+  // Derived transforms for button reveal animations
+  const buttonOpacity = useTransform(x, [-ACTION_WIDTH, -20, 0], [1, 0.3, 0])
+  const buttonScale = useTransform(x, [-ACTION_WIDTH, -10, 0], [1, 0.7, 0.5])
+  const editBtnX = useTransform(x, [-ACTION_WIDTH, 0], [0, 40])
+  const deleteBtnX = useTransform(x, [-ACTION_WIDTH, 0], [0, hasEdit ? 60 : 40])
+
+  const snapTo = useCallback((target) => {
+    animate(x, target, SPRING)
+    isOpenRef.current = target !== 0
+  }, [x])
+
+  // Keep ACTION_WIDTH in a ref so touch handlers always use the latest value
+  const actionWidthRef = useRef(ACTION_WIDTH)
+  actionWidthRef.current = ACTION_WIDTH
 
   useEffect(() => {
     function handleClose(e) {
-      if (e.detail !== id) {
-        snapClosed()
+      if (e.detail !== id && isOpenRef.current) {
+        snapTo(0)
       }
     }
     window.addEventListener('swipecard-close', handleClose)
     return () => window.removeEventListener('swipecard-close', handleClose)
-  }, [id, snapClosed])
+  }, [id, snapTo])
 
-  function handleTouchStart(e) {
-    const touch = e.touches[0]
-    startXRef.current = touch.clientX
-    startYRef.current = touch.clientY
-    directionLockedRef.current = null
-    if (cardRef.current) {
-      cardRef.current.style.transition = 'none'
+  // Register touch listeners directly on DOM with { passive: false } for touchmove
+  // React 19 uses passive touch listeners by default, which silently ignores preventDefault()
+  useEffect(() => {
+    const el = contentRef.current
+    if (!el) return
+
+    function onTouchStart(e) {
+      const touch = e.touches[0]
+      startXRef.current = touch.clientX
+      startYRef.current = touch.clientY
+      startTimeRef.current = Date.now()
+      directionLockedRef.current = null
+      x.stop()
     }
-  }
 
-  function handleTouchMove(e) {
-    const touch = e.touches[0]
-    const diffX = touch.clientX - startXRef.current
-    const diffY = touch.clientY - startYRef.current
+    function onTouchMove(e) {
+      const touch = e.touches[0]
+      const diffX = touch.clientX - startXRef.current
+      const diffY = touch.clientY - startYRef.current
+      const AW = actionWidthRef.current
 
-    // Lock direction after threshold
-    if (!directionLockedRef.current) {
-      if (Math.abs(diffX) > 10 || Math.abs(diffY) > 10) {
-        directionLockedRef.current = Math.abs(diffX) > Math.abs(diffY) ? 'horizontal' : 'vertical'
+      if (!directionLockedRef.current) {
+        if (Math.abs(diffX) > 8 || Math.abs(diffY) > 8) {
+          directionLockedRef.current = Math.abs(diffX) > Math.abs(diffY) ? 'horizontal' : 'vertical'
+        }
+        return
       }
-      return
+
+      if (directionLockedRef.current !== 'horizontal') return
+      e.preventDefault()
+
+      const baseX = isOpenRef.current ? -AW : 0
+      let newX = baseX + diffX
+
+      if (newX < -AW) {
+        const over = newX + AW
+        newX = -AW + over * RUBBER_BAND
+      }
+      if (newX > 0) {
+        newX = newX * RUBBER_BAND
+      }
+
+      x.set(newX)
     }
 
-    if (directionLockedRef.current !== 'horizontal') return
+    function onTouchEnd() {
+      if (directionLockedRef.current !== 'horizontal') return
+      const AW = actionWidthRef.current
 
-    e.preventDefault()
+      const current = x.get()
+      const elapsed = Date.now() - startTimeRef.current
+      const velocity = elapsed > 0 ? ((current - (isOpenRef.current ? -AW : 0)) / elapsed) * 1000 : 0
 
-    const baseX = isOpenRef.current ? -ACTION_WIDTH : 0
-    let newX = baseX + diffX
-    // Clamp: don't go right of 0, don't go left beyond ACTION_WIDTH
-    newX = Math.max(-ACTION_WIDTH, Math.min(0, newX))
-
-    if (cardRef.current) {
-      cardRef.current.style.transform = `translateX(${newX}px)`
+      if (velocity < -VELOCITY_THRESHOLD) {
+        window.dispatchEvent(new CustomEvent('swipecard-close', { detail: id }))
+        snapTo(-AW)
+      } else if (velocity > VELOCITY_THRESHOLD) {
+        snapTo(0)
+      } else {
+        if (current < -AW * 0.35) {
+          window.dispatchEvent(new CustomEvent('swipecard-close', { detail: id }))
+          snapTo(-AW)
+        } else {
+          snapTo(0)
+        }
+      }
     }
-    currentXRef.current = newX
-  }
 
-  function handleTouchEnd() {
-    if (directionLockedRef.current !== 'horizontal') return
+    el.addEventListener('touchstart', onTouchStart, { passive: true })
+    el.addEventListener('touchmove', onTouchMove, { passive: false })
+    el.addEventListener('touchend', onTouchEnd, { passive: true })
 
-    const threshold = -ACTION_WIDTH * 0.35
-    if (currentXRef.current <= threshold) {
-      // Close other cards, open this one
-      window.dispatchEvent(new CustomEvent('swipecard-close', { detail: id }))
-      snapOpen()
-    } else {
-      snapClosed()
+    return () => {
+      el.removeEventListener('touchstart', onTouchStart)
+      el.removeEventListener('touchmove', onTouchMove)
+      el.removeEventListener('touchend', onTouchEnd)
     }
-  }
+  }, [x, id, snapTo])
 
   if (buttonCount === 0) return children
 
@@ -101,36 +133,35 @@ export default function SwipeableCard({ children, onEdit, onDelete, id }) {
       {/* Action buttons behind */}
       <div className="absolute right-0 top-0 bottom-0 flex">
         {hasEdit && (
-          <button
-            onClick={() => { snapClosed(); onEdit() }}
-            className="w-[70px] flex flex-col items-center justify-center gap-1 bg-blue-500 text-white"
+          <motion.button
+            onClick={() => { snapTo(0); onEdit() }}
+            className="w-[75px] flex flex-col items-center justify-center gap-1 bg-blue-500 text-white"
+            style={{ opacity: buttonOpacity, scale: buttonScale, x: editBtnX }}
           >
             <span className="material-symbols-outlined text-[20px]">edit</span>
             <span className="text-[10px] font-semibold">Edit</span>
-          </button>
+          </motion.button>
         )}
         {hasDelete && (
-          <button
-            onClick={() => { snapClosed(); onDelete() }}
-            className="w-[70px] flex flex-col items-center justify-center gap-1 bg-rose-500 text-white"
+          <motion.button
+            onClick={() => { snapTo(0); onDelete() }}
+            className="w-[75px] flex flex-col items-center justify-center gap-1 bg-rose-500 text-white"
+            style={{ opacity: buttonOpacity, scale: buttonScale, x: deleteBtnX }}
           >
             <span className="material-symbols-outlined text-[20px]">delete</span>
             <span className="text-[10px] font-semibold">Delete</span>
-          </button>
+          </motion.button>
         )}
       </div>
 
       {/* Card content */}
-      <div
-        ref={cardRef}
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
+      <motion.div
+        ref={contentRef}
         className="relative z-10 bg-inherit"
-        style={{ willChange: 'transform' }}
+        style={{ x, willChange: 'transform', touchAction: 'pan-y' }}
       >
         {children}
-      </div>
+      </motion.div>
     </div>
   )
 }
