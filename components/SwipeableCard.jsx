@@ -131,25 +131,27 @@ export default function SwipeableCard({ children, onEdit, onDelete, id }) {
   return (
     <div className="relative overflow-hidden rounded-xl">
       {/* Action buttons behind */}
-      <div className="absolute right-0 top-0 bottom-0 flex">
+      <div className="absolute right-0 top-0 bottom-0 flex items-center">
         {hasEdit && (
           <motion.button
             onClick={() => { snapTo(0); onEdit() }}
-            className="w-[75px] flex flex-col items-center justify-center gap-1 bg-blue-500 text-white"
+            className="w-[75px] flex items-center justify-center"
             style={{ opacity: buttonOpacity, scale: buttonScale, x: editBtnX }}
           >
-            <span className="material-symbols-outlined text-[20px]">edit</span>
-            <span className="text-[10px] font-semibold">Edit</span>
+            <div className="w-11 h-11 rounded-full bg-blue-500 flex items-center justify-center">
+              <span className="material-symbols-outlined text-white text-[20px]">edit</span>
+            </div>
           </motion.button>
         )}
         {hasDelete && (
           <motion.button
             onClick={() => { snapTo(0); onDelete() }}
-            className="w-[75px] flex flex-col items-center justify-center gap-1 bg-rose-500 text-white"
+            className="w-[75px] flex items-center justify-center"
             style={{ opacity: buttonOpacity, scale: buttonScale, x: deleteBtnX }}
           >
-            <span className="material-symbols-outlined text-[20px]">delete</span>
-            <span className="text-[10px] font-semibold">Delete</span>
+            <div className="w-11 h-11 rounded-full bg-rose-500 flex items-center justify-center">
+              <span className="material-symbols-outlined text-white text-[20px]">delete</span>
+            </div>
           </motion.button>
         )}
       </div>

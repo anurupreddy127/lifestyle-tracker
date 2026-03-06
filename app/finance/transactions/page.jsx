@@ -75,6 +75,7 @@ export default function TransactionsPage() {
   // Subscription quick-pay
   const [selectedSubscription, setSelectedSubscription] = useState(null);
   const [showSubForm, setShowSubForm] = useState(false);
+  const [editingSubscription, setEditingSubscription] = useState(null);
   const [subFormName, setSubFormName] = useState("");
   const [subFormAmount, setSubFormAmount] = useState("");
   const [subFormBillingType, setSubFormBillingType] = useState("monthly");
@@ -325,17 +326,28 @@ export default function TransactionsPage() {
       return;
 
     try {
-      await supabase.from("subscription_reminders").insert({
+      const row = {
         name: subFormName.trim(),
         amount: parseFloat(subFormAmount),
         billing_type: subFormBillingType,
         next_billing_date: subFormNextDate,
         account_id: subFormAccountId,
         category: subFormCategory,
-        user_id: user.id,
-      });
+      };
+
+      if (editingSubscription) {
+        await supabase
+          .from("subscription_reminders")
+          .update(row)
+          .eq("id", editingSubscription.id);
+      } else {
+        await supabase
+          .from("subscription_reminders")
+          .insert({ ...row, user_id: user.id });
+      }
 
       setShowSubForm(false);
+      setEditingSubscription(null);
       setSubFormName("");
       setSubFormAmount("");
       setSubFormBillingType("monthly");
@@ -349,6 +361,30 @@ export default function TransactionsPage() {
       setSubscriptions(data || []);
     } catch {
       // Silent fail for subscription save
+    }
+  }
+
+  function openSubEdit(sub) {
+    setEditingSubscription(sub);
+    setSubFormName(sub.name);
+    setSubFormAmount(String(sub.amount));
+    setSubFormBillingType(sub.billing_type);
+    setSubFormNextDate(sub.next_billing_date);
+    setSubFormAccountId(sub.account_id);
+    setSubFormCategory(sub.category);
+    setShowSubForm(true);
+  }
+
+  async function handleSubDelete(subId) {
+    try {
+      await supabase.from("subscription_reminders").delete().eq("id", subId);
+      const { data } = await supabase
+        .from("subscription_reminders")
+        .select("*, accounts(name)")
+        .order("next_billing_date", { ascending: true });
+      setSubscriptions(data || []);
+    } catch {
+      // Silent fail
     }
   }
 
@@ -552,7 +588,7 @@ export default function TransactionsPage() {
             showSubForm ? (
               <>
                 <button
-                  onClick={() => setShowSubForm(false)}
+                  onClick={() => { setShowSubForm(false); setEditingSubscription(null); }}
                   className="flex items-center gap-1 text-sm font-medium text-slate-500 active:text-slate-700"
                 >
                   <span className="material-symbols-outlined text-[18px]">
@@ -653,7 +689,7 @@ export default function TransactionsPage() {
                   onClick={handleSubSave}
                   className="bg-finance text-white font-bold rounded-xl py-4 w-full text-base mt-1 active:bg-finance/90"
                 >
-                  Add Subscription
+                  {editingSubscription ? "Save Changes" : "Add Subscription"}
                 </button>
               </>
             ) : selectedSubscription ? (
@@ -702,34 +738,54 @@ export default function TransactionsPage() {
                     {subscriptions.map((sub) => (
                       <div
                         key={sub.id}
-                        onClick={() => setSelectedSubscription(sub)}
-                        className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 cursor-pointer active:bg-slate-100"
+                        className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-3"
                       >
-                        <div className="flex items-center justify-between">
-                          <p className="text-sm font-bold text-slate-900">
-                            {sub.name}
-                          </p>
-                          <p className="text-sm font-bold text-slate-900">
-                            {formatCurrency(sub.amount)}
-                          </p>
-                        </div>
-                        <div className="flex items-center gap-2 mt-0.5">
-                          <span className="text-xs text-slate-500">
-                            {sub.accounts?.name}
-                          </span>
-                          <span className="text-xs text-slate-400">·</span>
-                          <span className="text-[10px] font-bold uppercase bg-slate-200 text-slate-500 rounded px-1.5 py-0.5">
-                            {sub.billing_type === "monthly"
-                              ? "Monthly"
-                              : "Yearly"}
-                          </span>
+                        <div className="flex items-center gap-2">
+                          <div
+                            className="flex-1 min-w-0 cursor-pointer active:opacity-70"
+                            onClick={() => setSelectedSubscription(sub)}
+                          >
+                            <div className="flex items-center justify-between">
+                              <p className="text-sm font-bold text-slate-900">
+                                {sub.name}
+                              </p>
+                              <p className="text-sm font-bold text-slate-900">
+                                {formatCurrency(sub.amount)}
+                              </p>
+                            </div>
+                            <div className="flex items-center gap-2 mt-0.5">
+                              <span className="text-xs text-slate-500">
+                                {sub.accounts?.name}
+                              </span>
+                              <span className="text-xs text-slate-400">·</span>
+                              <span className="text-[10px] font-bold uppercase bg-slate-200 text-slate-500 rounded px-1.5 py-0.5">
+                                {sub.billing_type === "monthly"
+                                  ? "Monthly"
+                                  : "Yearly"}
+                              </span>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-1 shrink-0">
+                            <button
+                              onClick={() => openSubEdit(sub)}
+                              className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center text-slate-500 active:bg-blue-100 active:text-blue-500"
+                            >
+                              <span className="material-symbols-outlined text-[16px]">edit</span>
+                            </button>
+                            <button
+                              onClick={() => handleSubDelete(sub.id)}
+                              className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center text-slate-500 active:bg-rose-100 active:text-rose-500"
+                            >
+                              <span className="material-symbols-outlined text-[16px]">delete</span>
+                            </button>
+                          </div>
                         </div>
                       </div>
                     ))}
                   </div>
                 )}
                 <button
-                  onClick={() => setShowSubForm(true)}
+                  onClick={() => { setEditingSubscription(null); setSubFormName(""); setSubFormAmount(""); setSubFormBillingType("monthly"); setSubFormNextDate(""); setSubFormAccountId(accounts[0]?.id || ""); setSubFormCategory(categories[categories.length - 1]?.name || ""); setShowSubForm(true); }}
                   className="bg-finance text-white font-bold rounded-xl py-4 w-full text-base mt-1 flex items-center justify-center gap-2 active:bg-finance/90"
                 >
                   <span className="material-symbols-outlined text-[18px]">

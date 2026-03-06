@@ -23,6 +23,13 @@ input, select, textarea {
   font-size: 16px !important;
 }
 
+/* Fix iOS date input overflowing container */
+input[type="date"] {
+  -webkit-appearance: none;
+  appearance: none;
+  min-width: 0;
+}
+
 .safe-layout {
   padding-top: env(safe-area-inset-top);
   padding-bottom: env(safe-area-inset-bottom);

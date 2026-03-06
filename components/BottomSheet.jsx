@@ -23,8 +23,8 @@ export default function BottomSheet({ isOpen, onClose, title, children }) {
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
             transition={{ type: 'spring', stiffness: 350, damping: 35, mass: 0.5 }}
-            className="fixed inset-x-0 bottom-0 z-50 rounded-t-3xl bg-white border-t border-slate-100 shadow-2xl max-h-[85dvh] overflow-y-auto overscroll-contain"
-            style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 1.5rem)', WebkitOverflowScrolling: 'touch' }}
+            className="fixed inset-x-0 bottom-0 z-50 rounded-t-3xl bg-white border-t border-slate-100 shadow-2xl max-h-[85dvh] overflow-y-auto overflow-x-hidden overscroll-contain"
+            style={{ WebkitOverflowScrolling: 'touch' }}
           >
             {/* Drag handle */}
             <div className="w-12 h-1.5 bg-slate-300 rounded-full mx-auto mt-3 mb-4" />
@@ -43,7 +43,7 @@ export default function BottomSheet({ isOpen, onClose, title, children }) {
             )}
 
             {/* Content */}
-            <div className="px-5 pb-6">
+            <div className="px-5" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 1.5rem)' }}>
               {children}
             </div>
           </motion.div>
