@@ -186,7 +186,7 @@ export default function ExerciseLibrary() {
       )}
 
       {/* Fixed Add Button */}
-      <div className="fixed bottom-20 left-0 right-0 px-4 pb-2 pt-6 bg-gradient-to-t from-slate-50 via-slate-50 to-transparent z-10">
+      <div className="fixed left-0 right-0 px-4 pb-2 pt-6 bg-gradient-to-t from-slate-50 via-slate-50 to-transparent z-10" style={{ bottom: 'calc(4.5rem + env(safe-area-inset-bottom))' }}>
         <button
           onClick={openAddModal}
           className="bg-primary text-white font-bold rounded-xl py-4 w-full text-base shadow-lg shadow-primary/20 flex items-center justify-center gap-2 active:bg-primary/90"

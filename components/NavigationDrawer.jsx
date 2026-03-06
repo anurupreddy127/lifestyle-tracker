@@ -28,7 +28,9 @@ export default function NavigationDrawer({ isOpen, onClose }) {
   const pathname = usePathname()
   const { user, signOut } = useAuth()
   const workspace = getWorkspace(pathname)
-  const isFinance = workspace === 'finance' || (!workspace && localStorage.getItem('lastWorkspace') === 'finance')
+  let storedWs = null
+  try { storedWs = localStorage.getItem('lastWorkspace') } catch {}
+  const isFinance = workspace === 'finance' || (!workspace && storedWs === 'finance')
   const navLinks = isFinance ? FINANCE_LINKS : GYM_LINKS
 
   const handleSignOut = async () => {

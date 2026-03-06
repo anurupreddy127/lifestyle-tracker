@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
@@ -34,30 +34,30 @@ function getWorkspace(pathname) {
 export default function BottomNav() {
   const pathname = usePathname()
   const workspace = getWorkspace(pathname)
+  const [storedWorkspace, setStoredWorkspace] = useState(null)
 
   useEffect(() => {
     if (workspace) {
       localStorage.setItem('lastWorkspace', workspace)
     }
+    try { setStoredWorkspace(localStorage.getItem('lastWorkspace')) } catch {}
   }, [workspace])
 
-  let storedWorkspace = null
-  try { storedWorkspace = localStorage.getItem('lastWorkspace') } catch {}
   const isFinance = workspace === 'finance' || (!workspace && storedWorkspace === 'finance')
   const tabs = isFinance ? FINANCE_TABS : GYM_TABS
   const activeColor = isFinance ? 'text-finance' : 'text-primary'
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 px-4 pb-4" style={{ paddingBottom: `calc(env(safe-area-inset-bottom) + 12px)` }}>
-      <nav className="bg-white/90 backdrop-blur-md border border-slate-200 rounded-2xl shadow-lg shadow-black/5 flex">
+    <div className="fixed bottom-0 left-0 right-0 z-50 px-3" style={{ paddingBottom: `calc(env(safe-area-inset-bottom) + 8px)` }}>
+      <nav className="bg-white/90 backdrop-blur-md border border-slate-200/80 rounded-2xl shadow-lg shadow-black/5 flex">
         {tabs.map((tab) => {
           const active = isTabActive(pathname, tab.href)
           return (
             <Link
               key={tab.href}
               href={tab.href}
-              className={`flex-1 flex flex-col items-center py-2.5 gap-0.5 ${
-                active ? activeColor : 'text-slate-400'
+              className={`flex-1 flex flex-col items-center py-3 gap-0.5 transition-colors ${
+                active ? activeColor : 'text-slate-400 active:text-slate-500'
               }`}
             >
               <span

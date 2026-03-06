@@ -8,6 +8,20 @@ const manrope = Manrope({ subsets: ["latin"] });
 export const metadata = {
   title: "Lifestyle Tracker",
   description: "Personal gym and finance tracker",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "Lifestyle Tracker",
+  },
+};
+
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  viewportFit: "cover",
+  themeColor: "#f8fafc",
 };
 
 export default function RootLayout({ children }) {
@@ -15,15 +29,13 @@ export default function RootLayout({ children }) {
     <html lang="en" className={manrope.className}>
       <head>
         <link rel="manifest" href="/manifest.json" />
+        <link rel="apple-touch-icon" href="/icon-192.png" />
         <link
           rel="stylesheet"
-          href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0"
+          href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&display=swap"
         />
-        <meta name="apple-mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-        <meta name="theme-color" content="#f8fafc" />
       </head>
-      <body className="bg-slate-50 text-slate-900 select-none overscroll-none">
+      <body className="bg-slate-50 text-slate-900 select-none overscroll-none antialiased">
         <AppShell>{children}</AppShell>
         <Analytics />
       </body>
