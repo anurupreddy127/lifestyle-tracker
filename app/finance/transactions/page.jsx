@@ -524,7 +524,8 @@ export default function TransactionsPage() {
       <button
         onClick={openAdd}
         aria-label="Add new transaction"
-        className="fixed bottom-20 right-5 w-14 h-14 bg-finance rounded-full flex items-center justify-center shadow-lg shadow-finance/30 z-20 active:bg-finance/90"
+        className="fixed right-5 w-14 h-14 bg-finance rounded-full flex items-center justify-center shadow-lg shadow-finance/30 z-20 active:bg-finance/90"
+        style={{ bottom: 'calc(5rem + env(safe-area-inset-bottom))' }}
       >
         <span className="material-symbols-outlined text-white text-3xl">
           add
