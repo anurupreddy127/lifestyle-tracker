@@ -37,10 +37,14 @@ export default function BottomNav() {
   const [storedWorkspace, setStoredWorkspace] = useState(null)
 
   useEffect(() => {
+    try { setStoredWorkspace(localStorage.getItem('lastWorkspace')) } catch {}
+  }, [])
+
+  useEffect(() => {
     if (workspace) {
       localStorage.setItem('lastWorkspace', workspace)
+      setStoredWorkspace(workspace)
     }
-    try { setStoredWorkspace(localStorage.getItem('lastWorkspace')) } catch {}
   }, [workspace])
 
   const isFinance = workspace === 'finance' || (!workspace && storedWorkspace === 'finance')

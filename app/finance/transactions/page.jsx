@@ -7,6 +7,7 @@ import Toast from "@/components/Toast";
 import LoadingSkeleton from "@/components/LoadingSkeleton";
 import { recalculateBalance } from "@/lib/balanceUtils";
 import { useCategories, EMOJI_OPTIONS } from "@/hooks/useCategories";
+import { useSubscriptionForm } from "@/hooks/useSubscriptionForm";
 import SwipeableCard from "@/components/SwipeableCard";
 
 function groupByDate(transactions) {
@@ -74,14 +75,13 @@ export default function TransactionsPage() {
 
   // Subscription quick-pay
   const [selectedSubscription, setSelectedSubscription] = useState(null);
-  const [showSubForm, setShowSubForm] = useState(false);
-  const [editingSubscription, setEditingSubscription] = useState(null);
-  const [subFormName, setSubFormName] = useState("");
-  const [subFormAmount, setSubFormAmount] = useState("");
-  const [subFormBillingType, setSubFormBillingType] = useState("monthly");
-  const [subFormNextDate, setSubFormNextDate] = useState("");
-  const [subFormAccountId, setSubFormAccountId] = useState("");
-  const [subFormCategory, setSubFormCategory] = useState("");
+  const {
+    showSubForm, editingSubscription,
+    subFormName, setSubFormName, subFormAmount, setSubFormAmount,
+    subFormBillingType, setSubFormBillingType, subFormNextDate, setSubFormNextDate,
+    subFormAccountId, setSubFormAccountId, subFormCategory, setSubFormCategory,
+    openNewSubForm, openSubEdit, closeSubForm, handleSubSave, handleSubDelete,
+  } = useSubscriptionForm(accounts, categories, setSubscriptions);
 
   async function fetchData() {
     try {
@@ -315,79 +315,6 @@ export default function TransactionsPage() {
     }
   }
 
-  async function handleSubSave() {
-    if (
-      !subFormName.trim() ||
-      !subFormAmount ||
-      !subFormNextDate ||
-      !subFormAccountId ||
-      !subFormCategory
-    )
-      return;
-
-    try {
-      const row = {
-        name: subFormName.trim(),
-        amount: parseFloat(subFormAmount),
-        billing_type: subFormBillingType,
-        next_billing_date: subFormNextDate,
-        account_id: subFormAccountId,
-        category: subFormCategory,
-      };
-
-      if (editingSubscription) {
-        await supabase
-          .from("subscription_reminders")
-          .update(row)
-          .eq("id", editingSubscription.id);
-      } else {
-        await supabase
-          .from("subscription_reminders")
-          .insert({ ...row, user_id: user.id });
-      }
-
-      setShowSubForm(false);
-      setEditingSubscription(null);
-      setSubFormName("");
-      setSubFormAmount("");
-      setSubFormBillingType("monthly");
-      setSubFormNextDate("");
-      setSubFormAccountId(accounts[0]?.id || "");
-      setSubFormCategory(categories[categories.length - 1]?.name || "");
-      const { data } = await supabase
-        .from("subscription_reminders")
-        .select("*, accounts(name)")
-        .order("next_billing_date", { ascending: true });
-      setSubscriptions(data || []);
-    } catch {
-      // Silent fail for subscription save
-    }
-  }
-
-  function openSubEdit(sub) {
-    setEditingSubscription(sub);
-    setSubFormName(sub.name);
-    setSubFormAmount(String(sub.amount));
-    setSubFormBillingType(sub.billing_type);
-    setSubFormNextDate(sub.next_billing_date);
-    setSubFormAccountId(sub.account_id);
-    setSubFormCategory(sub.category);
-    setShowSubForm(true);
-  }
-
-  async function handleSubDelete(subId) {
-    try {
-      await supabase.from("subscription_reminders").delete().eq("id", subId);
-      const { data } = await supabase
-        .from("subscription_reminders")
-        .select("*, accounts(name)")
-        .order("next_billing_date", { ascending: true });
-      setSubscriptions(data || []);
-    } catch {
-      // Silent fail
-    }
-  }
-
   function formatCurrency(amount) {
     return new Intl.NumberFormat("en-US", {
       style: "currency",
@@ -589,7 +516,7 @@ export default function TransactionsPage() {
             showSubForm ? (
               <>
                 <button
-                  onClick={() => { setShowSubForm(false); setEditingSubscription(null); }}
+                  onClick={closeSubForm}
                   className="flex items-center gap-1 text-sm font-medium text-slate-500 active:text-slate-700"
                 >
                   <span className="material-symbols-outlined text-[18px]">
@@ -774,7 +701,7 @@ export default function TransactionsPage() {
                               <span className="material-symbols-outlined text-[16px]">edit</span>
                             </button>
                             <button
-                              onClick={() => handleSubDelete(sub.id)}
+                              onClick={() => handleSubDelete(sub.id, setSubscriptions)}
                               className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center text-slate-500 active:bg-rose-100 active:text-rose-500"
                             >
                               <span className="material-symbols-outlined text-[16px]">delete</span>
@@ -786,7 +713,7 @@ export default function TransactionsPage() {
                   </div>
                 )}
                 <button
-                  onClick={() => { setEditingSubscription(null); setSubFormName(""); setSubFormAmount(""); setSubFormBillingType("monthly"); setSubFormNextDate(""); setSubFormAccountId(accounts[0]?.id || ""); setSubFormCategory(categories[categories.length - 1]?.name || ""); setShowSubForm(true); }}
+                  onClick={openNewSubForm}
                   className="bg-finance text-white font-bold rounded-xl py-4 w-full text-base mt-1 flex items-center justify-center gap-2 active:bg-finance/90"
                 >
                   <span className="material-symbols-outlined text-[18px]">
