@@ -7,6 +7,7 @@ import BottomSheet from "@/components/BottomSheet";
 import Toast from "@/components/Toast";
 import LoadingSkeleton from "@/components/LoadingSkeleton";
 import { recalculateBalance } from "@/lib/balanceUtils";
+import { processSubscriptions } from "@/lib/processSubscriptions";
 import { useCategories, EMOJI_OPTIONS } from "@/hooks/useCategories";
 import { useSubscriptionForm } from "@/hooks/useSubscriptionForm";
 
@@ -152,10 +153,14 @@ export default function FinanceDashboard() {
   }
 
   useEffect(() => {
-    const fetchDataAsync = async () => {
+    const init = async () => {
+      const processed = await processSubscriptions(supabase, user.id);
+      if (processed.length > 0) {
+        setToast(`Auto-added ${processed.length} subscription${processed.length > 1 ? "s" : ""}`);
+      }
       await fetchData();
     };
-    fetchDataAsync();
+    init();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

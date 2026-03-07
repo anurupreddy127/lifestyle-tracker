@@ -146,13 +146,7 @@ export default function TransactionsPage() {
     setTxPersonalAmount("");
     setShowDeleteConfirm(false);
     setSelectedSubscription(null);
-    setShowSubForm(false);
-    setSubFormName("");
-    setSubFormAmount("");
-    setSubFormBillingType("monthly");
-    setSubFormNextDate("");
-    setSubFormAccountId(accounts[0]?.id || "");
-    setSubFormCategory(categories[categories.length - 1]?.name || "");
+    closeSubForm();
     setTxTransferTarget("account");
     setTxPersonName("");
     setTxFromPersonName("");
