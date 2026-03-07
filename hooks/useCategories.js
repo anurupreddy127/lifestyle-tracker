@@ -32,14 +32,6 @@ const CATEGORY_COLOR_PALETTE = [
   "bg-violet-100 text-violet-600",
 ];
 
-export const EMOJI_OPTIONS = [
-  "🏠", "🍕", "⚡", "❤️", "🛍️", "📚", "📦",
-  "🚗", "✈️", "🎮", "🎵", "🐱", "🌿", "💼",
-  "🏋️", "☕", "🎬", "💊", "📱", "🎁",
-  "🍔", "🏖️", "🧹", "💡", "🎨", "👕",
-  "🏥", "🎓", "🔧", "💰",
-];
-
 export function useCategories() {
   const { supabase, user } = useAuth();
   const [categories, setCategories] = useState([]);

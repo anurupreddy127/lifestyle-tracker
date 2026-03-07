@@ -6,7 +6,7 @@ import BottomSheet from "@/components/BottomSheet";
 import Toast from "@/components/Toast";
 import LoadingSkeleton from "@/components/LoadingSkeleton";
 import { recalculateBalance } from "@/lib/balanceUtils";
-import { useCategories, EMOJI_OPTIONS } from "@/hooks/useCategories";
+import { useCategories } from "@/hooks/useCategories";
 import { useSubscriptionForm } from "@/hooks/useSubscriptionForm";
 import SwipeableCard from "@/components/SwipeableCard";
 
@@ -60,7 +60,7 @@ export default function TransactionsPage() {
   const [txCategory, setTxCategory] = useState("");
   const [showAddCategory, setShowAddCategory] = useState(false);
   const [newCatName, setNewCatName] = useState("");
-  const [newCatEmoji, setNewCatEmoji] = useState("📦");
+  const [newCatEmoji, setNewCatEmoji] = useState("");
   const [editingCategories, setEditingCategories] = useState(false);
   const [txDescription, setTxDescription] = useState("");
   const [txPersonalAmount, setTxPersonalAmount] = useState("");
@@ -946,23 +946,19 @@ export default function TransactionsPage() {
                       </div>
                       <div>
                         <label className="text-xs font-medium text-slate-500 mb-1 block">
-                          Choose Emoji
+                          Emoji
                         </label>
-                        <div className="grid grid-cols-10 gap-1">
-                          {EMOJI_OPTIONS.map((emoji) => (
-                            <button
-                              key={emoji}
-                              onClick={() => setNewCatEmoji(emoji)}
-                              className={`w-8 h-8 rounded-lg text-base flex items-center justify-center ${
-                                newCatEmoji === emoji
-                                  ? "bg-finance/10 ring-2 ring-finance"
-                                  : "bg-white"
-                              }`}
-                            >
-                              {emoji}
-                            </button>
-                          ))}
-                        </div>
+                        <input
+                          type="text"
+                          value={newCatEmoji}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            const emojis = [...val].filter(c => /\p{Emoji_Presentation}|\p{Extended_Pictographic}/u.test(c));
+                            setNewCatEmoji(emojis.length > 0 ? emojis[emojis.length - 1] : "");
+                          }}
+                          placeholder="Tap to pick emoji"
+                          className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-2xl text-center w-16 h-12 focus:outline-none focus:ring-2 focus:ring-finance/20"
+                        />
                       </div>
                       <div className="flex gap-2">
                         <button
