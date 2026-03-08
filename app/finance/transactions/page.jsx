@@ -95,6 +95,9 @@ export default function TransactionsPage() {
   const [filterDatePreset, setFilterDatePreset] = useState("this_month");
   const [showFilters, setShowFilters] = useState(false);
 
+  // Inline validation errors
+  const [fieldErrors, setFieldErrors] = useState({});
+
   // Pagination
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
   const [totalCount, setTotalCount] = useState(0);
@@ -229,6 +232,7 @@ export default function TransactionsPage() {
     setTxTransferTarget("account");
     setTxPersonName("");
     setTxFromPersonName("");
+    setFieldErrors({});
     setShowModal(true);
   }
 
@@ -259,25 +263,34 @@ export default function TransactionsPage() {
     setTxFromPersonName(
       tx.transaction_type === "received" && tx.person_name ? tx.person_name : ""
     );
+    setFieldErrors({});
     setShowModal(true);
   }
 
   async function handleSave() {
     if (savingRef.current) return;
+
+    const errors = {};
     const amount = parseFloat(txAmount);
-    if (!amount || amount <= 0) return;
-    if (!txAccountId) return;
-    if (txType === "transfer" && txTransferTarget === "account" && !txToAccountId) return;
-    if (txType === "transfer" && txTransferTarget === "person" && !txPersonName.trim()) return;
-    if (txType === "transfer" && txTransferTarget === "account" && txAccountId === txToAccountId) return;
+    if (!amount || amount <= 0) errors.amount = "Enter a valid amount";
+    if (!txAccountId) errors.account = "Select an account";
+    if (txType === "transfer" && txTransferTarget === "account" && !txToAccountId) errors.toAccount = "Select a destination account";
+    if (txType === "transfer" && txTransferTarget === "person" && !txPersonName.trim()) errors.personName = "Enter a person name";
+    if (txType === "transfer" && txTransferTarget === "account" && txAccountId && txToAccountId && txAccountId === txToAccountId) errors.toAccount = "Must be different from source";
 
     // Validate personal amount for expenses
     let personalAmount = amount;
     if (txType === "expense" && txPersonalAmount.trim() !== "") {
       personalAmount = parseFloat(txPersonalAmount);
-      if (isNaN(personalAmount) || personalAmount < 0) return;
-      if (personalAmount > amount) return;
+      if (isNaN(personalAmount) || personalAmount < 0) errors.personalAmount = "Enter a valid amount";
+      else if (amount && personalAmount > amount) errors.personalAmount = "Cannot exceed total amount";
     }
+
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
+      return;
+    }
+    setFieldErrors({});
 
     savingRef.current = true;
     setSaving(true);
@@ -997,46 +1010,51 @@ export default function TransactionsPage() {
             <>
               {/* Amount */}
               <div>
-                <label className="text-sm font-medium text-slate-500 mb-1.5 block">
+                <label className={`text-sm font-medium mb-1.5 block ${fieldErrors.amount ? "text-rose-500" : "text-slate-500"}`}>
                   {txType === "expense" ? "Total Amount" : "Amount"}
                 </label>
                 <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-lg">
+                  <span className={`absolute left-4 top-1/2 -translate-y-1/2 font-bold text-lg ${fieldErrors.amount ? "text-rose-400" : "text-slate-400"}`}>
                     $
                   </span>
                   <input
                     type="text"
                     inputMode="decimal"
                     value={txAmount}
-                    onChange={(e) => setTxAmount(e.target.value)}
+                    onChange={(e) => { setTxAmount(e.target.value); setFieldErrors((p) => ({ ...p, amount: undefined })); }}
                     placeholder="0.00"
-                    className="bg-slate-50 border border-slate-200 rounded-xl pl-8 pr-4 py-3 text-2xl font-bold text-slate-900 placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-finance/20 focus:border-finance w-full"
+                    className={`bg-slate-50 border rounded-xl pl-8 pr-4 py-3 text-2xl font-bold text-slate-900 placeholder:text-slate-300 focus:outline-none focus:ring-2 w-full ${fieldErrors.amount ? "border-rose-400 focus:ring-rose-200 focus:border-rose-400" : "border-slate-200 focus:ring-finance/20 focus:border-finance"}`}
                   />
                 </div>
+                {fieldErrors.amount && <p className="text-xs text-rose-500 mt-1">{fieldErrors.amount}</p>}
               </div>
 
               {/* Your Share (expense only) */}
               {txType === "expense" && (
                 <div>
-                  <label className="text-sm font-medium text-slate-500 mb-1.5 block">
+                  <label className={`text-sm font-medium mb-1.5 block ${fieldErrors.personalAmount ? "text-rose-500" : "text-slate-500"}`}>
                     Your Share
                   </label>
                   <div className="relative">
-                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-base">
+                    <span className={`absolute left-4 top-1/2 -translate-y-1/2 font-bold text-base ${fieldErrors.personalAmount ? "text-rose-400" : "text-slate-400"}`}>
                       $
                     </span>
                     <input
                       type="text"
                       inputMode="decimal"
                       value={txPersonalAmount}
-                      onChange={(e) => setTxPersonalAmount(e.target.value)}
+                      onChange={(e) => { setTxPersonalAmount(e.target.value); setFieldErrors((p) => ({ ...p, personalAmount: undefined })); }}
                       placeholder={txAmount || "Same as total"}
-                      className="bg-slate-50 border border-slate-200 rounded-xl pl-8 pr-4 py-2.5 text-base font-semibold text-slate-900 placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-finance/20 focus:border-finance w-full"
+                      className={`bg-slate-50 border rounded-xl pl-8 pr-4 py-2.5 text-base font-semibold text-slate-900 placeholder:text-slate-300 focus:outline-none focus:ring-2 w-full ${fieldErrors.personalAmount ? "border-rose-400 focus:ring-rose-200 focus:border-rose-400" : "border-slate-200 focus:ring-finance/20 focus:border-finance"}`}
                     />
                   </div>
-                  <p className="text-[10px] text-slate-400 mt-1">
-                    Leave empty if you paid for yourself only
-                  </p>
+                  {fieldErrors.personalAmount ? (
+                    <p className="text-xs text-rose-500 mt-1">{fieldErrors.personalAmount}</p>
+                  ) : (
+                    <p className="text-[10px] text-slate-400 mt-1">
+                      Leave empty if you paid for yourself only
+                    </p>
+                  )}
                 </div>
               )}
 
@@ -1055,13 +1073,13 @@ export default function TransactionsPage() {
 
               {/* Account — full width */}
               <div>
-                <label className="text-sm font-medium text-slate-500 mb-1.5 block">
+                <label className={`text-sm font-medium mb-1.5 block ${fieldErrors.account ? "text-rose-500" : "text-slate-500"}`}>
                   {txType === "transfer" ? "From" : "Account"}
                 </label>
                 <select
                   value={txAccountId}
-                  onChange={(e) => setTxAccountId(e.target.value)}
-                  className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-base text-slate-900 focus:outline-none focus:ring-2 focus:ring-finance/20 w-full"
+                  onChange={(e) => { setTxAccountId(e.target.value); setFieldErrors((p) => ({ ...p, account: undefined })); }}
+                  className={`bg-slate-50 border rounded-xl px-4 py-3 text-base text-slate-900 focus:outline-none focus:ring-2 w-full ${fieldErrors.account ? "border-rose-400 focus:ring-rose-200" : "border-slate-200 focus:ring-finance/20"}`}
                 >
                   <option value="">Select</option>
                   {accounts.map((acc) => (
@@ -1070,6 +1088,7 @@ export default function TransactionsPage() {
                     </option>
                   ))}
                 </select>
+                {fieldErrors.account && <p className="text-xs text-rose-500 mt-1">{fieldErrors.account}</p>}
               </div>
 
               {/* Transfer destination: Account or Person */}
@@ -1100,13 +1119,13 @@ export default function TransactionsPage() {
 
                   {txTransferTarget === "account" ? (
                     <div>
-                      <label className="text-sm font-medium text-slate-500 mb-1.5 block">
+                      <label className={`text-sm font-medium mb-1.5 block ${fieldErrors.toAccount ? "text-rose-500" : "text-slate-500"}`}>
                         To Account
                       </label>
                       <select
                         value={txToAccountId}
-                        onChange={(e) => setTxToAccountId(e.target.value)}
-                        className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-base text-slate-900 focus:outline-none focus:ring-2 focus:ring-finance/20 w-full"
+                        onChange={(e) => { setTxToAccountId(e.target.value); setFieldErrors((p) => ({ ...p, toAccount: undefined })); }}
+                        className={`bg-slate-50 border rounded-xl px-4 py-3 text-base text-slate-900 focus:outline-none focus:ring-2 w-full ${fieldErrors.toAccount ? "border-rose-400 focus:ring-rose-200" : "border-slate-200 focus:ring-finance/20"}`}
                       >
                         <option value="">Select</option>
                         {accounts
@@ -1117,19 +1136,21 @@ export default function TransactionsPage() {
                             </option>
                           ))}
                       </select>
+                      {fieldErrors.toAccount && <p className="text-xs text-rose-500 mt-1">{fieldErrors.toAccount}</p>}
                     </div>
                   ) : (
                     <div>
-                      <label className="text-sm font-medium text-slate-500 mb-1.5 block">
+                      <label className={`text-sm font-medium mb-1.5 block ${fieldErrors.personName ? "text-rose-500" : "text-slate-500"}`}>
                         Person Name
                       </label>
                       <input
                         type="text"
                         value={txPersonName}
-                        onChange={(e) => setTxPersonName(e.target.value)}
+                        onChange={(e) => { setTxPersonName(e.target.value); setFieldErrors((p) => ({ ...p, personName: undefined })); }}
                         placeholder="e.g., John"
-                        className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-base text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-finance/20 w-full"
+                        className={`bg-slate-50 border rounded-xl px-4 py-3 text-base text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 w-full ${fieldErrors.personName ? "border-rose-400 focus:ring-rose-200" : "border-slate-200 focus:ring-finance/20"}`}
                       />
+                      {fieldErrors.personName && <p className="text-xs text-rose-500 mt-1">{fieldErrors.personName}</p>}
                     </div>
                   )}
                 </>
