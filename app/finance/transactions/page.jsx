@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import BottomSheet from "@/components/BottomSheet";
 import Toast from "@/components/Toast";
@@ -9,6 +9,24 @@ import { recalculateBalance } from "@/lib/balanceUtils";
 import { useCategories } from "@/hooks/useCategories";
 import { useSubscriptionForm } from "@/hooks/useSubscriptionForm";
 import SwipeableCard from "@/components/SwipeableCard";
+import { motion, AnimatePresence } from "motion/react";
+
+const PAGE_SIZE = 20;
+
+const TYPE_FILTERS = [
+  { value: "all", label: "All", icon: "list" },
+  { value: "expense", label: "Expense", icon: "shopping_bag", color: "bg-rose-500", activeText: "text-white" },
+  { value: "income", label: "Income", icon: "work", color: "bg-emerald-500", activeText: "text-white" },
+  { value: "transfer", label: "Transfer", icon: "swap_horiz", color: "bg-amber-500", activeText: "text-white" },
+  { value: "received", label: "Received", icon: "move_to_inbox", color: "bg-sky-500", activeText: "text-white" },
+];
+
+const DATE_PRESETS = [
+  { value: "this_month", label: "This Month" },
+  { value: "last_month", label: "Last Month" },
+  { value: "last_3_months", label: "3 Months" },
+  { value: "all_time", label: "All Time" },
+];
 
 function groupByDate(transactions) {
   const groups = {};
@@ -70,6 +88,18 @@ export default function TransactionsPage() {
   const [txPersonName, setTxPersonName] = useState("");
   const [txFromPersonName, setTxFromPersonName] = useState("");
 
+  // Filters
+  const [filterType, setFilterType] = useState("all");
+  const [filterAccounts, setFilterAccounts] = useState([]); // array of account IDs
+  const [filterCategory, setFilterCategory] = useState(null); // single category name or null
+  const [filterDatePreset, setFilterDatePreset] = useState("this_month");
+  const [showFilters, setShowFilters] = useState(false);
+
+  // Pagination
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+  const [totalCount, setTotalCount] = useState(0);
+  const [loadingMore, setLoadingMore] = useState(false);
+
   // Delete confirmation
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
@@ -83,6 +113,49 @@ export default function TransactionsPage() {
     openNewSubForm, openSubEdit, closeSubForm, handleSubSave, handleSubDelete,
   } = useSubscriptionForm(accounts, categories, setSubscriptions);
 
+  function getDateRange(preset) {
+    const now = new Date();
+    const today = now.toISOString().split("T")[0];
+    if (preset === "this_month") {
+      return { from: new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split("T")[0], to: today };
+    }
+    if (preset === "last_month") {
+      const start = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+      const end = new Date(now.getFullYear(), now.getMonth(), 0);
+      return { from: start.toISOString().split("T")[0], to: end.toISOString().split("T")[0] };
+    }
+    if (preset === "last_3_months") {
+      return { from: new Date(now.getFullYear(), now.getMonth() - 2, 1).toISOString().split("T")[0], to: today };
+    }
+    return { from: null, to: null }; // all_time
+  }
+
+  const fetchTransactions = useCallback(async (limit, append = false) => {
+    try {
+      const dateRange = getDateRange(filterDatePreset);
+
+      let query = supabase
+        .from("transactions")
+        .select("*, accounts!transactions_account_id_fkey(name)", { count: "exact" })
+        .order("date", { ascending: false })
+        .order("created_at", { ascending: false })
+        .limit(limit);
+
+      if (filterType !== "all") query = query.eq("transaction_type", filterType);
+      if (filterAccounts.length > 0) query = query.in("account_id", filterAccounts);
+      if (filterCategory) query = query.eq("category", filterCategory);
+      if (dateRange.from) query = query.gte("date", dateRange.from);
+      if (dateRange.to) query = query.lte("date", dateRange.to);
+
+      const { data, count } = await query;
+      setTransactions(data || []);
+      setTotalCount(count || 0);
+      setVisibleCount(limit);
+    } catch {
+      // silently handle
+    }
+  }, [supabase, filterType, filterAccounts, filterCategory, filterDatePreset]);
+
   async function fetchData() {
     try {
       const now = new Date();
@@ -91,13 +164,7 @@ export default function TransactionsPage() {
         .split("T")[0];
       const today = now.toISOString().split("T")[0];
 
-      const [txRes, accountsRes, subsRes, expenseCatRes] = await Promise.all([
-        supabase
-          .from("transactions")
-          .select("*, accounts!transactions_account_id_fkey(name)")
-          .order("date", { ascending: false })
-          .order("created_at", { ascending: false })
-          .limit(100),
+      const [accountsRes, subsRes, expenseCatRes] = await Promise.all([
         supabase
           .from("accounts")
           .select("*")
@@ -113,7 +180,6 @@ export default function TransactionsPage() {
           .gte("date", startOfMonth)
           .lte("date", today),
       ]);
-      setTransactions(txRes.data || []);
       setAccounts(accountsRes.data || []);
       setSubscriptions(subsRes.data || []);
 
@@ -129,10 +195,23 @@ export default function TransactionsPage() {
     }
   }
 
+  // Initial load
   useEffect(() => {
     fetchData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Fetch transactions when filters change
+  useEffect(() => {
+    fetchTransactions(PAGE_SIZE);
+  }, [fetchTransactions]);
+
+  async function loadMore() {
+    setLoadingMore(true);
+    const newCount = visibleCount + PAGE_SIZE;
+    await fetchTransactions(newCount);
+    setLoadingMore(false);
+  }
 
   function openAdd() {
     setEditingTransaction(null);
@@ -248,6 +327,7 @@ export default function TransactionsPage() {
 
       setShowModal(false);
       fetchData();
+      fetchTransactions(visibleCount);
     } catch {
       setToast("Failed to save transaction");
     } finally {
@@ -278,6 +358,7 @@ export default function TransactionsPage() {
       setShowDeleteConfirm(false);
       setToast("Transaction deleted!");
       fetchData();
+      fetchTransactions(visibleCount);
     } catch {
       setToast("Failed to delete");
     } finally {
@@ -304,6 +385,7 @@ export default function TransactionsPage() {
       setSelectedSubscription(null);
       setToast("Subscription transaction saved!");
       fetchData();
+      fetchTransactions(visibleCount);
     } catch {
       setToast("Failed to save");
     }
@@ -316,6 +398,26 @@ export default function TransactionsPage() {
     }).format(amount);
   }
 
+  function toggleAccountFilter(accountId) {
+    setFilterAccounts((prev) =>
+      prev.includes(accountId) ? prev.filter((id) => id !== accountId) : [...prev, accountId]
+    );
+  }
+
+  function clearAllFilters() {
+    setFilterType("all");
+    setFilterAccounts([]);
+    setFilterCategory(null);
+    setFilterDatePreset("this_month");
+    setShowFilters(false);
+  }
+
+  const activeFilterCount =
+    (filterType !== "all" ? 1 : 0) +
+    (filterAccounts.length > 0 ? 1 : 0) +
+    (filterCategory ? 1 : 0) +
+    (filterDatePreset !== "this_month" ? 1 : 0);
+
   const grouped = groupByDate(transactions);
 
   return (
@@ -324,9 +426,9 @@ export default function TransactionsPage() {
         <LoadingSkeleton count={8} height="h-14" />
       ) : (
         <>
-          {/* Spending by Category */}
+          {/* Spending by Category — tappable to filter */}
           {Object.keys(categorySpending).length > 0 && (
-            <div className="mb-4">
+            <div className="mb-3">
               <h2 className="text-base font-bold text-slate-900 mb-3">
                 Spending by Category
               </h2>
@@ -334,9 +436,14 @@ export default function TransactionsPage() {
                 {Object.entries(categorySpending)
                   .sort(([, a], [, b]) => b - a)
                   .map(([cat, amount]) => (
-                    <div
+                    <button
                       key={cat}
-                      className="min-w-[100px] w-[100px] bg-white border border-slate-200 rounded-xl p-3 flex flex-col items-center gap-2 shrink-0"
+                      onClick={() => setFilterCategory(filterCategory === cat ? null : cat)}
+                      className={`min-w-[100px] w-[100px] rounded-xl p-3 flex flex-col items-center gap-2 shrink-0 cursor-pointer transition-all duration-200 ${
+                        filterCategory === cat
+                          ? "bg-finance/10 border-2 border-finance shadow-sm"
+                          : "bg-white border border-slate-200"
+                      }`}
                     >
                       <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${getCategoryColor(cat)}`}>
                         <span className="text-lg">{getCategoryEmoji(cat)}</span>
@@ -347,18 +454,166 @@ export default function TransactionsPage() {
                       <p className="text-sm font-bold text-slate-900">
                         {formatCurrency(amount)}
                       </p>
-                    </div>
+                    </button>
                   ))}
               </div>
             </div>
           )}
 
+          {/* Type filter pills + filter toggle */}
+          <div className="flex items-center gap-2 mb-2">
+            <div className="flex gap-1.5 overflow-x-auto scrollbar-hide flex-1">
+              {TYPE_FILTERS.map((t) => (
+                <button
+                  key={t.value}
+                  onClick={() => {
+                    setFilterType(filterType === t.value ? "all" : t.value);
+                    if (t.value !== "expense") setFilterCategory(null);
+                  }}
+                  className={`flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-semibold whitespace-nowrap transition-all duration-200 min-h-[36px] ${
+                    filterType === t.value
+                      ? `${t.color || "bg-slate-800"} ${t.activeText || "text-white"} shadow-sm`
+                      : "bg-slate-100 text-slate-600"
+                  }`}
+                >
+                  <span className="material-symbols-outlined text-[16px]">{t.icon}</span>
+                  {t.label}
+                </button>
+              ))}
+            </div>
+            <button
+              onClick={() => setShowFilters(!showFilters)}
+              className={`relative flex items-center justify-center w-9 h-9 rounded-full shrink-0 transition-colors duration-200 ${
+                showFilters || activeFilterCount > 0
+                  ? "bg-finance text-white"
+                  : "bg-slate-100 text-slate-600"
+              }`}
+            >
+              <span className="material-symbols-outlined text-[18px]">tune</span>
+              {activeFilterCount > 0 && (
+                <span className="absolute -top-1 -right-1 w-4 h-4 bg-rose-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center">
+                  {activeFilterCount}
+                </span>
+              )}
+            </button>
+          </div>
+
+          {/* Expandable filter panel */}
+          <AnimatePresence>
+            {showFilters && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: "auto", opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.2 }}
+                className="overflow-hidden"
+              >
+                <div className="bg-white border border-slate-200 rounded-xl p-3 mb-3 flex flex-col gap-3">
+                  {/* Account filter */}
+                  <div>
+                    <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Account</p>
+                    <div className="flex gap-1.5 overflow-x-auto scrollbar-hide">
+                      {accounts.map((acc) => (
+                        <button
+                          key={acc.id}
+                          onClick={() => toggleAccountFilter(acc.id)}
+                          className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all duration-200 ${
+                            filterAccounts.includes(acc.id)
+                              ? "bg-finance text-white"
+                              : "bg-slate-100 text-slate-600"
+                          }`}
+                        >
+                          {acc.name}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Date range presets */}
+                  <div>
+                    <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Date Range</p>
+                    <div className="flex gap-1.5 overflow-x-auto scrollbar-hide">
+                      {DATE_PRESETS.map((d) => (
+                        <button
+                          key={d.value}
+                          onClick={() => setFilterDatePreset(d.value)}
+                          className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all duration-200 ${
+                            filterDatePreset === d.value
+                              ? "bg-finance text-white"
+                              : "bg-slate-100 text-slate-600"
+                          }`}
+                        >
+                          {d.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Clear all */}
+                  {activeFilterCount > 0 && (
+                    <button
+                      onClick={clearAllFilters}
+                      className="text-xs font-semibold text-rose-500 self-end"
+                    >
+                      Clear All Filters
+                    </button>
+                  )}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Active filter tags */}
+          {activeFilterCount > 0 && !showFilters && (
+            <div className="flex gap-1.5 flex-wrap mb-2">
+              {filterCategory && (
+                <button
+                  onClick={() => setFilterCategory(null)}
+                  className="flex items-center gap-1 px-2.5 py-1 bg-finance/10 text-finance rounded-full text-[11px] font-semibold"
+                >
+                  {getCategoryEmoji(filterCategory)} {filterCategory}
+                  <span className="material-symbols-outlined text-[14px]">close</span>
+                </button>
+              )}
+              {filterAccounts.length > 0 && (
+                <button
+                  onClick={() => setFilterAccounts([])}
+                  className="flex items-center gap-1 px-2.5 py-1 bg-finance/10 text-finance rounded-full text-[11px] font-semibold"
+                >
+                  {filterAccounts.length} account{filterAccounts.length > 1 ? "s" : ""}
+                  <span className="material-symbols-outlined text-[14px]">close</span>
+                </button>
+              )}
+              {filterDatePreset !== "this_month" && (
+                <button
+                  onClick={() => setFilterDatePreset("this_month")}
+                  className="flex items-center gap-1 px-2.5 py-1 bg-finance/10 text-finance rounded-full text-[11px] font-semibold"
+                >
+                  {DATE_PRESETS.find((d) => d.value === filterDatePreset)?.label}
+                  <span className="material-symbols-outlined text-[14px]">close</span>
+                </button>
+              )}
+            </div>
+          )}
+
+          {/* Transaction count */}
+          {transactions.length > 0 && (
+            <p className="text-[11px] text-slate-400 mb-1 px-1">
+              Showing {transactions.length} of {totalCount} transaction{totalCount !== 1 ? "s" : ""}
+            </p>
+          )}
+
           {transactions.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20 gap-3 text-slate-400">
               <span className="material-symbols-outlined text-5xl">
-                receipt_long
+                {activeFilterCount > 0 ? "filter_list_off" : "receipt_long"}
               </span>
-              <p className="text-sm">No transactions yet.</p>
+              <p className="text-sm">{activeFilterCount > 0 ? "No transactions match your filters." : "No transactions yet."}</p>
+              {activeFilterCount > 0 && (
+                <button onClick={clearAllFilters} className="text-sm font-semibold text-finance">
+                  Clear Filters
+                </button>
+              )}
             </div>
           ) : (
           <div className="flex flex-col gap-1">
@@ -436,6 +691,27 @@ export default function TransactionsPage() {
               </div>
             </div>
           ))}
+
+          {/* Load More */}
+          {transactions.length < totalCount && (
+            <button
+              onClick={loadMore}
+              disabled={loadingMore}
+              className="mt-4 mb-2 py-3 w-full rounded-xl text-sm font-semibold bg-slate-100 text-slate-600 active:bg-slate-200 disabled:opacity-50 flex items-center justify-center gap-2"
+            >
+              {loadingMore ? (
+                <>
+                  <span className="material-symbols-outlined text-[16px] animate-spin">progress_activity</span>
+                  Loading...
+                </>
+              ) : (
+                <>
+                  <span className="material-symbols-outlined text-[16px]">expand_more</span>
+                  Load More
+                </>
+              )}
+            </button>
+          )}
         </div>
           )}
         </>
