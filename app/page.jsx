@@ -4,7 +4,7 @@ import Link from 'next/link'
 
 export default function Home() {
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center px-6 py-12 bg-slate-50">
+    <div className="h-[100dvh] flex flex-col items-center justify-center px-6 bg-slate-50 overflow-hidden">
       {/* Title */}
       <div className="text-center mb-10">
         <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">
