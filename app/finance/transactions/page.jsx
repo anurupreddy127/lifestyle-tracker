@@ -252,7 +252,7 @@ export default function TransactionsPage() {
     );
     setShowDeleteConfirm(false);
     setSelectedSubscription(null);
-    setShowSubForm(false);
+    closeSubForm();
     if (tx.transaction_type === "transfer" && tx.person_name) {
       setTxTransferTarget("person");
       setTxPersonName(tx.person_name);
@@ -777,7 +777,7 @@ export default function TransactionsPage() {
                   setTxType(t.value);
                   if (t.value !== "subscription") {
                     setSelectedSubscription(null);
-                    setShowSubForm(false);
+                    closeSubForm();
                   }
                 }}
                 className={`flex flex-col items-center gap-1 py-2 rounded-xl text-[9px] font-semibold border-2 ${
