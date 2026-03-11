@@ -14,10 +14,14 @@ export default function GymStats() {
   const [mainTab, setMainTab] = useState('frequency')
   const [timeRange, setTimeRange] = useState('week')
 
+  // Month/Year navigation
+  const [selectedMonth, setSelectedMonth] = useState(() => new Date())
+  const [selectedYear, setSelectedYear] = useState(() => new Date().getFullYear())
+  const [allSessions, setAllSessions] = useState(null)
+
   useEffect(() => {
     async function fetchData() {
       try {
-        // Fetch sessions for frequency
         const { data: sessData } = await supabase
           .from('workout_sessions')
           .select('id, day_id, performed_at, workout_days(name)')
@@ -25,13 +29,11 @@ export default function GymStats() {
           .limit(200)
         setSessions(sessData || [])
 
-        // Fetch PRs (max weight per exercise)
         const { data: logs } = await supabase
           .from('workout_logs')
           .select('exercise_id, weight, reps, exercises(name)')
           .order('weight', { ascending: false })
 
-        // Deduplicate: keep highest weight per exercise
         const prMap = {}
         ;(logs || []).forEach((log) => {
           if (!prMap[log.exercise_id] || log.weight > prMap[log.exercise_id].weight) {
@@ -49,10 +51,25 @@ export default function GymStats() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  // Get sessions for current week
+  // Lazy-fetch all sessions when switching to yearly view
+  useEffect(() => {
+    if (timeRange !== 'year' || allSessions !== null) return
+    async function fetchAllSessions() {
+      const { data } = await supabase
+        .from('workout_sessions')
+        .select('id, day_id, performed_at, workout_days(name)')
+        .order('performed_at', { ascending: false })
+      setAllSessions(data || [])
+    }
+    fetchAllSessions()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [timeRange, allSessions])
+
+  // ── Helpers ──
+
   function getWeekSessions() {
     const now = new Date()
-    const dayOfWeek = (now.getDay() + 6) % 7 // Mon=0
+    const dayOfWeek = (now.getDay() + 6) % 7
     const startOfWeek = new Date(now)
     startOfWeek.setDate(now.getDate() - dayOfWeek)
     startOfWeek.setHours(0, 0, 0, 0)
@@ -66,9 +83,80 @@ export default function GymStats() {
     })
   }
 
+  function getMonthData(targetDate, sessionsList) {
+    const year = targetDate.getFullYear()
+    const month = targetDate.getMonth()
+    const firstDay = new Date(year, month, 1)
+    const lastDay = new Date(year, month + 1, 0)
+    const daysInMonth = lastDay.getDate()
+    const startOffset = (firstDay.getDay() + 6) % 7 // Monday-start
+
+    const prefix = `${year}-${String(month + 1).padStart(2, '0')}`
+    const activeDays = new Set()
+    sessionsList.forEach(s => {
+      if (s.performed_at?.startsWith(prefix)) {
+        activeDays.add(parseInt(s.performed_at.substring(8, 10), 10))
+      }
+    })
+
+    const totalWorkouts = sessionsList.filter(s => s.performed_at?.startsWith(prefix)).length
+    const weeksInMonth = Math.ceil((daysInMonth + startOffset) / 7)
+    const avgPerWeek = weeksInMonth > 0 ? (totalWorkouts / weeksInMonth).toFixed(1) : '0'
+
+    const dayBreakdown = {}
+    sessionsList.forEach(s => {
+      if (s.performed_at?.startsWith(prefix)) {
+        const name = s.workout_days?.name || 'Unknown'
+        dayBreakdown[name] = (dayBreakdown[name] || 0) + 1
+      }
+    })
+    const topDays = Object.entries(dayBreakdown)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 3)
+
+    return { year, month, daysInMonth, startOffset, activeDays, totalWorkouts, avgPerWeek, topDays }
+  }
+
+  function getYearData(targetYear, sessionsList) {
+    const months = Array.from({ length: 12 }, (_, i) => {
+      const prefix = `${targetYear}-${String(i + 1).padStart(2, '0')}`
+      const count = sessionsList.filter(s => s.performed_at?.startsWith(prefix)).length
+      return {
+        index: i,
+        label: new Date(targetYear, i, 1).toLocaleString('default', { month: 'short' }),
+        count,
+      }
+    })
+
+    const totalWorkouts = months.reduce((sum, m) => sum + m.count, 0)
+    const maxMonth = Math.max(...months.map(m => m.count), 1)
+    const activeMonths = months.filter(m => m.count > 0)
+    const avgPerMonth = activeMonths.length > 0 ? (totalWorkouts / activeMonths.length).toFixed(1) : '0'
+    const bestMonth = months.reduce((best, m) => m.count > best.count ? m : best, months[0])
+
+    return { months, totalWorkouts, maxMonth, avgPerMonth, bestMonth }
+  }
+
+  function navigateMonth(direction) {
+    setSelectedMonth(prev => {
+      const next = new Date(prev)
+      next.setMonth(next.getMonth() + direction)
+      return next
+    })
+  }
+
+  function navigateYear(direction) {
+    setSelectedYear(prev => prev + direction)
+  }
+
+  const now = new Date()
+  const isCurrentMonth = selectedMonth.getFullYear() === now.getFullYear()
+    && selectedMonth.getMonth() === now.getMonth()
+  const isCurrentYear = selectedYear === now.getFullYear()
+
   const weekData = getWeekSessions()
   const weekWorkouts = weekData.filter((d) => d.active).length
-  const totalSessions = sessions.length
+  const allTimeCount = allSessions !== null ? allSessions.length : sessions.length
 
   if (loading) {
     return (
@@ -104,7 +192,11 @@ export default function GymStats() {
             {['week', 'month', 'year'].map((range) => (
               <button
                 key={range}
-                onClick={() => setTimeRange(range)}
+                onClick={() => {
+                  setTimeRange(range)
+                  if (range === 'month') setSelectedMonth(new Date())
+                  if (range === 'year') setSelectedYear(new Date().getFullYear())
+                }}
                 className={`flex-1 py-2 rounded-lg text-sm font-semibold transition-colors ${
                   timeRange === range
                     ? 'bg-white text-primary shadow-sm'
@@ -116,10 +208,9 @@ export default function GymStats() {
             ))}
           </div>
 
-          {/* Weekly view */}
+          {/* ── Weekly View ── */}
           {timeRange === 'week' && (
             <>
-              {/* Day indicators */}
               <div className="flex justify-between mb-6">
                 {weekData.map((d) => (
                   <div key={d.day} className="flex flex-col items-center gap-1.5">
@@ -135,7 +226,6 @@ export default function GymStats() {
                 ))}
               </div>
 
-              {/* Summary */}
               <div className="grid grid-cols-2 gap-3">
                 <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
                   <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">This Week</p>
@@ -144,20 +234,223 @@ export default function GymStats() {
                 </div>
                 <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
                   <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">All Time</p>
-                  <p className="text-2xl font-bold text-slate-900">{totalSessions}</p>
+                  <p className="text-2xl font-bold text-slate-900">{allTimeCount}</p>
                   <p className="text-xs text-slate-500">Total Sessions</p>
                 </div>
               </div>
             </>
           )}
 
-          {/* Month/Year placeholder */}
-          {(timeRange === 'month' || timeRange === 'year') && (
-            <div className="flex flex-col items-center justify-center py-16 gap-3 text-slate-400">
-              <span className="material-symbols-outlined text-4xl">calendar_month</span>
-              <p className="text-sm">{timeRange === 'month' ? 'Monthly' : 'Yearly'} view coming soon</p>
-            </div>
-          )}
+          {/* ── Monthly View ── */}
+          {timeRange === 'month' && (() => {
+            const monthData = getMonthData(selectedMonth, sessions)
+            const monthLabel = selectedMonth.toLocaleString('default', { month: 'long', year: 'numeric' })
+
+            return (
+              <>
+                {/* Month navigation */}
+                <div className="flex items-center justify-between mb-5">
+                  <button
+                    onClick={() => navigateMonth(-1)}
+                    className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center active:bg-slate-200"
+                  >
+                    <span className="material-symbols-outlined text-slate-600 text-[20px]">chevron_left</span>
+                  </button>
+                  <p className="text-sm font-bold text-slate-900">{monthLabel}</p>
+                  <button
+                    onClick={() => navigateMonth(1)}
+                    disabled={isCurrentMonth}
+                    className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+                      isCurrentMonth ? 'bg-slate-50 text-slate-300' : 'bg-slate-100 text-slate-600 active:bg-slate-200'
+                    }`}
+                  >
+                    <span className="material-symbols-outlined text-[20px]">chevron_right</span>
+                  </button>
+                </div>
+
+                {/* Day-of-week headers */}
+                <div className="grid grid-cols-7 gap-1 mb-2">
+                  {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((d, i) => (
+                    <p key={i} className="text-[10px] font-bold text-slate-400 uppercase text-center">{d}</p>
+                  ))}
+                </div>
+
+                {/* Calendar grid */}
+                <div className="grid grid-cols-7 gap-1 mb-6">
+                  {Array.from({ length: monthData.startOffset }).map((_, i) => (
+                    <div key={`empty-${i}`} />
+                  ))}
+                  {Array.from({ length: monthData.daysInMonth }).map((_, i) => {
+                    const dayNum = i + 1
+                    const isActive = monthData.activeDays.has(dayNum)
+                    const isToday = isCurrentMonth && dayNum === now.getDate()
+                    return (
+                      <div key={dayNum} className="flex items-center justify-center aspect-square">
+                        <div className={`w-9 h-9 rounded-full flex items-center justify-center text-xs font-semibold ${
+                          isActive
+                            ? 'bg-primary text-white'
+                            : isToday
+                              ? 'bg-white border-2 border-primary text-primary'
+                              : 'text-slate-400'
+                        }`}>
+                          {dayNum}
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+
+                {/* Summary stat cards */}
+                <div className="grid grid-cols-2 gap-3 mb-4">
+                  <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">This Month</p>
+                    <p className="text-2xl font-bold text-slate-900">{monthData.totalWorkouts}</p>
+                    <p className="text-xs text-slate-500">Workouts</p>
+                  </div>
+                  <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Weekly Avg</p>
+                    <p className="text-2xl font-bold text-slate-900">{monthData.avgPerWeek}</p>
+                    <p className="text-xs text-slate-500">Per Week</p>
+                  </div>
+                </div>
+
+                {/* Most trained breakdown */}
+                {monthData.topDays.length > 0 && (
+                  <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Most Trained</p>
+                    <div className="flex flex-col gap-2.5">
+                      {monthData.topDays.map(([name, count]) => {
+                        const pct = monthData.totalWorkouts > 0 ? (count / monthData.totalWorkouts) * 100 : 0
+                        return (
+                          <div key={name}>
+                            <div className="flex items-center justify-between mb-1">
+                              <div className="flex items-center gap-2">
+                                <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                                  <span className="material-symbols-outlined text-primary text-[16px]">fitness_center</span>
+                                </div>
+                                <p className="text-sm font-semibold text-slate-900">{name}</p>
+                              </div>
+                              <p className="text-sm font-bold text-primary">{count}×</p>
+                            </div>
+                            <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden ml-10">
+                              <div className="h-full bg-primary/30 rounded-full" style={{ width: `${pct}%` }} />
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </div>
+                )}
+              </>
+            )
+          })()}
+
+          {/* ── Yearly View ── */}
+          {timeRange === 'year' && (() => {
+            const yearSessions = allSessions ?? sessions
+            const isLoadingYear = allSessions === null
+
+            if (isLoadingYear) {
+              return (
+                <div className="flex flex-col gap-3">
+                  <div className="bg-slate-200 rounded-xl w-full h-48 animate-pulse" />
+                  <div className="grid grid-cols-3 gap-2">
+                    {[1, 2, 3].map(i => <div key={i} className="bg-slate-200 rounded-xl h-20 animate-pulse" />)}
+                  </div>
+                </div>
+              )
+            }
+
+            const yearData = getYearData(selectedYear, yearSessions)
+
+            return (
+              <>
+                {/* Year navigation */}
+                <div className="flex items-center justify-between mb-5">
+                  <button
+                    onClick={() => navigateYear(-1)}
+                    className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center active:bg-slate-200"
+                  >
+                    <span className="material-symbols-outlined text-slate-600 text-[20px]">chevron_left</span>
+                  </button>
+                  <p className="text-sm font-bold text-slate-900">{selectedYear}</p>
+                  <button
+                    onClick={() => navigateYear(1)}
+                    disabled={isCurrentYear}
+                    className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+                      isCurrentYear ? 'bg-slate-50 text-slate-300' : 'bg-slate-100 text-slate-600 active:bg-slate-200'
+                    }`}
+                  >
+                    <span className="material-symbols-outlined text-[20px]">chevron_right</span>
+                  </button>
+                </div>
+
+                {yearData.totalWorkouts === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-16 gap-3 text-slate-400">
+                    <span className="material-symbols-outlined text-4xl">event_busy</span>
+                    <p className="text-sm">No workouts in {selectedYear}</p>
+                  </div>
+                ) : (
+                  <>
+                    {/* Bar chart */}
+                    <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm mb-4">
+                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">Workouts Per Month</p>
+                      <div className="flex items-end justify-between gap-1" style={{ height: '140px' }}>
+                        {yearData.months.map((m) => {
+                          const heightPct = yearData.maxMonth > 0 ? (m.count / yearData.maxMonth) * 100 : 0
+                          const isCurrent = isCurrentYear && m.index === now.getMonth()
+                          return (
+                            <div key={m.index} className="flex-1 flex flex-col items-center gap-1 h-full justify-end">
+                              {m.count > 0 && (
+                                <p className="text-[10px] font-bold text-slate-500">{m.count}</p>
+                              )}
+                              <div
+                                className={`w-full rounded-t-md ${
+                                  m.count > 0
+                                    ? isCurrent ? 'bg-primary' : 'bg-primary/40'
+                                    : 'bg-slate-100'
+                                }`}
+                                style={{
+                                  height: m.count > 0 ? `${Math.max(heightPct, 8)}%` : '4px',
+                                  minHeight: m.count > 0 ? '12px' : '4px',
+                                }}
+                              />
+                            </div>
+                          )
+                        })}
+                      </div>
+                      <div className="flex justify-between gap-1 mt-2">
+                        {yearData.months.map((m) => (
+                          <p key={m.index} className="flex-1 text-center text-[9px] font-bold text-slate-400 uppercase">
+                            {m.label.charAt(0)}
+                          </p>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Summary stat cards */}
+                    <div className="grid grid-cols-3 gap-2">
+                      <div className="bg-white border border-slate-200 rounded-xl p-3 shadow-sm">
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Total</p>
+                        <p className="text-xl font-bold text-slate-900">{yearData.totalWorkouts}</p>
+                        <p className="text-[10px] text-slate-500">Workouts</p>
+                      </div>
+                      <div className="bg-white border border-slate-200 rounded-xl p-3 shadow-sm">
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Avg</p>
+                        <p className="text-xl font-bold text-slate-900">{yearData.avgPerMonth}</p>
+                        <p className="text-[10px] text-slate-500">Per Month</p>
+                      </div>
+                      <div className="bg-white border border-slate-200 rounded-xl p-3 shadow-sm">
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Best</p>
+                        <p className="text-xl font-bold text-primary">{yearData.bestMonth.label}</p>
+                        <p className="text-[10px] text-slate-500">{yearData.bestMonth.count} workouts</p>
+                      </div>
+                    </div>
+                  </>
+                )}
+              </>
+            )
+          })()}
 
           {/* Personal Records preview */}
           {personalRecords.length > 0 && (
