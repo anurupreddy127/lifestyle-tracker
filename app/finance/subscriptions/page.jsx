@@ -144,7 +144,7 @@ export default function SubscriptionReminders() {
       {loading ? (
         <LoadingSkeleton count={4} height="h-20" />
       ) : reminders.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-20 gap-3 text-slate-400">
+        <div className="flex flex-col items-center justify-center py-20 gap-3 text-dark-muted">
           <span className="material-symbols-outlined text-5xl">
             subscriptions
           </span>
@@ -162,29 +162,29 @@ export default function SubscriptionReminders() {
                 onDelete={() => handleDelete(rem.id)}
               >
                 <div
-                  className={`glass rounded-2xl p-4 border shadow-sm shadow-black/[0.03] ${pastDue ? "border-amber-400" : "border-white/30"}`}
+                  className={`bg-dark-card border border-dark-border rounded-2xl p-4 border  ${pastDue ? "border-amber-400" : "border-dark-border"}`}
                 >
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between mb-1">
-                      <h3 className="text-base font-bold text-slate-900">
+                      <h3 className="text-base font-bold text-dark-text">
                         {rem.name}
                       </h3>
-                      <p className="text-base font-bold text-slate-900">
+                      <p className="text-base font-bold text-dark-text">
                         {formatCurrency(rem.amount)}
                       </p>
                     </div>
                     <div className="flex items-center gap-2 flex-wrap">
                       <span
-                        className={`text-xs font-medium ${pastDue ? "text-amber-500" : "text-slate-500"}`}
+                        className={`text-xs font-medium ${pastDue ? "text-amber-400" : "text-dark-muted"}`}
                       >
                         Due: {formatDate(rem.next_billing_date)}
                       </span>
-                      <span className="text-xs text-slate-400">·</span>
-                      <span className="text-xs text-slate-500">
+                      <span className="text-xs text-dark-muted">·</span>
+                      <span className="text-xs text-dark-muted">
                         {rem.accounts?.name}
                       </span>
-                      <span className="text-xs text-slate-400">·</span>
-                      <span className="text-[10px] font-bold uppercase bg-white/40 text-slate-500 rounded px-1.5 py-0.5">
+                      <span className="text-xs text-dark-muted">·</span>
+                      <span className="text-[10px] font-bold uppercase bg-dark-card text-dark-muted rounded px-1.5 py-0.5">
                         {rem.billing_type === "monthly" ? "Monthly" : "Yearly"}
                       </span>
                     </div>
@@ -212,7 +212,7 @@ export default function SubscriptionReminders() {
       >
         <div className="flex flex-col gap-4">
           <div>
-            <label className="text-sm font-medium text-slate-500 mb-1.5 block">
+            <label className="text-sm font-medium text-dark-muted mb-1.5 block">
               Name
             </label>
             <input
@@ -220,11 +220,11 @@ export default function SubscriptionReminders() {
               value={formName}
               onChange={(e) => setFormName(e.target.value)}
               placeholder="e.g., Netflix"
-              className="bg-white/50 backdrop-blur-sm border border-white/40 rounded-xl px-4 py-3 text-slate-900 placeholder:text-slate-400 text-base focus:outline-none focus:ring-2 focus:ring-finance/20 w-full"
+              className="bg-dark-input border border-dark-border rounded-xl px-4 py-3 text-dark-text placeholder:text-dark-muted text-base focus:outline-none focus:ring-2 focus:ring-finance/30 w-full"
             />
           </div>
           <div>
-            <label className="text-sm font-medium text-slate-500 mb-1.5 block">
+            <label className="text-sm font-medium text-dark-muted mb-1.5 block">
               Amount
             </label>
             <input
@@ -233,11 +233,11 @@ export default function SubscriptionReminders() {
               value={formAmount}
               onChange={(e) => setFormAmount(e.target.value)}
               placeholder="0.00"
-              className="bg-white/50 backdrop-blur-sm border border-white/40 rounded-xl px-4 py-3 text-slate-900 placeholder:text-slate-400 text-base focus:outline-none focus:ring-2 focus:ring-finance/20 w-full"
+              className="bg-dark-input border border-dark-border rounded-xl px-4 py-3 text-dark-text placeholder:text-dark-muted text-base focus:outline-none focus:ring-2 focus:ring-finance/30 w-full"
             />
           </div>
           <div>
-            <label className="text-sm font-medium text-slate-500 mb-2 block">
+            <label className="text-sm font-medium text-dark-muted mb-2 block">
               Billing Type
             </label>
             <div className="grid grid-cols-2 gap-2">
@@ -245,7 +245,7 @@ export default function SubscriptionReminders() {
                 <button
                   key={t}
                   onClick={() => setFormBillingType(t)}
-                  className={`py-3 rounded-xl text-sm font-semibold border-2 ${formBillingType === t ? "border-finance bg-finance/10 text-finance" : "border-transparent bg-slate-100 text-slate-600"}`}
+                  className={`py-3 rounded-xl text-sm font-semibold border-2 ${formBillingType === t ? "border-finance bg-finance/15 text-finance" : "border-transparent bg-dark-card text-dark-muted"}`}
                 >
                   {t === "monthly" ? "Monthly" : "Yearly"}
                 </button>
@@ -253,24 +253,24 @@ export default function SubscriptionReminders() {
             </div>
           </div>
           <div>
-            <label className="text-sm font-medium text-slate-500 mb-1.5 block">
+            <label className="text-sm font-medium text-dark-muted mb-1.5 block">
               Next Billing Date
             </label>
             <input
               type="date"
               value={formNextDate}
               onChange={(e) => setFormNextDate(e.target.value)}
-              className="bg-white/50 backdrop-blur-sm border border-white/40 rounded-xl px-4 py-3 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-finance/20 w-full"
+              className="bg-dark-input border border-dark-border rounded-xl px-4 py-3 text-sm text-dark-text focus:outline-none focus:ring-2 focus:ring-finance/30 w-full"
             />
           </div>
           <div>
-            <label className="text-sm font-medium text-slate-500 mb-1.5 block">
+            <label className="text-sm font-medium text-dark-muted mb-1.5 block">
               Account
             </label>
             <select
               value={formAccountId}
               onChange={(e) => setFormAccountId(e.target.value)}
-              className="bg-white/50 backdrop-blur-sm border border-white/40 rounded-xl px-4 py-3 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-finance/20 w-full"
+              className="bg-dark-input border border-dark-border rounded-xl px-4 py-3 text-sm text-dark-text focus:outline-none focus:ring-2 focus:ring-finance/30 w-full"
             >
               <option value="">Select account</option>
               {accounts.map((acc) => (
@@ -281,13 +281,13 @@ export default function SubscriptionReminders() {
             </select>
           </div>
           <div>
-            <label className="text-sm font-medium text-slate-500 mb-1.5 block">
+            <label className="text-sm font-medium text-dark-muted mb-1.5 block">
               Category
             </label>
             <select
               value={formCategory}
               onChange={(e) => setFormCategory(e.target.value)}
-              className="bg-white/50 backdrop-blur-sm border border-white/40 rounded-xl px-4 py-3 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-finance/20 w-full"
+              className="bg-dark-input border border-dark-border rounded-xl px-4 py-3 text-sm text-dark-text focus:outline-none focus:ring-2 focus:ring-finance/30 w-full"
             >
               {categories.map((cat) => (
                 <option key={cat.id} value={cat.name}>

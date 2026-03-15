@@ -24,17 +24,17 @@ const TYPE_ICONS = {
 };
 
 const TYPE_COLORS = {
-  checking: "bg-indigo-100 text-indigo-600",
-  savings: "bg-blue-100 text-blue-600",
-  credit_card: "bg-rose-100 text-rose-600",
-  cash: "bg-emerald-100 text-emerald-600",
+  checking: "bg-indigo-500/15 text-indigo-400",
+  savings: "bg-blue-500/15 text-blue-400",
+  credit_card: "bg-rose-500/100/15 text-rose-400",
+  cash: "bg-emerald-500/100/15 text-emerald-400",
 };
 
 const BADGE_COLORS = {
-  checking: "bg-emerald-500",
+  checking: "bg-emerald-500/100",
   savings: "bg-blue-500",
-  credit_card: "bg-rose-500",
-  cash: "bg-amber-500",
+  credit_card: "bg-rose-500/100",
+  cash: "bg-amber-500/100",
 };
 
 function resizeImage(file, maxWidth = 800, maxHeight = 600) {
@@ -323,7 +323,7 @@ export default function AccountManager() {
     return (
       <div
         className={`relative rounded-2xl overflow-hidden h-44 ${
-          hasImage ? "" : "glass shadow-sm shadow-black/[0.03]"
+          hasImage ? "" : "bg-dark-card border border-dark-border "
         }`}
       >
         {/* Background image */}
@@ -344,15 +344,15 @@ export default function AccountManager() {
             <span
               className={`text-[10px] font-bold uppercase px-2 py-1 rounded-md ${
                 hasImage
-                  ? `${BADGE_COLORS[acc.account_type] || "bg-slate-500"} text-white`
-                  : TYPE_COLORS[acc.account_type] || "bg-slate-100 text-slate-500"
+                  ? `${BADGE_COLORS[acc.account_type] || "bg-dark-bg0"} text-white`
+                  : TYPE_COLORS[acc.account_type] || "bg-dark-card text-dark-muted"
               }`}
             >
               {TYPE_LABELS[acc.account_type]}
             </span>
             <h3
               className={`text-lg font-bold mt-2 truncate ${
-                hasImage ? "text-white" : "text-slate-900"
+                hasImage ? "text-white" : "text-dark-text"
               }`}
             >
               {acc.name}
@@ -362,13 +362,13 @@ export default function AccountManager() {
           <div>
             {acc.account_type === "credit_card" ? (
               <>
-                <p className={`text-xs ${hasImage ? "text-white/70" : "text-slate-500"}`}>
+                <p className={`text-xs ${hasImage ? "text-white/70" : "text-dark-muted"}`}>
                   Current Balance
                 </p>
-                <p className={`text-2xl font-bold ${hasImage ? "text-white" : "text-rose-500"}`}>
+                <p className={`text-2xl font-bold ${hasImage ? "text-white" : "text-rose-400"}`}>
                   {acc.balance > 0 ? "-" : ""}{formatBalance(acc.balance)}
                 </p>
-                <p className={`text-[10px] mt-0.5 ${hasImage ? "text-white/60" : "text-slate-400"}`}>
+                <p className={`text-[10px] mt-0.5 ${hasImage ? "text-white/60" : "text-dark-muted"}`}>
                   {formatBalance(acc.available_credit || 0)} of{" "}
                   {formatBalance(acc.credit_limit || 0)}
                   {acc.due_date && ` · Due: ${getOrdinal(acc.due_date)}`}
@@ -376,10 +376,10 @@ export default function AccountManager() {
               </>
             ) : (
               <>
-                <p className={`text-xs ${hasImage ? "text-white/70" : "text-slate-500"}`}>
+                <p className={`text-xs ${hasImage ? "text-white/70" : "text-dark-muted"}`}>
                   Available Balance
                 </p>
-                <p className={`text-2xl font-bold ${hasImage ? "text-white" : "text-slate-900"}`}>
+                <p className={`text-2xl font-bold ${hasImage ? "text-white" : "text-dark-text"}`}>
                   {formatBalance(acc.balance)}
                 </p>
               </>
@@ -395,7 +395,7 @@ export default function AccountManager() {
       {loading ? (
         <LoadingSkeleton count={3} height="h-20" />
       ) : accounts.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-20 gap-3 text-slate-400">
+        <div className="flex flex-col items-center justify-center py-20 gap-3 text-dark-muted">
           <span className="material-symbols-outlined text-5xl">
             account_balance_wallet
           </span>
@@ -406,31 +406,31 @@ export default function AccountManager() {
           {/* Top Accounts by Spending */}
           {accountSpending.length > 0 && (
             <div className="mb-6">
-              <h2 className="text-base font-bold text-slate-900 mb-3">
+              <h2 className="text-base font-bold text-dark-text mb-3">
                 Top Accounts
               </h2>
               <div className="flex flex-col gap-2">
                 {accountSpending.map((acc) => (
                   <div
                     key={acc.id}
-                    className="glass rounded-2xl px-4 py-3 flex items-center gap-3"
+                    className="bg-dark-card border border-dark-border rounded-2xl px-4 py-3 flex items-center gap-3"
                   >
                     <div
-                      className={`w-10 h-10 rounded-lg flex items-center justify-center ${TYPE_COLORS[acc.type] || "bg-slate-100 text-slate-500"}`}
+                      className={`w-10 h-10 rounded-lg flex items-center justify-center ${TYPE_COLORS[acc.type] || "bg-dark-card text-dark-muted"}`}
                     >
                       <span className="material-symbols-outlined text-[20px]">
                         {TYPE_ICONS[acc.type] || "account_balance"}
                       </span>
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-bold text-slate-900 truncate">
+                      <p className="text-sm font-bold text-dark-text truncate">
                         {acc.name}
                       </p>
-                      <p className="text-xs text-slate-500">
+                      <p className="text-xs text-dark-muted">
                         {TYPE_LABELS[acc.type] || acc.type}
                       </p>
                     </div>
-                    <p className="text-sm font-bold text-slate-900">
+                    <p className="text-sm font-bold text-dark-text">
                       {formatBalance(acc.total)}
                     </p>
                   </div>
@@ -440,7 +440,7 @@ export default function AccountManager() {
           )}
 
           {/* All Accounts */}
-          <h2 className="text-base font-bold text-slate-900 mb-3">
+          <h2 className="text-base font-bold text-dark-text mb-3">
             All Accounts
           </h2>
           <div className="flex flex-col gap-3">
@@ -481,7 +481,7 @@ export default function AccountManager() {
       >
         <div className="flex flex-col gap-4">
           <div>
-            <label className="text-sm font-medium text-slate-500 mb-1.5 block">
+            <label className="text-sm font-medium text-dark-muted mb-1.5 block">
               Account Name
             </label>
             <input
@@ -489,13 +489,13 @@ export default function AccountManager() {
               value={formName}
               onChange={(e) => setFormName(e.target.value)}
               placeholder="e.g., Chase Checking"
-              className="bg-white/50 backdrop-blur-sm border border-white/40 rounded-xl px-4 py-3 text-slate-900 placeholder:text-slate-400 text-base focus:outline-none focus:ring-2 focus:ring-finance/20 w-full"
+              className="bg-dark-input border border-dark-border rounded-xl px-4 py-3 text-dark-text placeholder:text-dark-muted text-base focus:outline-none focus:ring-2 focus:ring-finance/30 w-full"
             />
           </div>
 
           {/* Image Picker */}
           <div>
-            <label className="text-sm font-medium text-slate-500 mb-1.5 block">
+            <label className="text-sm font-medium text-dark-muted mb-1.5 block">
               Card Background
             </label>
             <input
@@ -534,7 +534,7 @@ export default function AccountManager() {
             ) : (
               <button
                 onClick={() => fileInputRef.current?.click()}
-                className="w-full h-24 border-2 border-dashed border-white/40 rounded-xl flex flex-col items-center justify-center gap-1 text-slate-400 active:bg-white/40"
+                className="w-full h-24 border-2 border-dashed border-dark-border rounded-xl flex flex-col items-center justify-center gap-1 text-dark-muted active:bg-dark-card"
               >
                 <span className="material-symbols-outlined text-[24px]">
                   add_photo_alternate
@@ -545,7 +545,7 @@ export default function AccountManager() {
           </div>
 
           <div>
-            <label className="text-sm font-medium text-slate-500 mb-2 block">
+            <label className="text-sm font-medium text-dark-muted mb-2 block">
               Account Type
             </label>
             <div className="grid grid-cols-2 gap-2">
@@ -555,8 +555,8 @@ export default function AccountManager() {
                   onClick={() => !editingAccount && setFormType(t)}
                   className={`py-3 rounded-xl text-sm font-semibold border-2 ${
                     formType === t
-                      ? "border-finance bg-finance/10 text-finance"
-                      : "border-transparent bg-slate-100 text-slate-600"
+                      ? "border-finance bg-finance/15 text-finance"
+                      : "border-transparent bg-dark-card text-dark-muted"
                   } ${editingAccount ? "opacity-50" : ""}`}
                 >
                   {TYPE_LABELS[t]}
@@ -568,7 +568,7 @@ export default function AccountManager() {
           {formType === "credit_card" ? (
             <>
               <div>
-                <label className="text-sm font-medium text-slate-500 mb-1.5 block">
+                <label className="text-sm font-medium text-dark-muted mb-1.5 block">
                   Credit Limit
                 </label>
                 <input
@@ -577,11 +577,11 @@ export default function AccountManager() {
                   value={formCreditLimit}
                   onChange={(e) => setFormCreditLimit(e.target.value)}
                   placeholder="0.00"
-                  className="bg-white/50 backdrop-blur-sm border border-white/40 rounded-xl px-4 py-3 text-slate-900 placeholder:text-slate-400 text-base focus:outline-none focus:ring-2 focus:ring-finance/20 w-full"
+                  className="bg-dark-input border border-dark-border rounded-xl px-4 py-3 text-dark-text placeholder:text-dark-muted text-base focus:outline-none focus:ring-2 focus:ring-finance/30 w-full"
                 />
               </div>
               <div>
-                <label className="text-sm font-medium text-slate-500 mb-1.5 block">
+                <label className="text-sm font-medium text-dark-muted mb-1.5 block">
                   Available Credit
                 </label>
                 <input
@@ -590,11 +590,11 @@ export default function AccountManager() {
                   value={formAvailableCredit}
                   onChange={(e) => setFormAvailableCredit(e.target.value)}
                   placeholder="0.00"
-                  className="bg-white/50 backdrop-blur-sm border border-white/40 rounded-xl px-4 py-3 text-slate-900 placeholder:text-slate-400 text-base focus:outline-none focus:ring-2 focus:ring-finance/20 w-full"
+                  className="bg-dark-input border border-dark-border rounded-xl px-4 py-3 text-dark-text placeholder:text-dark-muted text-base focus:outline-none focus:ring-2 focus:ring-finance/30 w-full"
                 />
               </div>
               <div>
-                <label className="text-sm font-medium text-slate-500 mb-1.5 block">
+                <label className="text-sm font-medium text-dark-muted mb-1.5 block">
                   Due Date (Day of Month)
                 </label>
                 <input
@@ -608,13 +608,13 @@ export default function AccountManager() {
                     }
                   }}
                   placeholder="1-31"
-                  className="bg-white/50 backdrop-blur-sm border border-white/40 rounded-xl px-4 py-3 text-slate-900 placeholder:text-slate-400 text-base focus:outline-none focus:ring-2 focus:ring-finance/20 w-full"
+                  className="bg-dark-input border border-dark-border rounded-xl px-4 py-3 text-dark-text placeholder:text-dark-muted text-base focus:outline-none focus:ring-2 focus:ring-finance/30 w-full"
                 />
               </div>
             </>
           ) : (
             <div>
-              <label className="text-sm font-medium text-slate-500 mb-1.5 block">
+              <label className="text-sm font-medium text-dark-muted mb-1.5 block">
                 Amount
               </label>
               <input
@@ -623,7 +623,7 @@ export default function AccountManager() {
                 value={formStartingBalance}
                 onChange={(e) => setFormStartingBalance(e.target.value)}
                 placeholder="0.00"
-                className="bg-white/50 backdrop-blur-sm border border-white/40 rounded-xl px-4 py-3 text-slate-900 placeholder:text-slate-400 text-base focus:outline-none focus:ring-2 focus:ring-finance/20 w-full"
+                className="bg-dark-input border border-dark-border rounded-xl px-4 py-3 text-dark-text placeholder:text-dark-muted text-base focus:outline-none focus:ring-2 focus:ring-finance/30 w-full"
               />
             </div>
           )}
@@ -639,24 +639,24 @@ export default function AccountManager() {
           {editingAccount && (
             <div className="mt-1">
               {deleteError && (
-                <p className="text-xs text-rose-500 text-center mb-2">
+                <p className="text-xs text-rose-400 text-center mb-2">
                   {deleteError}
                 </p>
               )}
               {showDeleteConfirm ? (
                 <div className="flex items-center justify-center gap-3">
-                  <p className="text-sm font-medium text-slate-600">
+                  <p className="text-sm font-medium text-dark-muted">
                     Are you sure?
                   </p>
                   <button
                     onClick={() => setShowDeleteConfirm(false)}
-                    className="px-4 py-2.5 rounded-xl text-sm font-semibold bg-slate-100 text-slate-600 active:bg-white/50"
+                    className="px-4 py-2.5 rounded-xl text-sm font-semibold bg-dark-card text-dark-muted active:bg-white/5"
                   >
                     Cancel
                   </button>
                   <button
                     onClick={handleDelete}
-                    className="px-4 py-2.5 rounded-xl text-sm font-semibold bg-rose-500 text-white active:bg-rose-600"
+                    className="px-4 py-2.5 rounded-xl text-sm font-semibold bg-rose-500/100 text-white active:bg-rose-600"
                   >
                     Delete
                   </button>
@@ -664,7 +664,7 @@ export default function AccountManager() {
               ) : (
                 <button
                   onClick={() => setShowDeleteConfirm(true)}
-                  className="w-full py-3 rounded-xl text-sm font-semibold border-2 border-rose-200 text-rose-500 active:bg-rose-50"
+                  className="w-full py-3 rounded-xl text-sm font-semibold border-2 border-rose-500/20 text-rose-400 active:bg-rose-500/10"
                 >
                   Delete Account
                 </button>

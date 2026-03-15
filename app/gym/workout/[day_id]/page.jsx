@@ -250,23 +250,23 @@ export default function ActiveWorkout() {
     <div className="pb-44">
       {/* Custom header + progress bar (sticky together) */}
       <header
-        className="sticky top-0 z-20 bg-white/80 backdrop-blur-md border-b border-white/30"
+        className="sticky top-0 z-20 bg-dark-nav/95 backdrop-blur-md border-b border-dark-border"
         style={{ paddingTop: 'env(safe-area-inset-top)' }}
       >
         <div className="flex items-center px-4 py-3 gap-3">
-          <button onClick={() => router.push('/gym')} className="w-11 h-11 flex items-center justify-center rounded-xl text-slate-600 active:bg-slate-100 -ml-1">
+          <button onClick={() => router.push('/gym')} className="w-11 h-11 flex items-center justify-center rounded-xl text-dark-muted active:bg-dark-card -ml-1">
             <span className="material-symbols-outlined text-[24px]">arrow_back</span>
           </button>
           <div className="flex-1 min-w-0">
-            <h1 className="text-lg font-bold leading-tight text-slate-900 truncate">{dayName}</h1>
+            <h1 className="text-lg font-bold leading-tight text-dark-text truncate">{dayName}</h1>
           </div>
         </div>
         <div className="px-4 pb-3">
           <div className="flex items-center justify-between mb-1.5">
-            <p className="text-xs font-semibold text-slate-500">Workout Progress</p>
+            <p className="text-xs font-semibold text-dark-muted">Workout Progress</p>
             <p className="text-xs font-bold text-primary">{completedCount} of {exercises.length}</p>
           </div>
-          <div className="w-full bg-white/40 rounded-full h-2">
+          <div className="w-full bg-dark-card rounded-full h-2">
             <div
               className="bg-primary h-2 rounded-full transition-all duration-300"
               style={{ width: `${progress}%` }}
@@ -287,8 +287,8 @@ export default function ActiveWorkout() {
           return (
             <div
               key={ex.exercise_id}
-              className={`glass border rounded-2xl shadow-sm shadow-black/[0.03] transition-all duration-300 ${
-                allDone ? 'border-primary/30 bg-primary/[0.02]' : 'border-white/30'
+              className={`bg-dark-card border border-dark-border border rounded-2xl  transition-all duration-300 ${
+                allDone ? 'border-primary/30 bg-primary/[0.02]' : 'border-dark-border'
               }`}
             >
               {/* Exercise header — tappable when completed */}
@@ -298,17 +298,17 @@ export default function ActiveWorkout() {
                 className={`w-full flex items-center p-4 text-left ${allDone ? 'cursor-pointer' : 'cursor-default'}`}
               >
                 {allDone && (
-                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mr-3">
+                  <div className="w-8 h-8 rounded-full bg-primary/15 flex items-center justify-center shrink-0 mr-3">
                     <span className="material-symbols-outlined text-[18px] text-primary" style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>
                   </div>
                 )}
                 <div className="flex-1 min-w-0">
-                  <h3 className={`text-lg font-bold ${allDone ? 'text-primary' : 'text-slate-900'}`}>{ex.exercises.name}</h3>
+                  <h3 className={`text-lg font-bold ${allDone ? 'text-primary' : 'text-dark-text'}`}>{ex.exercises.name}</h3>
                   <div className="flex items-center gap-1.5 mt-1 flex-wrap">
-                    <span className="text-xs font-semibold bg-primary/10 text-primary rounded-full px-2.5 py-0.5 inline-flex items-center gap-1">
+                    <span className="text-xs font-semibold bg-primary/15 text-primary rounded-full px-2.5 py-0.5 inline-flex items-center gap-1">
                       Target: {ex.target_sets} × {ex.target_reps}
                     </span>
-                    <span className="text-xs font-semibold bg-slate-100 text-slate-500 rounded-full px-2.5 py-0.5 inline-flex items-center gap-1">
+                    <span className="text-xs font-semibold bg-dark-card text-dark-muted rounded-full px-2.5 py-0.5 inline-flex items-center gap-1">
                       <span className="material-symbols-outlined text-[13px]">
                         {ex.exercises.equipment_type === 'barbell_dumbbell' ? 'fitness_center' : ex.exercises.equipment_type === 'machine' ? 'precision_manufacturing' : 'back_hand'}
                       </span>
@@ -317,7 +317,7 @@ export default function ActiveWorkout() {
                   </div>
                 </div>
                 {allDone && (
-                  <span className={`material-symbols-outlined text-[22px] text-slate-400 shrink-0 ml-2 transition-transform duration-200 ${collapsed ? '' : 'rotate-180'}`}>
+                  <span className={`material-symbols-outlined text-[22px] text-dark-muted shrink-0 ml-2 transition-transform duration-200 ${collapsed ? '' : 'rotate-180'}`}>
                     expand_more
                   </span>
                 )}
@@ -327,12 +327,12 @@ export default function ActiveWorkout() {
               {!collapsed && (
                 <div className="px-4 pb-4">
                   {!allDone && prevSets.length > 0 && (
-                    <p className="text-xs text-slate-500 mb-3">
+                    <p className="text-xs text-dark-muted mb-3">
                       Last: {prevSets[0].weight} lbs × {prevSets[0].reps} reps
                     </p>
                   )}
                   {!allDone && prevSets.length === 0 && (
-                    <p className="text-xs text-slate-400 mb-3">No previous data</p>
+                    <p className="text-xs text-dark-muted mb-3">No previous data</p>
                   )}
 
                   <div className="flex flex-col gap-2">
@@ -340,8 +340,8 @@ export default function ActiveWorkout() {
                       const setData = exerciseSets[setIdx] || {}
                       return (
                         <div key={setIdx} className="flex items-center gap-2">
-                          <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center shrink-0">
-                            <span className="text-xs font-bold text-slate-500">{setIdx + 1}</span>
+                          <div className="w-8 h-8 rounded-full bg-dark-card flex items-center justify-center shrink-0">
+                            <span className="text-xs font-bold text-dark-muted">{setIdx + 1}</span>
                           </div>
 
                           {ex.exercises.equipment_type !== 'no_equipment' && (
@@ -351,7 +351,7 @@ export default function ActiveWorkout() {
                               placeholder="lbs"
                               value={setData.weight || ''}
                               onChange={(e) => updateSetInput(ex.exercise_id, setIdx, 'weight', e.target.value)}
-                              className="flex-1 bg-white/50 backdrop-blur-sm border border-white/40 rounded-lg px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary min-w-0"
+                              className="flex-1 bg-dark-input border border-dark-border rounded-lg px-3 py-2 text-sm text-dark-text placeholder:text-dark-muted focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50 min-w-0"
                             />
                           )}
 
@@ -361,7 +361,7 @@ export default function ActiveWorkout() {
                             placeholder="reps"
                             value={setData.reps || ''}
                             onChange={(e) => updateSetInput(ex.exercise_id, setIdx, 'reps', e.target.value)}
-                            className="flex-1 bg-white/50 backdrop-blur-sm border border-white/40 rounded-lg px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary min-w-0"
+                            className="flex-1 bg-dark-input border border-dark-border rounded-lg px-3 py-2 text-sm text-dark-text placeholder:text-dark-muted focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50 min-w-0"
                           />
 
                           <button
@@ -369,7 +369,7 @@ export default function ActiveWorkout() {
                             className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 transition-colors ${
                               setData.completed
                                 ? 'bg-primary text-white'
-                                : 'bg-white/40 text-slate-400'
+                                : 'bg-dark-card text-dark-muted'
                             }`}
                           >
                             <span className="material-symbols-outlined text-[20px]">check</span>
@@ -387,13 +387,13 @@ export default function ActiveWorkout() {
 
       {/* Fixed bottom buttons */}
       <div
-        className="fixed left-0 right-0 px-4 py-3 bg-white/70 backdrop-blur-md border-t border-white/30 z-40"
+        className="fixed left-0 right-0 px-4 py-3 bg-dark-nav/95 backdrop-blur-md border-t border-dark-border z-40"
         style={{ bottom: 'calc(5rem + env(safe-area-inset-bottom))' }}
       >
         <div className="grid grid-cols-2 gap-3">
           <button
             onClick={() => { clearWorkoutStorage(); router.push('/gym') }}
-            className="border-2 border-white/30 text-slate-600 font-semibold rounded-xl py-3.5 flex items-center justify-center gap-2"
+            className="border-2 border-dark-border text-dark-muted font-semibold rounded-xl py-3.5 flex items-center justify-center gap-2"
           >
             <span className="material-symbols-outlined text-[18px]">close</span>
             Cancel

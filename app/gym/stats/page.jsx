@@ -169,7 +169,7 @@ export default function GymStats() {
   return (
     <div className="px-4 pt-2 pb-4">
       {/* Main tabs */}
-      <div className="flex border-b border-white/30 mb-4">
+      <div className="flex border-b border-dark-border mb-4">
         {['frequency', 'prs'].map((tab) => (
           <button
             key={tab}
@@ -177,7 +177,7 @@ export default function GymStats() {
             className={`flex-1 py-3 text-sm font-bold uppercase tracking-wider border-b-2 transition-colors ${
               mainTab === tab
                 ? 'border-primary text-primary'
-                : 'border-transparent text-slate-400'
+                : 'border-transparent text-dark-muted'
             }`}
           >
             {tab === 'frequency' ? 'Frequency' : 'PRs'}
@@ -188,7 +188,7 @@ export default function GymStats() {
       {mainTab === 'frequency' && (
         <>
           {/* Time range tabs */}
-          <div className="bg-white/40 rounded-xl p-1 flex mb-6">
+          <div className="bg-dark-card rounded-xl p-1 flex mb-6">
             {['week', 'month', 'year'].map((range) => (
               <button
                 key={range}
@@ -199,8 +199,8 @@ export default function GymStats() {
                 }}
                 className={`flex-1 py-2 rounded-lg text-sm font-semibold transition-colors ${
                   timeRange === range
-                    ? 'bg-white text-primary shadow-sm shadow-black/[0.03]'
-                    : 'text-slate-600'
+                    ? 'bg-dark-nav text-primary '
+                    : 'text-dark-muted'
                 }`}
               >
                 {range.charAt(0).toUpperCase() + range.slice(1)}
@@ -214,11 +214,11 @@ export default function GymStats() {
               <div className="flex justify-between mb-6">
                 {weekData.map((d) => (
                   <div key={d.day} className="flex flex-col items-center gap-1.5">
-                    <p className="text-[10px] font-bold text-slate-400 uppercase">{d.day}</p>
+                    <p className="text-[10px] font-bold text-dark-muted uppercase">{d.day}</p>
                     <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
                       d.active
                         ? 'bg-primary'
-                        : 'bg-slate-100 border-2 border-dashed border-white/40'
+                        : 'bg-dark-card border-2 border-dashed border-dark-border'
                     }`}>
                       {d.active && <span className="material-symbols-outlined text-white text-[16px]">check</span>}
                     </div>
@@ -227,15 +227,15 @@ export default function GymStats() {
               </div>
 
               <div className="grid grid-cols-2 gap-3">
-                <div className="glass rounded-2xl p-4 shadow-sm shadow-black/[0.03]">
-                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">This Week</p>
-                  <p className="text-2xl font-bold text-slate-900">{weekWorkouts}</p>
-                  <p className="text-xs text-slate-500">Workouts</p>
+                <div className="bg-dark-card border border-dark-border rounded-2xl p-4 ">
+                  <p className="text-[10px] font-bold text-dark-muted uppercase tracking-widest mb-1">This Week</p>
+                  <p className="text-2xl font-bold text-dark-text">{weekWorkouts}</p>
+                  <p className="text-xs text-dark-muted">Workouts</p>
                 </div>
-                <div className="glass rounded-2xl p-4 shadow-sm shadow-black/[0.03]">
-                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">All Time</p>
-                  <p className="text-2xl font-bold text-slate-900">{allTimeCount}</p>
-                  <p className="text-xs text-slate-500">Total Sessions</p>
+                <div className="bg-dark-card border border-dark-border rounded-2xl p-4 ">
+                  <p className="text-[10px] font-bold text-dark-muted uppercase tracking-widest mb-1">All Time</p>
+                  <p className="text-2xl font-bold text-dark-text">{allTimeCount}</p>
+                  <p className="text-xs text-dark-muted">Total Sessions</p>
                 </div>
               </div>
             </>
@@ -252,16 +252,16 @@ export default function GymStats() {
                 <div className="flex items-center justify-between mb-5">
                   <button
                     onClick={() => navigateMonth(-1)}
-                    className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center active:bg-white/50"
+                    className="w-10 h-10 rounded-xl bg-dark-card flex items-center justify-center active:bg-white/5"
                   >
-                    <span className="material-symbols-outlined text-slate-600 text-[20px]">chevron_left</span>
+                    <span className="material-symbols-outlined text-dark-muted text-[20px]">chevron_left</span>
                   </button>
-                  <p className="text-sm font-bold text-slate-900">{monthLabel}</p>
+                  <p className="text-sm font-bold text-dark-text">{monthLabel}</p>
                   <button
                     onClick={() => navigateMonth(1)}
                     disabled={isCurrentMonth}
                     className={`w-10 h-10 rounded-xl flex items-center justify-center ${
-                      isCurrentMonth ? 'bg-white/40 text-slate-300' : 'bg-slate-100 text-slate-600 active:bg-white/50'
+                      isCurrentMonth ? 'bg-dark-card text-dark-muted/60' : 'bg-dark-card text-dark-muted active:bg-white/5'
                     }`}
                   >
                     <span className="material-symbols-outlined text-[20px]">chevron_right</span>
@@ -271,7 +271,7 @@ export default function GymStats() {
                 {/* Day-of-week headers */}
                 <div className="grid grid-cols-7 gap-1 mb-2">
                   {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((d, i) => (
-                    <p key={i} className="text-[10px] font-bold text-slate-400 uppercase text-center">{d}</p>
+                    <p key={i} className="text-[10px] font-bold text-dark-muted uppercase text-center">{d}</p>
                   ))}
                 </div>
 
@@ -290,8 +290,8 @@ export default function GymStats() {
                           isActive
                             ? 'bg-primary text-white'
                             : isToday
-                              ? 'bg-white border-2 border-primary text-primary'
-                              : 'text-slate-400'
+                              ? 'bg-dark-card border-2 border-primary text-primary'
+                              : 'text-dark-muted'
                         }`}>
                           {dayNum}
                         </div>
@@ -302,22 +302,22 @@ export default function GymStats() {
 
                 {/* Summary stat cards */}
                 <div className="grid grid-cols-2 gap-3 mb-4">
-                  <div className="glass rounded-2xl p-4 shadow-sm shadow-black/[0.03]">
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">This Month</p>
-                    <p className="text-2xl font-bold text-slate-900">{monthData.totalWorkouts}</p>
-                    <p className="text-xs text-slate-500">Workouts</p>
+                  <div className="bg-dark-card border border-dark-border rounded-2xl p-4 ">
+                    <p className="text-[10px] font-bold text-dark-muted uppercase tracking-widest mb-1">This Month</p>
+                    <p className="text-2xl font-bold text-dark-text">{monthData.totalWorkouts}</p>
+                    <p className="text-xs text-dark-muted">Workouts</p>
                   </div>
-                  <div className="glass rounded-2xl p-4 shadow-sm shadow-black/[0.03]">
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Weekly Avg</p>
-                    <p className="text-2xl font-bold text-slate-900">{monthData.avgPerWeek}</p>
-                    <p className="text-xs text-slate-500">Per Week</p>
+                  <div className="bg-dark-card border border-dark-border rounded-2xl p-4 ">
+                    <p className="text-[10px] font-bold text-dark-muted uppercase tracking-widest mb-1">Weekly Avg</p>
+                    <p className="text-2xl font-bold text-dark-text">{monthData.avgPerWeek}</p>
+                    <p className="text-xs text-dark-muted">Per Week</p>
                   </div>
                 </div>
 
                 {/* Most trained breakdown */}
                 {monthData.topDays.length > 0 && (
-                  <div className="glass rounded-2xl p-4 shadow-sm shadow-black/[0.03]">
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Most Trained</p>
+                  <div className="bg-dark-card border border-dark-border rounded-2xl p-4 ">
+                    <p className="text-[10px] font-bold text-dark-muted uppercase tracking-widest mb-3">Most Trained</p>
                     <div className="flex flex-col gap-2.5">
                       {monthData.topDays.map(([name, count]) => {
                         const pct = monthData.totalWorkouts > 0 ? (count / monthData.totalWorkouts) * 100 : 0
@@ -325,14 +325,14 @@ export default function GymStats() {
                           <div key={name}>
                             <div className="flex items-center justify-between mb-1">
                               <div className="flex items-center gap-2">
-                                <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                                <div className="w-8 h-8 rounded-lg bg-primary/15 flex items-center justify-center">
                                   <span className="material-symbols-outlined text-primary text-[16px]">fitness_center</span>
                                 </div>
-                                <p className="text-sm font-semibold text-slate-900">{name}</p>
+                                <p className="text-sm font-semibold text-dark-text">{name}</p>
                               </div>
                               <p className="text-sm font-bold text-primary">{count}×</p>
                             </div>
-                            <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden ml-10">
+                            <div className="h-1.5 bg-dark-card rounded-full overflow-hidden ml-10">
                               <div className="h-full bg-primary/30 rounded-full" style={{ width: `${pct}%` }} />
                             </div>
                           </div>
@@ -353,9 +353,9 @@ export default function GymStats() {
             if (isLoadingYear) {
               return (
                 <div className="flex flex-col gap-3">
-                  <div className="bg-white/40 rounded-xl w-full h-48 animate-pulse" />
+                  <div className="bg-dark-card rounded-xl w-full h-48 animate-pulse" />
                   <div className="grid grid-cols-3 gap-2">
-                    {[1, 2, 3].map(i => <div key={i} className="bg-white/40 rounded-xl h-20 animate-pulse" />)}
+                    {[1, 2, 3].map(i => <div key={i} className="bg-dark-card rounded-xl h-20 animate-pulse" />)}
                   </div>
                 </div>
               )
@@ -369,16 +369,16 @@ export default function GymStats() {
                 <div className="flex items-center justify-between mb-5">
                   <button
                     onClick={() => navigateYear(-1)}
-                    className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center active:bg-white/50"
+                    className="w-10 h-10 rounded-xl bg-dark-card flex items-center justify-center active:bg-white/5"
                   >
-                    <span className="material-symbols-outlined text-slate-600 text-[20px]">chevron_left</span>
+                    <span className="material-symbols-outlined text-dark-muted text-[20px]">chevron_left</span>
                   </button>
-                  <p className="text-sm font-bold text-slate-900">{selectedYear}</p>
+                  <p className="text-sm font-bold text-dark-text">{selectedYear}</p>
                   <button
                     onClick={() => navigateYear(1)}
                     disabled={isCurrentYear}
                     className={`w-10 h-10 rounded-xl flex items-center justify-center ${
-                      isCurrentYear ? 'bg-white/40 text-slate-300' : 'bg-slate-100 text-slate-600 active:bg-white/50'
+                      isCurrentYear ? 'bg-dark-card text-dark-muted/60' : 'bg-dark-card text-dark-muted active:bg-white/5'
                     }`}
                   >
                     <span className="material-symbols-outlined text-[20px]">chevron_right</span>
@@ -386,15 +386,15 @@ export default function GymStats() {
                 </div>
 
                 {yearData.totalWorkouts === 0 ? (
-                  <div className="flex flex-col items-center justify-center py-16 gap-3 text-slate-400">
+                  <div className="flex flex-col items-center justify-center py-16 gap-3 text-dark-muted">
                     <span className="material-symbols-outlined text-4xl">event_busy</span>
                     <p className="text-sm">No workouts in {selectedYear}</p>
                   </div>
                 ) : (
                   <>
                     {/* Bar chart */}
-                    <div className="glass rounded-2xl p-4 shadow-sm shadow-black/[0.03] mb-4">
-                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">Workouts Per Month</p>
+                    <div className="bg-dark-card border border-dark-border rounded-2xl p-4  mb-4">
+                      <p className="text-[10px] font-bold text-dark-muted uppercase tracking-widest mb-4">Workouts Per Month</p>
                       <div className="flex items-end justify-between gap-1" style={{ height: '140px' }}>
                         {yearData.months.map((m) => {
                           const heightPct = yearData.maxMonth > 0 ? (m.count / yearData.maxMonth) * 100 : 0
@@ -402,13 +402,13 @@ export default function GymStats() {
                           return (
                             <div key={m.index} className="flex-1 flex flex-col items-center gap-1 h-full justify-end">
                               {m.count > 0 && (
-                                <p className="text-[10px] font-bold text-slate-500">{m.count}</p>
+                                <p className="text-[10px] font-bold text-dark-muted">{m.count}</p>
                               )}
                               <div
                                 className={`w-full rounded-t-md ${
                                   m.count > 0
                                     ? isCurrent ? 'bg-primary' : 'bg-primary/40'
-                                    : 'bg-slate-100'
+                                    : 'bg-dark-card'
                                 }`}
                                 style={{
                                   height: m.count > 0 ? `${Math.max(heightPct, 8)}%` : '4px',
@@ -421,7 +421,7 @@ export default function GymStats() {
                       </div>
                       <div className="flex justify-between gap-1 mt-2">
                         {yearData.months.map((m) => (
-                          <p key={m.index} className="flex-1 text-center text-[9px] font-bold text-slate-400 uppercase">
+                          <p key={m.index} className="flex-1 text-center text-[9px] font-bold text-dark-muted uppercase">
                             {m.label.charAt(0)}
                           </p>
                         ))}
@@ -430,20 +430,20 @@ export default function GymStats() {
 
                     {/* Summary stat cards */}
                     <div className="grid grid-cols-3 gap-2">
-                      <div className="glass rounded-2xl p-3 shadow-sm shadow-black/[0.03]">
-                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Total</p>
-                        <p className="text-xl font-bold text-slate-900">{yearData.totalWorkouts}</p>
-                        <p className="text-[10px] text-slate-500">Workouts</p>
+                      <div className="bg-dark-card border border-dark-border rounded-2xl p-3 ">
+                        <p className="text-[10px] font-bold text-dark-muted uppercase tracking-widest mb-1">Total</p>
+                        <p className="text-xl font-bold text-dark-text">{yearData.totalWorkouts}</p>
+                        <p className="text-[10px] text-dark-muted">Workouts</p>
                       </div>
-                      <div className="glass rounded-2xl p-3 shadow-sm shadow-black/[0.03]">
-                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Avg</p>
-                        <p className="text-xl font-bold text-slate-900">{yearData.avgPerMonth}</p>
-                        <p className="text-[10px] text-slate-500">Per Month</p>
+                      <div className="bg-dark-card border border-dark-border rounded-2xl p-3 ">
+                        <p className="text-[10px] font-bold text-dark-muted uppercase tracking-widest mb-1">Avg</p>
+                        <p className="text-xl font-bold text-dark-text">{yearData.avgPerMonth}</p>
+                        <p className="text-[10px] text-dark-muted">Per Month</p>
                       </div>
-                      <div className="glass rounded-2xl p-3 shadow-sm shadow-black/[0.03]">
-                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Best</p>
+                      <div className="bg-dark-card border border-dark-border rounded-2xl p-3 ">
+                        <p className="text-[10px] font-bold text-dark-muted uppercase tracking-widest mb-1">Best</p>
                         <p className="text-xl font-bold text-primary">{yearData.bestMonth.label}</p>
-                        <p className="text-[10px] text-slate-500">{yearData.bestMonth.count} workouts</p>
+                        <p className="text-[10px] text-dark-muted">{yearData.bestMonth.count} workouts</p>
                       </div>
                     </div>
                   </>
@@ -456,18 +456,18 @@ export default function GymStats() {
           {personalRecords.length > 0 && (
             <div className="mt-6">
               <div className="flex items-center justify-between mb-3">
-                <h2 className="text-base font-bold text-slate-900">Personal Records</h2>
+                <h2 className="text-base font-bold text-dark-text">Personal Records</h2>
                 <button onClick={() => setMainTab('prs')} className="text-xs font-semibold text-primary">View All</button>
               </div>
               <div className="flex flex-col gap-2">
                 {personalRecords.slice(0, 3).map((pr) => (
-                  <div key={pr.exercise_id} className="glass rounded-2xl p-3 flex items-center gap-3 shadow-sm shadow-black/[0.03]">
-                    <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                  <div key={pr.exercise_id} className="bg-dark-card border border-dark-border rounded-2xl p-3 flex items-center gap-3 ">
+                    <div className="w-10 h-10 rounded-lg bg-primary/15 flex items-center justify-center">
                       <span className="material-symbols-outlined text-primary text-[18px]">emoji_events</span>
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-bold text-slate-900 truncate">{pr.exercises?.name}</p>
-                      <p className="text-xs text-slate-500">Best lift</p>
+                      <p className="text-sm font-bold text-dark-text truncate">{pr.exercises?.name}</p>
+                      <p className="text-xs text-dark-muted">Best lift</p>
                     </div>
                     <p className="text-sm font-bold text-primary">{pr.weight} lbs</p>
                   </div>
@@ -482,20 +482,20 @@ export default function GymStats() {
       {mainTab === 'prs' && (
         <>
           {personalRecords.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-20 gap-3 text-slate-400">
+            <div className="flex flex-col items-center justify-center py-20 gap-3 text-dark-muted">
               <span className="material-symbols-outlined text-5xl">emoji_events</span>
               <p className="text-sm">Complete workouts to track personal records.</p>
             </div>
           ) : (
             <div className="flex flex-col gap-2">
               {personalRecords.map((pr) => (
-                <div key={pr.exercise_id} className="glass rounded-2xl p-4 flex items-center gap-3 shadow-sm shadow-black/[0.03]">
-                  <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">
+                <div key={pr.exercise_id} className="bg-dark-card border border-dark-border rounded-2xl p-4 flex items-center gap-3 ">
+                  <div className="w-12 h-12 rounded-lg bg-primary/15 flex items-center justify-center">
                     <span className="material-symbols-outlined text-primary text-xl">emoji_events</span>
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-base font-bold text-slate-900 truncate">{pr.exercises?.name}</p>
-                    <p className="text-xs text-slate-500">Best: {pr.weight} lbs × {pr.reps} reps</p>
+                    <p className="text-base font-bold text-dark-text truncate">{pr.exercises?.name}</p>
+                    <p className="text-xs text-dark-muted">Best: {pr.weight} lbs × {pr.reps} reps</p>
                   </div>
                   <p className="text-lg font-bold text-primary">{pr.weight}</p>
                 </div>

@@ -13,7 +13,7 @@ export default function BottomSheet({ isOpen, onClose, title, children }) {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[60]"
+            className="fixed inset-0 bg-black/60 z-[60]"
             onClick={onClose}
           />
 
@@ -23,19 +23,19 @@ export default function BottomSheet({ isOpen, onClose, title, children }) {
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
             transition={{ type: 'spring', stiffness: 350, damping: 35, mass: 0.5 }}
-            className="fixed inset-x-0 bottom-0 z-[60] rounded-t-3xl glass-strong shadow-2xl max-h-[85dvh] overflow-y-auto overflow-x-hidden overscroll-contain"
-            style={{ WebkitOverflowScrolling: 'touch', borderTop: '1px solid rgba(255,255,255,0.4)' }}
+            className="fixed inset-x-0 bottom-0 z-[60] rounded-t-3xl bg-dark-nav shadow-2xl max-h-[85dvh] overflow-y-auto overflow-x-hidden overscroll-contain"
+            style={{ WebkitOverflowScrolling: 'touch' }}
           >
             {/* Drag handle */}
-            <div className="w-12 h-1.5 bg-slate-300/60 rounded-full mx-auto mt-3 mb-4" />
+            <div className="w-12 h-1.5 bg-dark-border rounded-full mx-auto mt-3 mb-4" />
 
             {/* Title row */}
             {title && (
               <div className="flex items-center justify-between px-5 mb-4">
-                <h2 className="text-xl font-bold text-slate-900">{title}</h2>
+                <h2 className="text-xl font-bold text-dark-text">{title}</h2>
                 <button
                   onClick={onClose}
-                  className="w-8 h-8 rounded-full bg-white/50 flex items-center justify-center text-slate-500 cursor-pointer transition-colors hover:bg-white/70"
+                  className="w-8 h-8 rounded-full bg-dark-input flex items-center justify-center text-dark-muted cursor-pointer transition-colors hover:bg-white/10"
                 >
                   <span className="material-symbols-outlined text-[18px]">close</span>
                 </button>

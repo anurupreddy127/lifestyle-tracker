@@ -10,7 +10,6 @@ export default function ProfilePage() {
   const { user, supabase, signOut } = useAuth()
   const router = useRouter()
 
-  // API Key state
   const [apiKeys, setApiKeys] = useState([])
   const [loadingKeys, setLoadingKeys] = useState(true)
   const [showKeyModal, setShowKeyModal] = useState(false)
@@ -21,7 +20,6 @@ export default function ProfilePage() {
   const [copied, setCopied] = useState(false)
   const [toast, setToast] = useState('')
 
-  // Fetch existing API keys
   useEffect(() => {
     if (!user) return
     async function fetchKeys() {
@@ -40,14 +38,12 @@ export default function ProfilePage() {
     router.push('/login')
   }
 
-  // Generate new API key
   async function handleGenerateKey() {
     if (generatingRef.current) return
     generatingRef.current = true
     setGenerating(true)
 
     try {
-      // Generate random key: lt_ + 32 hex chars
       const randomBytes = new Uint8Array(16)
       crypto.getRandomValues(randomBytes)
       const hexStr = Array.from(randomBytes)
@@ -56,14 +52,12 @@ export default function ProfilePage() {
       const rawKey = `lt_${hexStr}`
       const prefix = rawKey.slice(0, 10) + '...'
 
-      // SHA-256 hash the key
       const encoder = new TextEncoder()
       const data = encoder.encode(rawKey)
       const hashBuffer = await crypto.subtle.digest('SHA-256', data)
       const hashArray = Array.from(new Uint8Array(hashBuffer))
       const keyHash = hashArray.map((b) => b.toString(16).padStart(2, '0')).join('')
 
-      // Store hashed key in DB
       const { data: row, error } = await supabase
         .from('api_keys')
         .insert({
@@ -89,14 +83,12 @@ export default function ProfilePage() {
     }
   }
 
-  // Copy key to clipboard
   async function handleCopy() {
     try {
       await navigator.clipboard.writeText(newRawKey)
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
     } catch {
-      // Fallback for iOS
       const textArea = document.createElement('textarea')
       textArea.value = newRawKey
       textArea.style.position = 'fixed'
@@ -110,7 +102,6 @@ export default function ProfilePage() {
     }
   }
 
-  // Delete an API key
   async function handleDeleteKey(keyId) {
     const { error } = await supabase
       .from('api_keys')
@@ -123,7 +114,6 @@ export default function ProfilePage() {
     }
   }
 
-  // Format date
   function formatDate(dateStr) {
     return new Date(dateStr).toLocaleDateString('en-US', {
       month: 'short',
@@ -132,57 +122,59 @@ export default function ProfilePage() {
     })
   }
 
+  const inputClass = "w-full bg-dark-input border border-dark-border rounded-xl px-4 py-3 text-base text-dark-text focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50"
+
   return (
     <div className="px-4 pt-2 pb-4">
       {/* User info */}
-      <div className="glass rounded-2xl p-5 shadow-sm shadow-black/[0.03] mb-4 flex items-center gap-4">
-        <div className="w-14 h-14 rounded-full bg-primary/90 flex items-center justify-center shrink-0 shadow-lg shadow-primary/20">
+      <div className="bg-dark-card border border-dark-border rounded-2xl p-5 mb-4 flex items-center gap-4">
+        <div className="w-14 h-14 rounded-full bg-primary flex items-center justify-center shrink-0">
           <span className="material-symbols-outlined text-white text-2xl">person</span>
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-base font-bold text-slate-900 truncate">{user?.email || 'User'}</p>
-          <p className="text-xs text-slate-500">Lifestyle Tracker</p>
+          <p className="text-base font-bold text-dark-text truncate">{user?.email || 'User'}</p>
+          <p className="text-xs text-dark-muted">Lifestyle Tracker</p>
         </div>
       </div>
 
       {/* Settings */}
-      <div className="glass rounded-2xl shadow-sm shadow-black/[0.03] overflow-hidden mb-4">
-        <div className="divide-y divide-white/30">
+      <div className="bg-dark-card border border-dark-border rounded-2xl overflow-hidden mb-4">
+        <div className="divide-y divide-dark-border">
           <button
             onClick={() => router.push('/gym')}
-            className="w-full flex items-center gap-3 px-4 py-3.5 active:bg-white/40"
+            className="w-full flex items-center gap-3 px-4 py-3.5 active:bg-white/5 cursor-pointer"
           >
-            <span className="material-symbols-outlined text-slate-500 text-[20px]">fitness_center</span>
-            <span className="flex-1 text-sm font-medium text-slate-900 text-left">Gym Workouts</span>
-            <span className="material-symbols-outlined text-slate-400 text-[18px]">chevron_right</span>
+            <span className="material-symbols-outlined text-dark-muted text-[20px]">fitness_center</span>
+            <span className="flex-1 text-sm font-medium text-dark-text text-left">Gym Workouts</span>
+            <span className="material-symbols-outlined text-dark-muted text-[18px]">chevron_right</span>
           </button>
 
           <button
             onClick={() => router.push('/finance')}
-            className="w-full flex items-center gap-3 px-4 py-3.5 active:bg-white/40"
+            className="w-full flex items-center gap-3 px-4 py-3.5 active:bg-white/5 cursor-pointer"
           >
-            <span className="material-symbols-outlined text-slate-500 text-[20px]">account_balance_wallet</span>
-            <span className="flex-1 text-sm font-medium text-slate-900 text-left">Finance Dashboard</span>
-            <span className="material-symbols-outlined text-slate-400 text-[18px]">chevron_right</span>
+            <span className="material-symbols-outlined text-dark-muted text-[20px]">account_balance_wallet</span>
+            <span className="flex-1 text-sm font-medium text-dark-text text-left">Finance Dashboard</span>
+            <span className="material-symbols-outlined text-dark-muted text-[18px]">chevron_right</span>
           </button>
 
           <button
             onClick={() => router.push('/gym/stats')}
-            className="w-full flex items-center gap-3 px-4 py-3.5 active:bg-white/40"
+            className="w-full flex items-center gap-3 px-4 py-3.5 active:bg-white/5 cursor-pointer"
           >
-            <span className="material-symbols-outlined text-slate-500 text-[20px]">monitoring</span>
-            <span className="flex-1 text-sm font-medium text-slate-900 text-left">Stats & Analytics</span>
-            <span className="material-symbols-outlined text-slate-400 text-[18px]">chevron_right</span>
+            <span className="material-symbols-outlined text-dark-muted text-[20px]">monitoring</span>
+            <span className="flex-1 text-sm font-medium text-dark-text text-left">Stats & Analytics</span>
+            <span className="material-symbols-outlined text-dark-muted text-[18px]">chevron_right</span>
           </button>
         </div>
       </div>
 
       {/* API Keys */}
-      <div className="glass rounded-2xl shadow-sm shadow-black/[0.03] overflow-hidden mb-4">
-        <div className="px-4 py-3.5 flex items-center justify-between border-b border-white/30">
+      <div className="bg-dark-card border border-dark-border rounded-2xl overflow-hidden mb-4">
+        <div className="px-4 py-3.5 flex items-center justify-between border-b border-dark-border">
           <div className="flex items-center gap-3">
-            <span className="material-symbols-outlined text-slate-500 text-[20px]">key</span>
-            <span className="text-sm font-semibold text-slate-900">API Keys</span>
+            <span className="material-symbols-outlined text-dark-muted text-[20px]">key</span>
+            <span className="text-sm font-semibold text-dark-text">API Keys</span>
           </div>
           <button
             onClick={() => {
@@ -191,31 +183,31 @@ export default function ProfilePage() {
               setCopied(false)
               setShowKeyModal(true)
             }}
-            className="text-xs font-semibold text-primary px-3 py-1.5 rounded-lg bg-primary/10 active:bg-primary/20"
+            className="text-xs font-semibold text-primary px-3 py-1.5 rounded-lg bg-primary/15 active:bg-primary/25 cursor-pointer"
           >
             + Generate
           </button>
         </div>
 
         {loadingKeys ? (
-          <div className="px-4 py-6 text-center text-xs text-slate-400">Loading...</div>
+          <div className="px-4 py-6 text-center text-xs text-dark-muted">Loading...</div>
         ) : apiKeys.length === 0 ? (
           <div className="px-4 py-6 text-center">
-            <p className="text-xs text-slate-400">No API keys yet</p>
-            <p className="text-[11px] text-slate-300 mt-1">Generate a key to use with iPhone Shortcuts</p>
+            <p className="text-xs text-dark-muted">No API keys yet</p>
+            <p className="text-[11px] text-dark-muted/60 mt-1">Generate a key to use with iPhone Shortcuts</p>
           </div>
         ) : (
-          <div className="divide-y divide-white/30">
+          <div className="divide-y divide-dark-border">
             {apiKeys.map((key) => (
               <div key={key.id} className="flex items-center gap-3 px-4 py-3">
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-slate-900 truncate">{key.name}</p>
-                  <p className="text-xs text-slate-400 font-mono">{key.key_prefix}</p>
-                  <p className="text-[10px] text-slate-300 mt-0.5">{formatDate(key.created_at)}</p>
+                  <p className="text-sm font-medium text-dark-text truncate">{key.name}</p>
+                  <p className="text-xs text-dark-muted font-mono">{key.key_prefix}</p>
+                  <p className="text-[10px] text-dark-muted/60 mt-0.5">{formatDate(key.created_at)}</p>
                 </div>
                 <button
                   onClick={() => handleDeleteKey(key.id)}
-                  className="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 active:bg-rose-50 active:text-rose-500"
+                  className="w-8 h-8 rounded-full flex items-center justify-center text-dark-muted active:bg-rose-500/10 active:text-rose-400 cursor-pointer"
                 >
                   <span className="material-symbols-outlined text-[18px]">delete</span>
                 </button>
@@ -226,20 +218,18 @@ export default function ProfilePage() {
       </div>
 
       {/* About */}
-      <div className="glass rounded-2xl shadow-sm shadow-black/[0.03] overflow-hidden mb-6">
-        <div className="divide-y divide-white/30">
-          <div className="flex items-center gap-3 px-4 py-3.5">
-            <span className="material-symbols-outlined text-slate-500 text-[20px]">info</span>
-            <span className="flex-1 text-sm font-medium text-slate-900">Version</span>
-            <span className="text-xs text-slate-400">1.0.0</span>
-          </div>
+      <div className="bg-dark-card border border-dark-border rounded-2xl overflow-hidden mb-6">
+        <div className="flex items-center gap-3 px-4 py-3.5">
+          <span className="material-symbols-outlined text-dark-muted text-[20px]">info</span>
+          <span className="flex-1 text-sm font-medium text-dark-text">Version</span>
+          <span className="text-xs text-dark-muted">1.0.0</span>
         </div>
       </div>
 
       {/* Sign Out */}
       <button
         onClick={handleSignOut}
-        className="w-full glass rounded-2xl py-3.5 text-rose-500 font-semibold text-sm flex items-center justify-center gap-2 active:bg-rose-50/30 cursor-pointer"
+        className="w-full bg-dark-card border border-dark-border rounded-2xl py-3.5 text-rose-400 font-semibold text-sm flex items-center justify-center gap-2 active:bg-rose-500/10 cursor-pointer"
       >
         <span className="material-symbols-outlined text-[18px]">logout</span>
         Sign Out
@@ -254,43 +244,43 @@ export default function ProfilePage() {
         {!newRawKey ? (
           <div className="space-y-4">
             <div>
-              <label className="text-xs font-semibold text-slate-500 mb-1.5 block">Key Name</label>
+              <label className="text-xs font-semibold text-dark-muted mb-1.5 block">Key Name</label>
               <input
                 type="text"
                 value={keyName}
                 onChange={(e) => setKeyName(e.target.value)}
                 placeholder="iPhone Shortcut"
-                className="w-full bg-white/50 backdrop-blur-sm border border-white/40 rounded-xl px-4 py-3 text-base text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/40"
+                className={inputClass}
               />
             </div>
 
             <button
               onClick={handleGenerateKey}
               disabled={generating}
-              className="w-full bg-primary text-white font-semibold text-sm py-3.5 rounded-xl active:scale-[0.98] disabled:opacity-50"
+              className="w-full bg-primary text-white font-semibold text-sm py-3.5 rounded-xl active:scale-[0.98] disabled:opacity-50 cursor-pointer"
             >
               {generating ? 'Generating...' : 'Generate Key'}
             </button>
           </div>
         ) : (
           <div className="space-y-4">
-            <div className="bg-amber-500/10 backdrop-blur-sm border border-amber-500/20 rounded-xl p-3">
-              <p className="text-xs font-semibold text-amber-700 mb-1">
+            <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-3">
+              <p className="text-xs font-semibold text-amber-400 mb-1">
                 <span className="material-symbols-outlined text-[14px] align-middle mr-1">warning</span>
                 Save this key now — you won't see it again!
               </p>
-              <p className="text-[11px] text-amber-600">Copy it and paste it into your iPhone Shortcut.</p>
+              <p className="text-[11px] text-amber-400/70">Copy it and paste it into your iPhone Shortcut.</p>
             </div>
 
-            <div className="bg-white/40 backdrop-blur-sm border border-white/30 rounded-xl p-4">
-              <p className="text-xs font-mono text-slate-700 break-all select-all leading-relaxed">
+            <div className="bg-dark-input border border-dark-border rounded-xl p-4">
+              <p className="text-xs font-mono text-dark-text break-all select-all leading-relaxed">
                 {newRawKey}
               </p>
             </div>
 
             <button
               onClick={handleCopy}
-              className={`w-full font-semibold text-sm py-3.5 rounded-xl active:scale-[0.98] flex items-center justify-center gap-2 ${
+              className={`w-full font-semibold text-sm py-3.5 rounded-xl active:scale-[0.98] flex items-center justify-center gap-2 cursor-pointer ${
                 copied
                   ? 'bg-emerald-500 text-white'
                   : 'bg-primary text-white'
@@ -304,7 +294,7 @@ export default function ProfilePage() {
 
             <button
               onClick={() => setShowKeyModal(false)}
-              className="w-full bg-white/50 text-slate-700 font-semibold text-sm py-3.5 rounded-xl active:scale-[0.98]"
+              className="w-full bg-dark-input text-dark-text font-semibold text-sm py-3.5 rounded-xl active:scale-[0.98] cursor-pointer"
             >
               Done
             </button>

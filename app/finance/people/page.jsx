@@ -124,12 +124,12 @@ export default function PeoplePage() {
         <>
           {/* Total Outstanding */}
           {peopleNames.length > 0 && totalOutstanding > 0 && (
-            <div className="glass rounded-2xl p-4 shadow-sm shadow-black/[0.03] mb-4">
+            <div className="bg-dark-card border border-dark-border rounded-2xl p-4  mb-4">
               <div className="flex items-center gap-2 mb-1">
                 <span className="material-symbols-outlined text-finance text-[18px]">
                   account_balance
                 </span>
-                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">
+                <p className="text-xs font-bold text-dark-muted uppercase tracking-widest">
                   Total Outstanding
                 </p>
               </div>
@@ -141,10 +141,10 @@ export default function PeoplePage() {
 
           {/* People List */}
           {peopleNames.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-20 gap-3 text-slate-400">
+            <div className="flex flex-col items-center justify-center py-20 gap-3 text-dark-muted">
               <span className="material-symbols-outlined text-5xl">people</span>
               <p className="text-sm">No lending activity yet.</p>
-              <p className="text-xs text-slate-300">
+              <p className="text-xs text-dark-muted/60">
                 Transfer money to a person to start tracking
               </p>
             </div>
@@ -157,18 +157,18 @@ export default function PeoplePage() {
                   <div
                     key={name}
                     onClick={() => openPersonDetail(name)}
-                    className="glass rounded-2xl px-4 py-3 flex items-center gap-3 cursor-pointer active:bg-white/40"
+                    className="bg-dark-card border border-dark-border rounded-2xl px-4 py-3 flex items-center gap-3 cursor-pointer active:bg-dark-card"
                   >
-                    <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center shrink-0">
-                      <span className="material-symbols-outlined text-slate-500 text-[20px]">
+                    <div className="w-10 h-10 rounded-full bg-dark-card flex items-center justify-center shrink-0">
+                      <span className="material-symbols-outlined text-dark-muted text-[20px]">
                         person
                       </span>
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-bold text-slate-900 truncate">
+                      <p className="text-sm font-bold text-dark-text truncate">
                         {name}
                       </p>
-                      <p className="text-xs text-slate-400 mt-0.5">
+                      <p className="text-xs text-dark-muted mt-0.5">
                         {net > 0
                           ? "owes you"
                           : net < 0
@@ -185,8 +185,8 @@ export default function PeoplePage() {
                           net > 0
                             ? "text-finance"
                             : net < 0
-                              ? "text-rose-500"
-                              : "text-slate-400"
+                              ? "text-rose-400"
+                              : "text-dark-muted"
                         }`}
                       >
                         {net !== 0
@@ -212,8 +212,8 @@ export default function PeoplePage() {
           <div className="flex flex-col gap-4">
             {/* Net Summary */}
             <div className="flex items-center justify-center gap-3 py-3">
-              <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center">
-                <span className="material-symbols-outlined text-slate-500 text-2xl">
+              <div className="w-12 h-12 rounded-full bg-dark-card flex items-center justify-center">
+                <span className="material-symbols-outlined text-dark-muted text-2xl">
                   person
                 </span>
               </div>
@@ -223,15 +223,15 @@ export default function PeoplePage() {
                     (netMap[selectedPerson] || 0) > 0
                       ? "text-finance"
                       : (netMap[selectedPerson] || 0) < 0
-                        ? "text-rose-500"
-                        : "text-slate-400"
+                        ? "text-rose-400"
+                        : "text-dark-muted"
                   }`}
                 >
                   {(netMap[selectedPerson] || 0) !== 0
                     ? formatCurrency(Math.abs(netMap[selectedPerson] || 0))
                     : "Settled"}
                 </p>
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-dark-muted">
                   {(netMap[selectedPerson] || 0) > 0
                     ? "owes you"
                     : (netMap[selectedPerson] || 0) < 0
@@ -246,7 +246,7 @@ export default function PeoplePage() {
               const txs = getPersonTransactions(selectedPerson);
               if (txs.length === 0) {
                 return (
-                  <p className="text-sm text-slate-400 text-center py-4">
+                  <p className="text-sm text-dark-muted text-center py-4">
                     No transactions yet
                   </p>
                 );
@@ -256,29 +256,29 @@ export default function PeoplePage() {
                 <div className="flex flex-col gap-1 max-h-80 overflow-y-auto">
                   {grouped.map(([dateLabel, items]) => (
                     <div key={dateLabel}>
-                      <p className="text-xs font-bold text-slate-400 uppercase tracking-widest px-1 pt-3 pb-1.5">
+                      <p className="text-xs font-bold text-dark-muted uppercase tracking-widest px-1 pt-3 pb-1.5">
                         {dateLabel}
                       </p>
                       <div className="flex flex-col gap-2">
                         {items.map((tx) => (
                           <div
                             key={tx.id}
-                            className="bg-white/50 backdrop-blur-sm border border-white/40 rounded-xl px-4 py-3 flex items-center gap-3"
+                            className="bg-dark-input border border-dark-border rounded-xl px-4 py-3 flex items-center gap-3"
                           >
-                            <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center shrink-0">
-                              <span className="material-symbols-outlined text-[16px] text-slate-500">
+                            <div className="w-8 h-8 rounded-full bg-dark-card flex items-center justify-center shrink-0">
+                              <span className="material-symbols-outlined text-[16px] text-dark-muted">
                                 {tx.transaction_type === "transfer"
                                   ? "arrow_upward"
                                   : "arrow_downward"}
                               </span>
                             </div>
                             <div className="flex-1 min-w-0">
-                              <p className="text-sm font-medium text-slate-900">
+                              <p className="text-sm font-medium text-dark-text">
                                 {tx.transaction_type === "transfer"
                                   ? "Lent"
                                   : "Received back"}
                               </p>
-                              <p className="text-xs text-slate-400 mt-0.5 truncate">
+                              <p className="text-xs text-dark-muted mt-0.5 truncate">
                                 {tx.accounts?.name}
                                 {tx.description ? ` · ${tx.description}` : ""}
                               </p>
@@ -286,7 +286,7 @@ export default function PeoplePage() {
                             <p
                               className={`text-sm font-bold ${
                                 tx.transaction_type === "transfer"
-                                  ? "text-rose-500"
+                                  ? "text-rose-400"
                                   : "text-finance"
                               }`}
                             >

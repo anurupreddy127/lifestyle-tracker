@@ -105,58 +105,58 @@ export default function DayBuilder() {
   return (
     <div className="px-4 pt-2 pb-4">
       {error && (
-        <div className="bg-rose-50 border border-rose-200 rounded-xl p-3 mb-4 text-rose-600 text-sm">
+        <div className="bg-rose-500/10 border border-rose-500/20 rounded-xl p-3 mb-4 text-rose-400 text-sm">
           {error}
         </div>
       )}
 
       {/* Day Name Input */}
       <div className="mb-6">
-        <label className="text-sm font-medium text-slate-500 mb-1.5 block px-1">Day Name</label>
+        <label className="text-sm font-medium text-dark-muted mb-1.5 block px-1">Day Name</label>
         <input
           type="text"
           placeholder="e.g. Upper Body Power"
           value={dayName}
           onChange={(e) => setDayName(e.target.value)}
-          className="glass rounded-2xl h-14 px-4 text-lg text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary w-full"
+          className="bg-dark-card border border-dark-border rounded-2xl h-14 px-4 text-lg text-dark-text placeholder:text-dark-muted focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50 w-full"
         />
       </div>
 
       {/* Exercises section header */}
       <div className="flex items-center justify-between mb-3">
-        <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Exercises</p>
-        <p className="text-xs text-slate-400">{selectedExercises.length} Items</p>
+        <p className="text-xs font-bold text-dark-muted uppercase tracking-widest">Exercises</p>
+        <p className="text-xs text-dark-muted">{selectedExercises.length} Items</p>
       </div>
 
       {/* Exercises List */}
       {selectedExercises.length === 0 ? (
-        <p className="text-sm text-slate-400 text-center py-8">
+        <p className="text-sm text-dark-muted text-center py-8">
           No exercises added yet. Tap below to add exercises.
         </p>
       ) : (
         <div className="flex flex-col gap-2 mb-2">
           {selectedExercises.map((ex, index) => (
-            <div key={ex.exercise_id} className="glass rounded-2xl p-4 flex items-center gap-3">
+            <div key={ex.exercise_id} className="bg-dark-card border border-dark-border rounded-2xl p-4 flex items-center gap-3">
               {/* Drag handle */}
-              <span className="material-symbols-outlined text-slate-400 text-[20px] shrink-0">drag_indicator</span>
+              <span className="material-symbols-outlined text-dark-muted text-[20px] shrink-0">drag_indicator</span>
 
               {/* Info */}
               <div className="flex-1 min-w-0">
-                <p className="text-base font-semibold text-slate-900 truncate">{ex.name}</p>
-                <p className="text-xs text-slate-500 mt-0.5">
+                <p className="text-base font-semibold text-dark-text truncate">{ex.name}</p>
+                <p className="text-xs text-dark-muted mt-0.5">
                   {ex.target_sets} sets × {ex.target_reps} reps
                 </p>
               </div>
 
               {/* Actions */}
               <div className="flex items-center gap-0.5">
-                <button onClick={() => moveExercise(index, -1)} className="text-slate-400 active:text-primary p-1">
+                <button onClick={() => moveExercise(index, -1)} className="text-dark-muted active:text-primary p-1">
                   <span className="material-symbols-outlined text-[18px]">arrow_upward</span>
                 </button>
-                <button onClick={() => moveExercise(index, 1)} className="text-slate-400 active:text-primary p-1">
+                <button onClick={() => moveExercise(index, 1)} className="text-dark-muted active:text-primary p-1">
                   <span className="material-symbols-outlined text-[18px]">arrow_downward</span>
                 </button>
-                <button onClick={() => removeExercise(index)} className="text-slate-400 active:text-rose-500 p-1 ml-1">
+                <button onClick={() => removeExercise(index)} className="text-dark-muted active:text-rose-400 p-1 ml-1">
                   <span className="material-symbols-outlined text-[18px]">delete</span>
                 </button>
               </div>
@@ -168,7 +168,7 @@ export default function DayBuilder() {
       {/* Add Exercise Button */}
       <button
         onClick={() => { setSearchQuery(''); setShowPicker(true) }}
-        className="border-2 border-dashed border-white/40 rounded-xl py-4 w-full text-primary font-semibold text-sm flex items-center justify-center gap-2 mt-2 active:bg-white/40"
+        className="border-2 border-dashed border-dark-border rounded-xl py-4 w-full text-primary font-semibold text-sm flex items-center justify-center gap-2 mt-2 active:bg-dark-card"
       >
         <span className="material-symbols-outlined text-[18px]">add_circle</span>
         Add Exercise
@@ -185,18 +185,18 @@ export default function DayBuilder() {
       {/* Exercise Picker */}
       <BottomSheet isOpen={showPicker} onClose={() => setShowPicker(false)} title="Pick Exercise">
         <div className="relative mb-4">
-          <span className="material-symbols-outlined text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 text-[20px]">search</span>
+          <span className="material-symbols-outlined text-dark-muted absolute left-3 top-1/2 -translate-y-1/2 text-[20px]">search</span>
           <input
             type="text"
             placeholder="Search exercises..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="bg-white/50 backdrop-blur-sm border border-white/40 rounded-xl pl-10 pr-4 py-3 text-slate-900 placeholder:text-slate-400 text-base focus:outline-none focus:ring-2 focus:ring-primary/20 w-full"
+            className="bg-dark-input border border-dark-border rounded-xl pl-10 pr-4 py-3 text-dark-text placeholder:text-dark-muted text-base focus:outline-none focus:ring-2 focus:ring-primary/30 w-full"
           />
         </div>
         <div className="flex flex-col gap-2 max-h-[40vh] overflow-y-auto">
           {filteredExercises.length === 0 ? (
-            <p className="text-sm text-slate-400 text-center py-4">
+            <p className="text-sm text-dark-muted text-center py-4">
               {allExercises.length === 0 ? 'No exercises in library.' : 'No matching exercises.'}
             </p>
           ) : (
@@ -204,13 +204,13 @@ export default function DayBuilder() {
               <button
                 key={ex.id}
                 onClick={() => handlePickExercise(ex)}
-                className="flex items-center gap-3 glass border border-white/30 rounded-xl px-3 py-3 active:bg-white/40 text-left w-full"
+                className="flex items-center gap-3 bg-dark-card border border-dark-border border border-dark-border rounded-xl px-3 py-3 active:bg-dark-card text-left w-full"
               >
-                <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center shrink-0">
+                <div className="w-12 h-12 bg-primary/15 rounded-lg flex items-center justify-center shrink-0">
                   <span className="material-symbols-outlined text-primary text-[18px]">fitness_center</span>
                 </div>
                 <div className="flex-1 min-w-0">
-                  <span className="text-sm font-semibold text-slate-900 block truncate">{ex.name}</span>
+                  <span className="text-sm font-semibold text-dark-text block truncate">{ex.name}</span>
                   <span className="text-[10px] font-bold uppercase text-primary/60">
                     {ex.equipment_type === 'barbell_dumbbell' ? 'Barbell/Dumbbell' : ex.equipment_type === 'no_equipment' ? 'No Equipment' : 'Machine'}
                   </span>
@@ -228,29 +228,29 @@ export default function DayBuilder() {
         title={pendingExercise ? `Set Targets` : 'Set Targets'}
       >
         {pendingExercise && (
-          <p className="text-sm text-slate-500 mb-4">{pendingExercise.name}</p>
+          <p className="text-sm text-dark-muted mb-4">{pendingExercise.name}</p>
         )}
         <div className="flex gap-4 mb-6">
           <div className="flex-1">
-            <label className="text-sm font-medium text-slate-500 mb-1.5 block">Sets</label>
+            <label className="text-sm font-medium text-dark-muted mb-1.5 block">Sets</label>
             <input
               type="text"
               inputMode="numeric"
               pattern="[0-9]*"
               value={tempSets}
               onChange={(e) => setTempSets(e.target.value)}
-              className="bg-white/50 backdrop-blur-sm border border-white/40 rounded-xl px-4 py-3 text-slate-900 text-lg text-center focus:outline-none focus:ring-2 focus:ring-primary/20 w-full font-bold"
+              className="bg-dark-input border border-dark-border rounded-xl px-4 py-3 text-dark-text text-lg text-center focus:outline-none focus:ring-2 focus:ring-primary/30 w-full font-bold"
             />
           </div>
           <div className="flex-1">
-            <label className="text-sm font-medium text-slate-500 mb-1.5 block">Reps</label>
+            <label className="text-sm font-medium text-dark-muted mb-1.5 block">Reps</label>
             <input
               type="text"
               inputMode="numeric"
               pattern="[0-9]*"
               value={tempReps}
               onChange={(e) => setTempReps(e.target.value)}
-              className="bg-white/50 backdrop-blur-sm border border-white/40 rounded-xl px-4 py-3 text-slate-900 text-lg text-center focus:outline-none focus:ring-2 focus:ring-primary/20 w-full font-bold"
+              className="bg-dark-input border border-dark-border rounded-xl px-4 py-3 text-dark-text text-lg text-center focus:outline-none focus:ring-2 focus:ring-primary/30 w-full font-bold"
             />
           </div>
         </div>

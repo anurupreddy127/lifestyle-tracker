@@ -2,9 +2,18 @@
 
 @theme {
   --color-primary: #256af4;
-  --color-primary-light: oklch(from #256af4 l c h / 0.1);
+  --color-primary-light: oklch(from #256af4 l c h / 0.15);
   --color-finance: #10b981;
-  --color-finance-light: oklch(from #10b981 l c h / 0.1);
+  --color-finance-light: oklch(from #10b981 l c h / 0.15);
+
+  /* WhatsApp dark palette */
+  --color-dark-bg: #111B21;
+  --color-dark-nav: #202C33;
+  --color-dark-card: #1F2C34;
+  --color-dark-border: #2A3942;
+  --color-dark-text: #E9EDEF;
+  --color-dark-muted: #8696A0;
+  --color-dark-input: #2A3942;
 }
 
 html {
@@ -16,43 +25,15 @@ body {
   -webkit-user-select: none;
   overscroll-behavior-y: none;
   -webkit-tap-highlight-color: transparent;
-  background: linear-gradient(135deg, #e0e7ff 0%, #f0f4ff 25%, #faf5ff 50%, #ecfdf5 75%, #eff6ff 100%);
-  background-attachment: fixed;
+  background-color: var(--color-dark-bg);
+  color: var(--color-dark-text);
   min-height: 100dvh;
-}
-
-/* Glassmorphism utility layers */
-.glass {
-  background: rgba(255, 255, 255, 0.55);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.4);
-}
-
-.glass-strong {
-  background: rgba(255, 255, 255, 0.7);
-  backdrop-filter: blur(24px) saturate(180%);
-  -webkit-backdrop-filter: blur(24px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.5);
-}
-
-.glass-subtle {
-  background: rgba(255, 255, 255, 0.35);
-  backdrop-filter: blur(16px) saturate(160%);
-  -webkit-backdrop-filter: blur(16px) saturate(160%);
-  border: 1px solid rgba(255, 255, 255, 0.25);
-}
-
-.glass-dark {
-  background: rgba(15, 23, 42, 0.6);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 /* Prevent iOS zoom on input focus (inputs < 16px trigger zoom) */
 input, select, textarea {
   font-size: 16px !important;
+  color-scheme: dark;
 }
 
 /* Fix iOS date input overflowing container */
