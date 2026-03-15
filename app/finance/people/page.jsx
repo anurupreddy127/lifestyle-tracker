@@ -124,7 +124,7 @@ export default function PeoplePage() {
         <>
           {/* Total Outstanding */}
           {peopleNames.length > 0 && totalOutstanding > 0 && (
-            <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm mb-4">
+            <div className="glass rounded-2xl p-4 shadow-sm shadow-black/[0.03] mb-4">
               <div className="flex items-center gap-2 mb-1">
                 <span className="material-symbols-outlined text-finance text-[18px]">
                   account_balance
@@ -157,7 +157,7 @@ export default function PeoplePage() {
                   <div
                     key={name}
                     onClick={() => openPersonDetail(name)}
-                    className="bg-white border border-slate-200 rounded-xl px-4 py-3 flex items-center gap-3 cursor-pointer active:bg-slate-50"
+                    className="glass rounded-2xl px-4 py-3 flex items-center gap-3 cursor-pointer active:bg-white/40"
                   >
                     <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center shrink-0">
                       <span className="material-symbols-outlined text-slate-500 text-[20px]">
@@ -263,7 +263,7 @@ export default function PeoplePage() {
                         {items.map((tx) => (
                           <div
                             key={tx.id}
-                            className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 flex items-center gap-3"
+                            className="bg-white/50 backdrop-blur-sm border border-white/40 rounded-xl px-4 py-3 flex items-center gap-3"
                           >
                             <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center shrink-0">
                               <span className="material-symbols-outlined text-[16px] text-slate-500">

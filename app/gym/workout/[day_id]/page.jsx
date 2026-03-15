@@ -250,7 +250,7 @@ export default function ActiveWorkout() {
     <div className="pb-44">
       {/* Custom header + progress bar (sticky together) */}
       <header
-        className="sticky top-0 z-20 bg-white/80 backdrop-blur-md border-b border-slate-100"
+        className="sticky top-0 z-20 bg-white/80 backdrop-blur-md border-b border-white/30"
         style={{ paddingTop: 'env(safe-area-inset-top)' }}
       >
         <div className="flex items-center px-4 py-3 gap-3">
@@ -266,7 +266,7 @@ export default function ActiveWorkout() {
             <p className="text-xs font-semibold text-slate-500">Workout Progress</p>
             <p className="text-xs font-bold text-primary">{completedCount} of {exercises.length}</p>
           </div>
-          <div className="w-full bg-slate-200 rounded-full h-2">
+          <div className="w-full bg-white/40 rounded-full h-2">
             <div
               className="bg-primary h-2 rounded-full transition-all duration-300"
               style={{ width: `${progress}%` }}
@@ -287,8 +287,8 @@ export default function ActiveWorkout() {
           return (
             <div
               key={ex.exercise_id}
-              className={`bg-white border rounded-xl shadow-sm transition-all duration-300 ${
-                allDone ? 'border-primary/30 bg-primary/[0.02]' : 'border-slate-200'
+              className={`glass border rounded-2xl shadow-sm shadow-black/[0.03] transition-all duration-300 ${
+                allDone ? 'border-primary/30 bg-primary/[0.02]' : 'border-white/30'
               }`}
             >
               {/* Exercise header — tappable when completed */}
@@ -351,7 +351,7 @@ export default function ActiveWorkout() {
                               placeholder="lbs"
                               value={setData.weight || ''}
                               onChange={(e) => updateSetInput(ex.exercise_id, setIdx, 'weight', e.target.value)}
-                              className="flex-1 bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary min-w-0"
+                              className="flex-1 bg-white/50 backdrop-blur-sm border border-white/40 rounded-lg px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary min-w-0"
                             />
                           )}
 
@@ -361,7 +361,7 @@ export default function ActiveWorkout() {
                             placeholder="reps"
                             value={setData.reps || ''}
                             onChange={(e) => updateSetInput(ex.exercise_id, setIdx, 'reps', e.target.value)}
-                            className="flex-1 bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary min-w-0"
+                            className="flex-1 bg-white/50 backdrop-blur-sm border border-white/40 rounded-lg px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary min-w-0"
                           />
 
                           <button
@@ -369,7 +369,7 @@ export default function ActiveWorkout() {
                             className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 transition-colors ${
                               setData.completed
                                 ? 'bg-primary text-white'
-                                : 'bg-slate-200 text-slate-400'
+                                : 'bg-white/40 text-slate-400'
                             }`}
                           >
                             <span className="material-symbols-outlined text-[20px]">check</span>
@@ -387,13 +387,13 @@ export default function ActiveWorkout() {
 
       {/* Fixed bottom buttons */}
       <div
-        className="fixed left-0 right-0 px-4 py-3 bg-white/90 backdrop-blur-md border-t border-slate-200 z-40"
+        className="fixed left-0 right-0 px-4 py-3 bg-white/70 backdrop-blur-md border-t border-white/30 z-40"
         style={{ bottom: 'calc(5rem + env(safe-area-inset-bottom))' }}
       >
         <div className="grid grid-cols-2 gap-3">
           <button
             onClick={() => { clearWorkoutStorage(); router.push('/gym') }}
-            className="border-2 border-slate-200 text-slate-600 font-semibold rounded-xl py-3.5 flex items-center justify-center gap-2"
+            className="border-2 border-white/30 text-slate-600 font-semibold rounded-xl py-3.5 flex items-center justify-center gap-2"
           >
             <span className="material-symbols-outlined text-[18px]">close</span>
             Cancel

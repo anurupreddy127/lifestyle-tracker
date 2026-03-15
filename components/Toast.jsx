@@ -18,7 +18,7 @@ export default function Toast({ message, isVisible, onDismiss }) {
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: -20, scale: 0.95 }}
           transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-          className="fixed left-4 right-4 z-50 bg-slate-900 border border-slate-800 rounded-xl p-4 text-white text-sm shadow-lg"
+          className="fixed left-4 right-4 z-50 glass-dark rounded-2xl p-4 text-white text-sm shadow-lg"
           style={{ top: 'calc(env(safe-area-inset-top) + 12px)' }}
         >
           {message}

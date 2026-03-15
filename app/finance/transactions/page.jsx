@@ -454,8 +454,8 @@ export default function TransactionsPage() {
                       onClick={() => setFilterCategory(filterCategory === cat ? null : cat)}
                       className={`min-w-[100px] w-[100px] rounded-xl p-3 flex flex-col items-center gap-2 shrink-0 cursor-pointer transition-all duration-200 ${
                         filterCategory === cat
-                          ? "bg-finance/10 border-2 border-finance shadow-sm"
-                          : "bg-white border border-slate-200"
+                          ? "bg-finance/10 border-2 border-finance shadow-sm shadow-black/[0.03]"
+                          : "glass"
                       }`}
                     >
                       <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${getCategoryColor(cat)}`}>
@@ -485,7 +485,7 @@ export default function TransactionsPage() {
                   }}
                   className={`flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-semibold whitespace-nowrap transition-all duration-200 min-h-[36px] ${
                     filterType === t.value
-                      ? `${t.color || "bg-slate-800"} ${t.activeText || "text-white"} shadow-sm`
+                      ? `${t.color || "bg-slate-800"} ${t.activeText || "text-white"} shadow-sm shadow-black/[0.03]`
                       : "bg-slate-100 text-slate-600"
                   }`}
                 >
@@ -521,7 +521,7 @@ export default function TransactionsPage() {
                 transition={{ duration: 0.2 }}
                 className="overflow-hidden"
               >
-                <div className="bg-white border border-slate-200 rounded-xl p-3 mb-3 flex flex-col gap-3">
+                <div className="glass rounded-2xl p-3 mb-3 flex flex-col gap-3">
                   {/* Account filter */}
                   <div>
                     <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Account</p>
@@ -646,7 +646,7 @@ export default function TransactionsPage() {
                       setTimeout(() => setShowDeleteConfirm(true), 100);
                     }}
                   >
-                    <div className="bg-white border border-slate-200 rounded-xl px-4 py-3 flex items-center gap-3">
+                    <div className="glass rounded-2xl px-4 py-3 flex items-center gap-3">
                       <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center shrink-0">
                         {tx.category ? (
                           <span className="text-lg">{getCategoryEmoji(tx.category)}</span>
@@ -710,7 +710,7 @@ export default function TransactionsPage() {
             <button
               onClick={loadMore}
               disabled={loadingMore}
-              className="mt-4 mb-2 py-3 w-full rounded-xl text-sm font-semibold bg-slate-100 text-slate-600 active:bg-slate-200 disabled:opacity-50 flex items-center justify-center gap-2"
+              className="mt-4 mb-2 py-3 w-full rounded-xl text-sm font-semibold bg-slate-100 text-slate-600 active:bg-white/50 disabled:opacity-50 flex items-center justify-center gap-2"
             >
               {loadingMore ? (
                 <>
@@ -816,7 +816,7 @@ export default function TransactionsPage() {
                     value={subFormName}
                     onChange={(e) => setSubFormName(e.target.value)}
                     placeholder="e.g., Netflix"
-                    className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-900 placeholder:text-slate-400 text-base focus:outline-none focus:ring-2 focus:ring-finance/20 w-full"
+                    className="bg-white/50 backdrop-blur-sm border border-white/40 rounded-xl px-4 py-3 text-slate-900 placeholder:text-slate-400 text-base focus:outline-none focus:ring-2 focus:ring-finance/20 w-full"
                   />
                 </div>
                 <div>
@@ -829,7 +829,7 @@ export default function TransactionsPage() {
                     value={subFormAmount}
                     onChange={(e) => setSubFormAmount(e.target.value)}
                     placeholder="0.00"
-                    className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-900 placeholder:text-slate-400 text-base focus:outline-none focus:ring-2 focus:ring-finance/20 w-full"
+                    className="bg-white/50 backdrop-blur-sm border border-white/40 rounded-xl px-4 py-3 text-slate-900 placeholder:text-slate-400 text-base focus:outline-none focus:ring-2 focus:ring-finance/20 w-full"
                   />
                 </div>
                 <div>
@@ -860,7 +860,7 @@ export default function TransactionsPage() {
                     type="date"
                     value={subFormNextDate}
                     onChange={(e) => setSubFormNextDate(e.target.value)}
-                    className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-base text-slate-900 focus:outline-none focus:ring-2 focus:ring-finance/20 w-full"
+                    className="bg-white/50 backdrop-blur-sm border border-white/40 rounded-xl px-4 py-3 text-base text-slate-900 focus:outline-none focus:ring-2 focus:ring-finance/20 w-full"
                   />
                 </div>
                 <div>
@@ -870,7 +870,7 @@ export default function TransactionsPage() {
                   <select
                     value={subFormAccountId}
                     onChange={(e) => setSubFormAccountId(e.target.value)}
-                    className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-base text-slate-900 focus:outline-none focus:ring-2 focus:ring-finance/20 w-full"
+                    className="bg-white/50 backdrop-blur-sm border border-white/40 rounded-xl px-4 py-3 text-base text-slate-900 focus:outline-none focus:ring-2 focus:ring-finance/20 w-full"
                   >
                     <option value="">Select account</option>
                     {accounts.map((acc) => (
@@ -887,7 +887,7 @@ export default function TransactionsPage() {
                   <select
                     value={subFormCategory}
                     onChange={(e) => setSubFormCategory(e.target.value)}
-                    className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-base text-slate-900 focus:outline-none focus:ring-2 focus:ring-finance/20 w-full"
+                    className="bg-white/50 backdrop-blur-sm border border-white/40 rounded-xl px-4 py-3 text-base text-slate-900 focus:outline-none focus:ring-2 focus:ring-finance/20 w-full"
                   >
                     {categories.map((cat) => (
                       <option key={cat.id} value={cat.name}>
@@ -923,7 +923,7 @@ export default function TransactionsPage() {
                 <div className="flex gap-3 w-full mt-2">
                   <button
                     onClick={() => setSelectedSubscription(null)}
-                    className="flex-1 py-3 rounded-xl text-sm font-semibold bg-slate-100 text-slate-600 active:bg-slate-200"
+                    className="flex-1 py-3 rounded-xl text-sm font-semibold bg-slate-100 text-slate-600 active:bg-white/50"
                   >
                     Cancel
                   </button>
@@ -949,7 +949,7 @@ export default function TransactionsPage() {
                     {subscriptions.map((sub) => (
                       <div
                         key={sub.id}
-                        className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-3"
+                        className="bg-white/50 backdrop-blur-sm border border-white/40 rounded-xl px-4 py-3"
                       >
                         <div className="flex items-center gap-2">
                           <div
@@ -969,7 +969,7 @@ export default function TransactionsPage() {
                                 {sub.accounts?.name}
                               </span>
                               <span className="text-xs text-slate-400">·</span>
-                              <span className="text-[10px] font-bold uppercase bg-slate-200 text-slate-500 rounded px-1.5 py-0.5">
+                              <span className="text-[10px] font-bold uppercase bg-white/40 text-slate-500 rounded px-1.5 py-0.5">
                                 {sub.billing_type === "monthly"
                                   ? "Monthly"
                                   : "Yearly"}
@@ -979,13 +979,13 @@ export default function TransactionsPage() {
                           <div className="flex items-center gap-1 shrink-0">
                             <button
                               onClick={() => openSubEdit(sub)}
-                              className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center text-slate-500 active:bg-blue-100 active:text-blue-500"
+                              className="w-8 h-8 rounded-full bg-white/40 flex items-center justify-center text-slate-500 active:bg-blue-100 active:text-blue-500"
                             >
                               <span className="material-symbols-outlined text-[16px]">edit</span>
                             </button>
                             <button
                               onClick={() => handleSubDelete(sub.id, setSubscriptions)}
-                              className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center text-slate-500 active:bg-rose-100 active:text-rose-500"
+                              className="w-8 h-8 rounded-full bg-white/40 flex items-center justify-center text-slate-500 active:bg-rose-100 active:text-rose-500"
                             >
                               <span className="material-symbols-outlined text-[16px]">delete</span>
                             </button>
@@ -1023,7 +1023,7 @@ export default function TransactionsPage() {
                     value={txAmount}
                     onChange={(e) => { setTxAmount(e.target.value); setFieldErrors((p) => ({ ...p, amount: undefined })); }}
                     placeholder="0.00"
-                    className={`bg-slate-50 border rounded-xl pl-8 pr-4 py-3 text-2xl font-bold text-slate-900 placeholder:text-slate-300 focus:outline-none focus:ring-2 w-full ${fieldErrors.amount ? "border-rose-400 focus:ring-rose-200 focus:border-rose-400" : "border-slate-200 focus:ring-finance/20 focus:border-finance"}`}
+                    className={`bg-white/40 border rounded-xl pl-8 pr-4 py-3 text-2xl font-bold text-slate-900 placeholder:text-slate-300 focus:outline-none focus:ring-2 w-full ${fieldErrors.amount ? "border-rose-400 focus:ring-rose-200 focus:border-rose-400" : "border-white/30 focus:ring-finance/20 focus:border-finance"}`}
                   />
                 </div>
                 {fieldErrors.amount && <p className="text-xs text-rose-500 mt-1">{fieldErrors.amount}</p>}
@@ -1045,7 +1045,7 @@ export default function TransactionsPage() {
                       value={txPersonalAmount}
                       onChange={(e) => { setTxPersonalAmount(e.target.value); setFieldErrors((p) => ({ ...p, personalAmount: undefined })); }}
                       placeholder={txAmount || "Same as total"}
-                      className={`bg-slate-50 border rounded-xl pl-8 pr-4 py-2.5 text-base font-semibold text-slate-900 placeholder:text-slate-300 focus:outline-none focus:ring-2 w-full ${fieldErrors.personalAmount ? "border-rose-400 focus:ring-rose-200 focus:border-rose-400" : "border-slate-200 focus:ring-finance/20 focus:border-finance"}`}
+                      className={`bg-white/40 border rounded-xl pl-8 pr-4 py-2.5 text-base font-semibold text-slate-900 placeholder:text-slate-300 focus:outline-none focus:ring-2 w-full ${fieldErrors.personalAmount ? "border-rose-400 focus:ring-rose-200 focus:border-rose-400" : "border-white/30 focus:ring-finance/20 focus:border-finance"}`}
                     />
                   </div>
                   {fieldErrors.personalAmount ? (
@@ -1067,7 +1067,7 @@ export default function TransactionsPage() {
                   type="date"
                   value={txDate}
                   onChange={(e) => setTxDate(e.target.value)}
-                  className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-base text-slate-900 focus:outline-none focus:ring-2 focus:ring-finance/20 w-full"
+                  className="bg-white/50 backdrop-blur-sm border border-white/40 rounded-xl px-4 py-3 text-base text-slate-900 focus:outline-none focus:ring-2 focus:ring-finance/20 w-full"
                 />
               </div>
 
@@ -1079,7 +1079,7 @@ export default function TransactionsPage() {
                 <select
                   value={txAccountId}
                   onChange={(e) => { setTxAccountId(e.target.value); setFieldErrors((p) => ({ ...p, account: undefined })); }}
-                  className={`bg-slate-50 border rounded-xl px-4 py-3 text-base text-slate-900 focus:outline-none focus:ring-2 w-full ${fieldErrors.account ? "border-rose-400 focus:ring-rose-200" : "border-slate-200 focus:ring-finance/20"}`}
+                  className={`bg-white/40 border rounded-xl px-4 py-3 text-base text-slate-900 focus:outline-none focus:ring-2 w-full ${fieldErrors.account ? "border-rose-400 focus:ring-rose-200" : "border-white/30 focus:ring-finance/20"}`}
                 >
                   <option value="">Select</option>
                   {accounts.map((acc) => (
@@ -1125,7 +1125,7 @@ export default function TransactionsPage() {
                       <select
                         value={txToAccountId}
                         onChange={(e) => { setTxToAccountId(e.target.value); setFieldErrors((p) => ({ ...p, toAccount: undefined })); }}
-                        className={`bg-slate-50 border rounded-xl px-4 py-3 text-base text-slate-900 focus:outline-none focus:ring-2 w-full ${fieldErrors.toAccount ? "border-rose-400 focus:ring-rose-200" : "border-slate-200 focus:ring-finance/20"}`}
+                        className={`bg-white/40 border rounded-xl px-4 py-3 text-base text-slate-900 focus:outline-none focus:ring-2 w-full ${fieldErrors.toAccount ? "border-rose-400 focus:ring-rose-200" : "border-white/30 focus:ring-finance/20"}`}
                       >
                         <option value="">Select</option>
                         {accounts
@@ -1148,7 +1148,7 @@ export default function TransactionsPage() {
                         value={txPersonName}
                         onChange={(e) => { setTxPersonName(e.target.value); setFieldErrors((p) => ({ ...p, personName: undefined })); }}
                         placeholder="e.g., John"
-                        className={`bg-slate-50 border rounded-xl px-4 py-3 text-base text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 w-full ${fieldErrors.personName ? "border-rose-400 focus:ring-rose-200" : "border-slate-200 focus:ring-finance/20"}`}
+                        className={`bg-white/40 border rounded-xl px-4 py-3 text-base text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 w-full ${fieldErrors.personName ? "border-rose-400 focus:ring-rose-200" : "border-white/30 focus:ring-finance/20"}`}
                       />
                       {fieldErrors.personName && <p className="text-xs text-rose-500 mt-1">{fieldErrors.personName}</p>}
                     </div>
@@ -1167,7 +1167,7 @@ export default function TransactionsPage() {
                     value={txFromPersonName}
                     onChange={(e) => setTxFromPersonName(e.target.value)}
                     placeholder="e.g., John"
-                    className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-base text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-finance/20 w-full"
+                    className="bg-white/50 backdrop-blur-sm border border-white/40 rounded-xl px-4 py-3 text-base text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-finance/20 w-full"
                   />
                 </div>
               )}
@@ -1201,7 +1201,7 @@ export default function TransactionsPage() {
                         className={`relative flex flex-col items-center gap-1 py-2.5 rounded-xl text-[10px] font-semibold border-2 ${
                           !editingCategories && txCategory === cat.name
                             ? "border-finance bg-finance/5 text-finance"
-                            : "border-transparent bg-slate-50 text-slate-500"
+                            : "border-transparent bg-white/40 text-slate-500"
                         }`}
                       >
                         {editingCategories && (
@@ -1220,7 +1220,7 @@ export default function TransactionsPage() {
                           setNewCatEmoji("📦");
                           setShowAddCategory(true);
                         }}
-                        className="flex flex-col items-center gap-1 py-2.5 rounded-xl text-[10px] font-semibold border-2 border-dashed border-slate-300 bg-slate-50 text-slate-400"
+                        className="flex flex-col items-center gap-1 py-2.5 rounded-xl text-[10px] font-semibold border-2 border-dashed border-white/40 bg-white/40 text-slate-400"
                       >
                         <span className="text-lg">+</span>
                         Add
@@ -1228,7 +1228,7 @@ export default function TransactionsPage() {
                     )}
                   </div>
                   {showAddCategory && (
-                    <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 mt-3 flex flex-col gap-3">
+                    <div className="bg-white/50 backdrop-blur-sm border border-white/40 rounded-xl p-4 mt-3 flex flex-col gap-3">
                       <div>
                         <label className="text-xs font-medium text-slate-500 mb-1 block">
                           Category Name
@@ -1238,7 +1238,7 @@ export default function TransactionsPage() {
                           value={newCatName}
                           onChange={(e) => setNewCatName(e.target.value)}
                           placeholder="e.g., Pets"
-                          className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-base text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-finance/20 w-full"
+                          className="glass rounded-lg px-3 py-2 text-base text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-finance/20 w-full"
                         />
                       </div>
                       <div>
@@ -1254,7 +1254,7 @@ export default function TransactionsPage() {
                             setNewCatEmoji(emojis.length > 0 ? emojis[emojis.length - 1] : "");
                           }}
                           placeholder="Tap to pick emoji"
-                          className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-2xl text-center w-16 h-12 focus:outline-none focus:ring-2 focus:ring-finance/20"
+                          className="glass rounded-lg px-3 py-2 text-2xl text-center w-16 h-12 focus:outline-none focus:ring-2 focus:ring-finance/20"
                         />
                       </div>
                       <div className="flex gap-2">
@@ -1296,7 +1296,7 @@ export default function TransactionsPage() {
                   value={txDescription}
                   onChange={(e) => setTxDescription(e.target.value)}
                   placeholder={txType === "received" ? "Who sent it?" : "What was this for?"}
-                  className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-base text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-finance/20 w-full"
+                  className="bg-white/50 backdrop-blur-sm border border-white/40 rounded-xl px-4 py-3 text-base text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-finance/20 w-full"
                 />
               </div>
 
@@ -1321,7 +1321,7 @@ export default function TransactionsPage() {
                       </p>
                       <button
                         onClick={() => setShowDeleteConfirm(false)}
-                        className="px-4 py-2.5 rounded-xl text-sm font-semibold bg-slate-100 text-slate-600 active:bg-slate-200"
+                        className="px-4 py-2.5 rounded-xl text-sm font-semibold bg-slate-100 text-slate-600 active:bg-white/50"
                       >
                         Cancel
                       </button>

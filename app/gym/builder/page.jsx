@@ -118,7 +118,7 @@ export default function DayBuilder() {
           placeholder="e.g. Upper Body Power"
           value={dayName}
           onChange={(e) => setDayName(e.target.value)}
-          className="bg-white border border-slate-200 rounded-xl h-14 px-4 text-lg text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary w-full"
+          className="glass rounded-2xl h-14 px-4 text-lg text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary w-full"
         />
       </div>
 
@@ -136,7 +136,7 @@ export default function DayBuilder() {
       ) : (
         <div className="flex flex-col gap-2 mb-2">
           {selectedExercises.map((ex, index) => (
-            <div key={ex.exercise_id} className="bg-white border border-slate-200 rounded-xl p-4 flex items-center gap-3">
+            <div key={ex.exercise_id} className="glass rounded-2xl p-4 flex items-center gap-3">
               {/* Drag handle */}
               <span className="material-symbols-outlined text-slate-400 text-[20px] shrink-0">drag_indicator</span>
 
@@ -168,7 +168,7 @@ export default function DayBuilder() {
       {/* Add Exercise Button */}
       <button
         onClick={() => { setSearchQuery(''); setShowPicker(true) }}
-        className="border-2 border-dashed border-slate-200 rounded-xl py-4 w-full text-primary font-semibold text-sm flex items-center justify-center gap-2 mt-2 active:bg-slate-50"
+        className="border-2 border-dashed border-white/40 rounded-xl py-4 w-full text-primary font-semibold text-sm flex items-center justify-center gap-2 mt-2 active:bg-white/40"
       >
         <span className="material-symbols-outlined text-[18px]">add_circle</span>
         Add Exercise
@@ -191,7 +191,7 @@ export default function DayBuilder() {
             placeholder="Search exercises..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="bg-slate-100 border-none rounded-xl pl-10 pr-4 py-3 text-slate-900 placeholder:text-slate-400 text-base focus:outline-none focus:ring-2 focus:ring-primary/20 w-full"
+            className="bg-white/50 backdrop-blur-sm border border-white/40 rounded-xl pl-10 pr-4 py-3 text-slate-900 placeholder:text-slate-400 text-base focus:outline-none focus:ring-2 focus:ring-primary/20 w-full"
           />
         </div>
         <div className="flex flex-col gap-2 max-h-[40vh] overflow-y-auto">
@@ -204,7 +204,7 @@ export default function DayBuilder() {
               <button
                 key={ex.id}
                 onClick={() => handlePickExercise(ex)}
-                className="flex items-center gap-3 bg-white border border-slate-100 rounded-xl px-3 py-3 active:bg-slate-50 text-left w-full"
+                className="flex items-center gap-3 glass border border-white/30 rounded-xl px-3 py-3 active:bg-white/40 text-left w-full"
               >
                 <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center shrink-0">
                   <span className="material-symbols-outlined text-primary text-[18px]">fitness_center</span>
@@ -239,7 +239,7 @@ export default function DayBuilder() {
               pattern="[0-9]*"
               value={tempSets}
               onChange={(e) => setTempSets(e.target.value)}
-              className="bg-slate-100 border-none rounded-xl px-4 py-3 text-slate-900 text-lg text-center focus:outline-none focus:ring-2 focus:ring-primary/20 w-full font-bold"
+              className="bg-white/50 backdrop-blur-sm border border-white/40 rounded-xl px-4 py-3 text-slate-900 text-lg text-center focus:outline-none focus:ring-2 focus:ring-primary/20 w-full font-bold"
             />
           </div>
           <div className="flex-1">
@@ -250,7 +250,7 @@ export default function DayBuilder() {
               pattern="[0-9]*"
               value={tempReps}
               onChange={(e) => setTempReps(e.target.value)}
-              className="bg-slate-100 border-none rounded-xl px-4 py-3 text-slate-900 text-lg text-center focus:outline-none focus:ring-2 focus:ring-primary/20 w-full font-bold"
+              className="bg-white/50 backdrop-blur-sm border border-white/40 rounded-xl px-4 py-3 text-slate-900 text-lg text-center focus:outline-none focus:ring-2 focus:ring-primary/20 w-full font-bold"
             />
           </div>
         </div>

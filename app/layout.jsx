@@ -21,7 +21,7 @@ export const viewport = {
   maximumScale: 1,
   userScalable: false,
   viewportFit: "cover",
-  themeColor: "#f8fafc",
+  themeColor: "#e8eeff",
 };
 
 export default function RootLayout({ children }) {
@@ -35,7 +35,7 @@ export default function RootLayout({ children }) {
           href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&display=swap"
         />
       </head>
-      <body className="bg-slate-50 text-slate-900 select-none overscroll-none antialiased">
+      <body className="text-slate-900 select-none overscroll-none antialiased">
         <AppShell>{children}</AppShell>
         <Analytics />
       </body>

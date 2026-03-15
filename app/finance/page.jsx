@@ -287,7 +287,7 @@ export default function FinanceDashboard() {
         <>
           {/* Section 1 — Cash Flow Cards */}
           <div className="grid grid-cols-3 gap-2 mb-6">
-            <div className="bg-white border border-slate-200 rounded-xl p-3 shadow-sm">
+            <div className="glass rounded-2xl p-3 shadow-sm shadow-black/[0.03] shadow-black/[0.03]">
               <div className="flex items-center gap-1 mb-1">
                 <span className="material-symbols-outlined text-finance text-[16px]">
                   arrow_upward
@@ -300,7 +300,7 @@ export default function FinanceDashboard() {
                 {formatCurrency(totalIncome)}
               </p>
             </div>
-            <div className="bg-white border border-slate-200 rounded-xl p-3 shadow-sm">
+            <div className="glass rounded-2xl p-3 shadow-sm shadow-black/[0.03] shadow-black/[0.03]">
               <div className="flex items-center gap-1 mb-1">
                 <span className="material-symbols-outlined text-rose-500 text-[16px]">
                   arrow_downward
@@ -313,7 +313,7 @@ export default function FinanceDashboard() {
                 {formatCurrency(totalExpenses)}
               </p>
             </div>
-            <div className="bg-white border border-slate-200 rounded-xl p-3 shadow-sm">
+            <div className="glass rounded-2xl p-3 shadow-sm shadow-black/[0.03] shadow-black/[0.03]">
               <div className="flex items-center gap-1 mb-1">
                 <span className="material-symbols-outlined text-[16px]" style={{ color: net >= 0 ? "#10b981" : "#f43f5e" }}>
                   balance
@@ -341,7 +341,7 @@ export default function FinanceDashboard() {
                 .map(([cat, amount]) => (
                   <div
                     key={cat}
-                    className="min-w-[100px] w-[100px] bg-white border border-slate-200 rounded-xl p-3 flex flex-col items-center gap-2 shrink-0"
+                    className="min-w-[100px] w-[100px] glass rounded-2xl p-3 flex flex-col items-center gap-2 shrink-0"
                   >
                     <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${getCategoryColor(cat)}`}>
                       <span className="text-lg">{getCategoryEmoji(cat)}</span>
@@ -376,7 +376,7 @@ export default function FinanceDashboard() {
               {accountSpending.map((acc) => (
                 <div
                   key={acc.id}
-                  className="bg-white border border-slate-200 rounded-xl px-4 py-3 flex items-center gap-3"
+                  className="glass rounded-2xl px-4 py-3 flex items-center gap-3"
                 >
                   <div
                     className={`w-10 h-10 rounded-lg flex items-center justify-center ${ACCOUNT_TYPE_COLORS[acc.type] || "bg-slate-100 text-slate-500"}`}
@@ -481,7 +481,7 @@ export default function FinanceDashboard() {
                     value={subFormName}
                     onChange={(e) => setSubFormName(e.target.value)}
                     placeholder="e.g., Netflix"
-                    className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-900 placeholder:text-slate-400 text-base focus:outline-none focus:ring-2 focus:ring-finance/20 w-full"
+                    className="bg-white/50 backdrop-blur-sm border border-white/40 rounded-2xl px-4 py-3 text-slate-900 placeholder:text-slate-400 text-base focus:outline-none focus:ring-2 focus:ring-finance/20 w-full"
                   />
                 </div>
                 <div>
@@ -494,7 +494,7 @@ export default function FinanceDashboard() {
                     value={subFormAmount}
                     onChange={(e) => setSubFormAmount(e.target.value)}
                     placeholder="0.00"
-                    className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-900 placeholder:text-slate-400 text-base focus:outline-none focus:ring-2 focus:ring-finance/20 w-full"
+                    className="bg-white/50 backdrop-blur-sm border border-white/40 rounded-2xl px-4 py-3 text-slate-900 placeholder:text-slate-400 text-base focus:outline-none focus:ring-2 focus:ring-finance/20 w-full"
                   />
                 </div>
                 <div>
@@ -525,7 +525,7 @@ export default function FinanceDashboard() {
                     type="date"
                     value={subFormNextDate}
                     onChange={(e) => setSubFormNextDate(e.target.value)}
-                    className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-base text-slate-900 focus:outline-none focus:ring-2 focus:ring-finance/20 w-full"
+                    className="bg-white/50 backdrop-blur-sm border border-white/40 rounded-2xl px-4 py-3 text-base text-slate-900 focus:outline-none focus:ring-2 focus:ring-finance/20 w-full"
                   />
                 </div>
                 <div>
@@ -535,7 +535,7 @@ export default function FinanceDashboard() {
                   <select
                     value={subFormAccountId}
                     onChange={(e) => setSubFormAccountId(e.target.value)}
-                    className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-base text-slate-900 focus:outline-none focus:ring-2 focus:ring-finance/20 w-full"
+                    className="bg-white/50 backdrop-blur-sm border border-white/40 rounded-2xl px-4 py-3 text-base text-slate-900 focus:outline-none focus:ring-2 focus:ring-finance/20 w-full"
                   >
                     <option value="">Select account</option>
                     {accounts.map((acc) => (
@@ -552,7 +552,7 @@ export default function FinanceDashboard() {
                   <select
                     value={subFormCategory}
                     onChange={(e) => setSubFormCategory(e.target.value)}
-                    className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-base text-slate-900 focus:outline-none focus:ring-2 focus:ring-finance/20 w-full"
+                    className="bg-white/50 backdrop-blur-sm border border-white/40 rounded-2xl px-4 py-3 text-base text-slate-900 focus:outline-none focus:ring-2 focus:ring-finance/20 w-full"
                   >
                     {categories.map((cat) => (
                       <option key={cat.id} value={cat.name}>
@@ -589,7 +589,7 @@ export default function FinanceDashboard() {
                 <div className="flex gap-3 w-full mt-2">
                   <button
                     onClick={() => setSelectedSubscription(null)}
-                    className="flex-1 py-3 rounded-xl text-sm font-semibold bg-slate-100 text-slate-600 active:bg-slate-200"
+                    className="flex-1 py-3 rounded-xl text-sm font-semibold bg-slate-100 text-slate-600 active:bg-white/50"
                   >
                     Cancel
                   </button>
@@ -617,7 +617,7 @@ export default function FinanceDashboard() {
                     {subscriptions.map((sub) => (
                       <div
                         key={sub.id}
-                        className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-3"
+                        className="bg-white/50 backdrop-blur-sm border border-white/40 rounded-2xl px-4 py-3"
                       >
                         <div className="flex items-center gap-2">
                           <div
@@ -637,7 +637,7 @@ export default function FinanceDashboard() {
                                 {sub.accounts?.name}
                               </span>
                               <span className="text-xs text-slate-400">·</span>
-                              <span className="text-[10px] font-bold uppercase bg-slate-200 text-slate-500 rounded px-1.5 py-0.5">
+                              <span className="text-[10px] font-bold uppercase bg-white/40 text-slate-500 rounded px-1.5 py-0.5">
                                 {sub.billing_type === "monthly"
                                   ? "Monthly"
                                   : "Yearly"}
@@ -647,13 +647,13 @@ export default function FinanceDashboard() {
                           <div className="flex items-center gap-1 shrink-0">
                             <button
                               onClick={() => openSubEdit(sub)}
-                              className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center text-slate-500 active:bg-blue-100 active:text-blue-500"
+                              className="w-8 h-8 rounded-full bg-white/40 flex items-center justify-center text-slate-500 active:bg-blue-100 active:text-blue-500"
                             >
                               <span className="material-symbols-outlined text-[16px]">edit</span>
                             </button>
                             <button
                               onClick={() => handleSubDelete(sub.id, setSubscriptions)}
-                              className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center text-slate-500 active:bg-rose-100 active:text-rose-500"
+                              className="w-8 h-8 rounded-full bg-white/40 flex items-center justify-center text-slate-500 active:bg-rose-100 active:text-rose-500"
                             >
                               <span className="material-symbols-outlined text-[16px]">delete</span>
                             </button>
@@ -692,7 +692,7 @@ export default function FinanceDashboard() {
                     value={txAmount}
                     onChange={(e) => setTxAmount(e.target.value)}
                     placeholder="0.00"
-                    className="bg-slate-50 border border-slate-200 rounded-xl pl-8 pr-4 py-3 text-2xl font-bold text-slate-900 placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-finance/20 focus:border-finance w-full"
+                    className="bg-white/50 backdrop-blur-sm border border-white/40 rounded-2xl pl-8 pr-4 py-3 text-2xl font-bold text-slate-900 placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-finance/20 focus:border-finance w-full"
                   />
                 </div>
               </div>
@@ -713,7 +713,7 @@ export default function FinanceDashboard() {
                       value={txPersonalAmount}
                       onChange={(e) => setTxPersonalAmount(e.target.value)}
                       placeholder={txAmount || "Same as total"}
-                      className="bg-slate-50 border border-slate-200 rounded-xl pl-8 pr-4 py-2.5 text-base font-semibold text-slate-900 placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-finance/20 focus:border-finance w-full"
+                      className="bg-white/50 backdrop-blur-sm border border-white/40 rounded-2xl pl-8 pr-4 py-2.5 text-base font-semibold text-slate-900 placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-finance/20 focus:border-finance w-full"
                     />
                   </div>
                   <p className="text-[10px] text-slate-400 mt-1">
@@ -731,7 +731,7 @@ export default function FinanceDashboard() {
                   type="date"
                   value={txDate}
                   onChange={(e) => setTxDate(e.target.value)}
-                  className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-base text-slate-900 focus:outline-none focus:ring-2 focus:ring-finance/20 w-full"
+                  className="bg-white/50 backdrop-blur-sm border border-white/40 rounded-2xl px-4 py-3 text-base text-slate-900 focus:outline-none focus:ring-2 focus:ring-finance/20 w-full"
                 />
               </div>
 
@@ -743,7 +743,7 @@ export default function FinanceDashboard() {
                 <select
                   value={txAccountId}
                   onChange={(e) => setTxAccountId(e.target.value)}
-                  className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-base text-slate-900 focus:outline-none focus:ring-2 focus:ring-finance/20 w-full"
+                  className="bg-white/50 backdrop-blur-sm border border-white/40 rounded-2xl px-4 py-3 text-base text-slate-900 focus:outline-none focus:ring-2 focus:ring-finance/20 w-full"
                 >
                   <option value="">Select</option>
                   {accounts.map((acc) => (
@@ -788,7 +788,7 @@ export default function FinanceDashboard() {
                       <select
                         value={txToAccountId}
                         onChange={(e) => setTxToAccountId(e.target.value)}
-                        className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-base text-slate-900 focus:outline-none focus:ring-2 focus:ring-finance/20 w-full"
+                        className="bg-white/50 backdrop-blur-sm border border-white/40 rounded-2xl px-4 py-3 text-base text-slate-900 focus:outline-none focus:ring-2 focus:ring-finance/20 w-full"
                       >
                         <option value="">Select</option>
                         {accounts
@@ -810,7 +810,7 @@ export default function FinanceDashboard() {
                         value={txPersonName}
                         onChange={(e) => setTxPersonName(e.target.value)}
                         placeholder="e.g., John"
-                        className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-base text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-finance/20 w-full"
+                        className="bg-white/50 backdrop-blur-sm border border-white/40 rounded-2xl px-4 py-3 text-base text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-finance/20 w-full"
                       />
                     </div>
                   )}
@@ -828,7 +828,7 @@ export default function FinanceDashboard() {
                     value={txFromPersonName}
                     onChange={(e) => setTxFromPersonName(e.target.value)}
                     placeholder="e.g., John"
-                    className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-base text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-finance/20 w-full"
+                    className="bg-white/50 backdrop-blur-sm border border-white/40 rounded-2xl px-4 py-3 text-base text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-finance/20 w-full"
                   />
                 </div>
               )}
@@ -862,7 +862,7 @@ export default function FinanceDashboard() {
                         className={`relative flex flex-col items-center gap-1 py-2.5 rounded-xl text-[10px] font-semibold border-2 ${
                           !editingCategories && txCategory === cat.name
                             ? "border-finance bg-finance/5 text-finance"
-                            : "border-transparent bg-slate-50 text-slate-500"
+                            : "border-transparent bg-white/40 text-slate-500"
                         }`}
                       >
                         {editingCategories && (
@@ -881,7 +881,7 @@ export default function FinanceDashboard() {
                           setNewCatEmoji("📦");
                           setShowAddCategory(true);
                         }}
-                        className="flex flex-col items-center gap-1 py-2.5 rounded-xl text-[10px] font-semibold border-2 border-dashed border-slate-300 bg-slate-50 text-slate-400"
+                        className="flex flex-col items-center gap-1 py-2.5 rounded-xl text-[10px] font-semibold border-2 border-dashed border-white/40 bg-white/40 text-slate-400"
                       >
                         <span className="text-lg">+</span>
                         Add
@@ -889,7 +889,7 @@ export default function FinanceDashboard() {
                     )}
                   </div>
                   {showAddCategory && (
-                    <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 mt-3 flex flex-col gap-3">
+                    <div className="bg-white/50 backdrop-blur-sm border border-white/40 rounded-2xl p-4 mt-3 flex flex-col gap-3">
                       <div>
                         <label className="text-xs font-medium text-slate-500 mb-1 block">
                           Category Name
@@ -899,7 +899,7 @@ export default function FinanceDashboard() {
                           value={newCatName}
                           onChange={(e) => setNewCatName(e.target.value)}
                           placeholder="e.g., Pets"
-                          className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-base text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-finance/20 w-full"
+                          className="glass rounded-lg px-3 py-2 text-base text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-finance/20 w-full"
                         />
                       </div>
                       <div>
@@ -916,7 +916,7 @@ export default function FinanceDashboard() {
                             setNewCatEmoji(emojis.length > 0 ? emojis[emojis.length - 1] : "");
                           }}
                           placeholder="Tap to pick emoji"
-                          className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-2xl text-center w-16 h-12 focus:outline-none focus:ring-2 focus:ring-finance/20"
+                          className="glass rounded-lg px-3 py-2 text-2xl text-center w-16 h-12 focus:outline-none focus:ring-2 focus:ring-finance/20"
                         />
                       </div>
                       <div className="flex gap-2">
@@ -964,7 +964,7 @@ export default function FinanceDashboard() {
                         ? "Transfer note"
                         : "What was this for?"
                   }
-                  className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-base text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-finance/20 w-full"
+                  className="bg-white/50 backdrop-blur-sm border border-white/40 rounded-2xl px-4 py-3 text-base text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-finance/20 w-full"
                 />
               </div>
 

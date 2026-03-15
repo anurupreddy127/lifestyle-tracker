@@ -4,7 +4,7 @@ import Link from 'next/link'
 
 export default function Home() {
   return (
-    <div className="h-[100dvh] flex flex-col items-center justify-center px-6 bg-slate-50 overflow-hidden">
+    <div className="h-[100dvh] flex flex-col items-center justify-center px-6 overflow-hidden">
       {/* Title */}
       <div className="text-center mb-10">
         <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">
@@ -18,9 +18,15 @@ export default function Home() {
         {/* Gym Card */}
         <Link
           href="/gym"
-          className="flex items-center gap-5 bg-primary rounded-2xl p-6 shadow-lg shadow-primary/20 active:scale-[0.98] transition-transform"
+          className="flex items-center gap-5 rounded-2xl p-6 shadow-lg shadow-primary/15 active:scale-[0.98] transition-transform cursor-pointer"
+          style={{
+            background: 'linear-gradient(135deg, rgba(37, 106, 244, 0.85), rgba(37, 106, 244, 0.65))',
+            backdropFilter: 'blur(20px)',
+            WebkitBackdropFilter: 'blur(20px)',
+            border: '1px solid rgba(255,255,255,0.25)',
+          }}
         >
-          <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center">
+          <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-sm">
             <span className="material-symbols-outlined text-white text-[36px]">
               fitness_center
             </span>
@@ -37,9 +43,15 @@ export default function Home() {
         {/* Finance Card */}
         <Link
           href="/finance"
-          className="flex items-center gap-5 bg-finance rounded-2xl p-6 shadow-lg shadow-finance/20 active:scale-[0.98] transition-transform"
+          className="flex items-center gap-5 rounded-2xl p-6 shadow-lg shadow-finance/15 active:scale-[0.98] transition-transform cursor-pointer"
+          style={{
+            background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.85), rgba(16, 185, 129, 0.65))',
+            backdropFilter: 'blur(20px)',
+            WebkitBackdropFilter: 'blur(20px)',
+            border: '1px solid rgba(255,255,255,0.25)',
+          }}
         >
-          <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center">
+          <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-sm">
             <span className="material-symbols-outlined text-white text-[36px]">
               account_balance_wallet
             </span>

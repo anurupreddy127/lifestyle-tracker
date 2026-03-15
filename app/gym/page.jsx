@@ -61,7 +61,13 @@ export default function GymHome() {
       {activeWorkout && (
         <button
           onClick={() => router.push(`/gym/workout/${activeWorkout.day_id}`)}
-          className="w-full mb-4 bg-gradient-to-r from-primary to-blue-600 rounded-xl p-4 flex items-center gap-3 shadow-lg shadow-primary/20 active:opacity-90"
+          className="w-full mb-4 rounded-2xl p-4 flex items-center gap-3 shadow-lg shadow-primary/15 active:opacity-90 cursor-pointer"
+          style={{
+            background: 'linear-gradient(135deg, rgba(37, 106, 244, 0.85), rgba(59, 130, 246, 0.7))',
+            backdropFilter: 'blur(16px)',
+            WebkitBackdropFilter: 'blur(16px)',
+            border: '1px solid rgba(255,255,255,0.2)',
+          }}
         >
           <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center shrink-0">
             <span className="material-symbols-outlined text-white text-[22px]">play_arrow</span>
@@ -94,7 +100,7 @@ export default function GymHome() {
                 onEdit={() => router.push(`/gym/builder/${day.id}`)}
                 onDelete={() => handleDeleteDay(day.id)}
               >
-                <div className="bg-white border border-slate-200 rounded-xl shadow-sm p-3 flex items-center gap-3">
+                <div className="glass rounded-2xl shadow-sm shadow-black/[0.03] p-3 flex items-center gap-3">
                   {/* Thumbnail */}
                   <div className={`w-20 h-20 rounded-lg bg-gradient-to-br ${gradient} flex items-center justify-center shrink-0`}>
                     <span className="material-symbols-outlined text-white/80 text-3xl">fitness_center</span>
@@ -131,7 +137,7 @@ export default function GymHome() {
       {/* Create New Day Button */}
       <button
         onClick={() => router.push('/gym/builder')}
-        className="border-2 border-dashed border-slate-300 bg-slate-100 rounded-xl h-14 w-full font-bold text-slate-600 text-sm mt-4 flex items-center justify-center gap-2 active:bg-slate-200"
+        className="border-2 border-dashed border-white/50 bg-white/30 backdrop-blur-sm rounded-2xl h-14 w-full font-bold text-slate-600 text-sm mt-4 flex items-center justify-center gap-2 active:bg-white/50 cursor-pointer transition-colors"
         aria-label="Create new workout day"
       >
         <span className="material-symbols-outlined text-[20px]">add_circle</span>

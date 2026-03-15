@@ -135,8 +135,8 @@ export default function ProfilePage() {
   return (
     <div className="px-4 pt-2 pb-4">
       {/* User info */}
-      <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm mb-4 flex items-center gap-4">
-        <div className="w-14 h-14 rounded-full bg-primary flex items-center justify-center shrink-0">
+      <div className="glass rounded-2xl p-5 shadow-sm shadow-black/[0.03] mb-4 flex items-center gap-4">
+        <div className="w-14 h-14 rounded-full bg-primary/90 flex items-center justify-center shrink-0 shadow-lg shadow-primary/20">
           <span className="material-symbols-outlined text-white text-2xl">person</span>
         </div>
         <div className="flex-1 min-w-0">
@@ -146,11 +146,11 @@ export default function ProfilePage() {
       </div>
 
       {/* Settings */}
-      <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden mb-4">
-        <div className="divide-y divide-slate-100">
+      <div className="glass rounded-2xl shadow-sm shadow-black/[0.03] overflow-hidden mb-4">
+        <div className="divide-y divide-white/30">
           <button
             onClick={() => router.push('/gym')}
-            className="w-full flex items-center gap-3 px-4 py-3.5 active:bg-slate-50"
+            className="w-full flex items-center gap-3 px-4 py-3.5 active:bg-white/40"
           >
             <span className="material-symbols-outlined text-slate-500 text-[20px]">fitness_center</span>
             <span className="flex-1 text-sm font-medium text-slate-900 text-left">Gym Workouts</span>
@@ -159,7 +159,7 @@ export default function ProfilePage() {
 
           <button
             onClick={() => router.push('/finance')}
-            className="w-full flex items-center gap-3 px-4 py-3.5 active:bg-slate-50"
+            className="w-full flex items-center gap-3 px-4 py-3.5 active:bg-white/40"
           >
             <span className="material-symbols-outlined text-slate-500 text-[20px]">account_balance_wallet</span>
             <span className="flex-1 text-sm font-medium text-slate-900 text-left">Finance Dashboard</span>
@@ -168,7 +168,7 @@ export default function ProfilePage() {
 
           <button
             onClick={() => router.push('/gym/stats')}
-            className="w-full flex items-center gap-3 px-4 py-3.5 active:bg-slate-50"
+            className="w-full flex items-center gap-3 px-4 py-3.5 active:bg-white/40"
           >
             <span className="material-symbols-outlined text-slate-500 text-[20px]">monitoring</span>
             <span className="flex-1 text-sm font-medium text-slate-900 text-left">Stats & Analytics</span>
@@ -178,8 +178,8 @@ export default function ProfilePage() {
       </div>
 
       {/* API Keys */}
-      <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden mb-4">
-        <div className="px-4 py-3.5 flex items-center justify-between border-b border-slate-100">
+      <div className="glass rounded-2xl shadow-sm shadow-black/[0.03] overflow-hidden mb-4">
+        <div className="px-4 py-3.5 flex items-center justify-between border-b border-white/30">
           <div className="flex items-center gap-3">
             <span className="material-symbols-outlined text-slate-500 text-[20px]">key</span>
             <span className="text-sm font-semibold text-slate-900">API Keys</span>
@@ -205,7 +205,7 @@ export default function ProfilePage() {
             <p className="text-[11px] text-slate-300 mt-1">Generate a key to use with iPhone Shortcuts</p>
           </div>
         ) : (
-          <div className="divide-y divide-slate-100">
+          <div className="divide-y divide-white/30">
             {apiKeys.map((key) => (
               <div key={key.id} className="flex items-center gap-3 px-4 py-3">
                 <div className="flex-1 min-w-0">
@@ -226,8 +226,8 @@ export default function ProfilePage() {
       </div>
 
       {/* About */}
-      <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden mb-6">
-        <div className="divide-y divide-slate-100">
+      <div className="glass rounded-2xl shadow-sm shadow-black/[0.03] overflow-hidden mb-6">
+        <div className="divide-y divide-white/30">
           <div className="flex items-center gap-3 px-4 py-3.5">
             <span className="material-symbols-outlined text-slate-500 text-[20px]">info</span>
             <span className="flex-1 text-sm font-medium text-slate-900">Version</span>
@@ -239,7 +239,7 @@ export default function ProfilePage() {
       {/* Sign Out */}
       <button
         onClick={handleSignOut}
-        className="w-full bg-white border border-rose-200 rounded-xl py-3.5 text-rose-500 font-semibold text-sm flex items-center justify-center gap-2 active:bg-rose-50"
+        className="w-full glass rounded-2xl py-3.5 text-rose-500 font-semibold text-sm flex items-center justify-center gap-2 active:bg-rose-50/30 cursor-pointer"
       >
         <span className="material-symbols-outlined text-[18px]">logout</span>
         Sign Out
@@ -260,7 +260,7 @@ export default function ProfilePage() {
                 value={keyName}
                 onChange={(e) => setKeyName(e.target.value)}
                 placeholder="iPhone Shortcut"
-                className="w-full border border-slate-200 rounded-xl px-4 py-3 text-base text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+                className="w-full bg-white/50 backdrop-blur-sm border border-white/40 rounded-xl px-4 py-3 text-base text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/40"
               />
             </div>
 
@@ -274,7 +274,7 @@ export default function ProfilePage() {
           </div>
         ) : (
           <div className="space-y-4">
-            <div className="bg-amber-50 border border-amber-200 rounded-xl p-3">
+            <div className="bg-amber-500/10 backdrop-blur-sm border border-amber-500/20 rounded-xl p-3">
               <p className="text-xs font-semibold text-amber-700 mb-1">
                 <span className="material-symbols-outlined text-[14px] align-middle mr-1">warning</span>
                 Save this key now — you won't see it again!
@@ -282,7 +282,7 @@ export default function ProfilePage() {
               <p className="text-[11px] text-amber-600">Copy it and paste it into your iPhone Shortcut.</p>
             </div>
 
-            <div className="bg-slate-50 border border-slate-200 rounded-xl p-4">
+            <div className="bg-white/40 backdrop-blur-sm border border-white/30 rounded-xl p-4">
               <p className="text-xs font-mono text-slate-700 break-all select-all leading-relaxed">
                 {newRawKey}
               </p>
@@ -304,7 +304,7 @@ export default function ProfilePage() {
 
             <button
               onClick={() => setShowKeyModal(false)}
-              className="w-full bg-slate-100 text-slate-700 font-semibold text-sm py-3.5 rounded-xl active:scale-[0.98]"
+              className="w-full bg-white/50 text-slate-700 font-semibold text-sm py-3.5 rounded-xl active:scale-[0.98]"
             >
               Done
             </button>

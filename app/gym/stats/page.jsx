@@ -169,7 +169,7 @@ export default function GymStats() {
   return (
     <div className="px-4 pt-2 pb-4">
       {/* Main tabs */}
-      <div className="flex border-b border-slate-200 mb-4">
+      <div className="flex border-b border-white/30 mb-4">
         {['frequency', 'prs'].map((tab) => (
           <button
             key={tab}
@@ -188,7 +188,7 @@ export default function GymStats() {
       {mainTab === 'frequency' && (
         <>
           {/* Time range tabs */}
-          <div className="bg-slate-200 rounded-xl p-1 flex mb-6">
+          <div className="bg-white/40 rounded-xl p-1 flex mb-6">
             {['week', 'month', 'year'].map((range) => (
               <button
                 key={range}
@@ -199,7 +199,7 @@ export default function GymStats() {
                 }}
                 className={`flex-1 py-2 rounded-lg text-sm font-semibold transition-colors ${
                   timeRange === range
-                    ? 'bg-white text-primary shadow-sm'
+                    ? 'bg-white text-primary shadow-sm shadow-black/[0.03]'
                     : 'text-slate-600'
                 }`}
               >
@@ -218,7 +218,7 @@ export default function GymStats() {
                     <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
                       d.active
                         ? 'bg-primary'
-                        : 'bg-slate-100 border-2 border-dashed border-slate-300'
+                        : 'bg-slate-100 border-2 border-dashed border-white/40'
                     }`}>
                       {d.active && <span className="material-symbols-outlined text-white text-[16px]">check</span>}
                     </div>
@@ -227,12 +227,12 @@ export default function GymStats() {
               </div>
 
               <div className="grid grid-cols-2 gap-3">
-                <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
+                <div className="glass rounded-2xl p-4 shadow-sm shadow-black/[0.03]">
                   <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">This Week</p>
                   <p className="text-2xl font-bold text-slate-900">{weekWorkouts}</p>
                   <p className="text-xs text-slate-500">Workouts</p>
                 </div>
-                <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
+                <div className="glass rounded-2xl p-4 shadow-sm shadow-black/[0.03]">
                   <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">All Time</p>
                   <p className="text-2xl font-bold text-slate-900">{allTimeCount}</p>
                   <p className="text-xs text-slate-500">Total Sessions</p>
@@ -252,7 +252,7 @@ export default function GymStats() {
                 <div className="flex items-center justify-between mb-5">
                   <button
                     onClick={() => navigateMonth(-1)}
-                    className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center active:bg-slate-200"
+                    className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center active:bg-white/50"
                   >
                     <span className="material-symbols-outlined text-slate-600 text-[20px]">chevron_left</span>
                   </button>
@@ -261,7 +261,7 @@ export default function GymStats() {
                     onClick={() => navigateMonth(1)}
                     disabled={isCurrentMonth}
                     className={`w-10 h-10 rounded-xl flex items-center justify-center ${
-                      isCurrentMonth ? 'bg-slate-50 text-slate-300' : 'bg-slate-100 text-slate-600 active:bg-slate-200'
+                      isCurrentMonth ? 'bg-white/40 text-slate-300' : 'bg-slate-100 text-slate-600 active:bg-white/50'
                     }`}
                   >
                     <span className="material-symbols-outlined text-[20px]">chevron_right</span>
@@ -302,12 +302,12 @@ export default function GymStats() {
 
                 {/* Summary stat cards */}
                 <div className="grid grid-cols-2 gap-3 mb-4">
-                  <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
+                  <div className="glass rounded-2xl p-4 shadow-sm shadow-black/[0.03]">
                     <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">This Month</p>
                     <p className="text-2xl font-bold text-slate-900">{monthData.totalWorkouts}</p>
                     <p className="text-xs text-slate-500">Workouts</p>
                   </div>
-                  <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
+                  <div className="glass rounded-2xl p-4 shadow-sm shadow-black/[0.03]">
                     <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Weekly Avg</p>
                     <p className="text-2xl font-bold text-slate-900">{monthData.avgPerWeek}</p>
                     <p className="text-xs text-slate-500">Per Week</p>
@@ -316,7 +316,7 @@ export default function GymStats() {
 
                 {/* Most trained breakdown */}
                 {monthData.topDays.length > 0 && (
-                  <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
+                  <div className="glass rounded-2xl p-4 shadow-sm shadow-black/[0.03]">
                     <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Most Trained</p>
                     <div className="flex flex-col gap-2.5">
                       {monthData.topDays.map(([name, count]) => {
@@ -353,9 +353,9 @@ export default function GymStats() {
             if (isLoadingYear) {
               return (
                 <div className="flex flex-col gap-3">
-                  <div className="bg-slate-200 rounded-xl w-full h-48 animate-pulse" />
+                  <div className="bg-white/40 rounded-xl w-full h-48 animate-pulse" />
                   <div className="grid grid-cols-3 gap-2">
-                    {[1, 2, 3].map(i => <div key={i} className="bg-slate-200 rounded-xl h-20 animate-pulse" />)}
+                    {[1, 2, 3].map(i => <div key={i} className="bg-white/40 rounded-xl h-20 animate-pulse" />)}
                   </div>
                 </div>
               )
@@ -369,7 +369,7 @@ export default function GymStats() {
                 <div className="flex items-center justify-between mb-5">
                   <button
                     onClick={() => navigateYear(-1)}
-                    className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center active:bg-slate-200"
+                    className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center active:bg-white/50"
                   >
                     <span className="material-symbols-outlined text-slate-600 text-[20px]">chevron_left</span>
                   </button>
@@ -378,7 +378,7 @@ export default function GymStats() {
                     onClick={() => navigateYear(1)}
                     disabled={isCurrentYear}
                     className={`w-10 h-10 rounded-xl flex items-center justify-center ${
-                      isCurrentYear ? 'bg-slate-50 text-slate-300' : 'bg-slate-100 text-slate-600 active:bg-slate-200'
+                      isCurrentYear ? 'bg-white/40 text-slate-300' : 'bg-slate-100 text-slate-600 active:bg-white/50'
                     }`}
                   >
                     <span className="material-symbols-outlined text-[20px]">chevron_right</span>
@@ -393,7 +393,7 @@ export default function GymStats() {
                 ) : (
                   <>
                     {/* Bar chart */}
-                    <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm mb-4">
+                    <div className="glass rounded-2xl p-4 shadow-sm shadow-black/[0.03] mb-4">
                       <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">Workouts Per Month</p>
                       <div className="flex items-end justify-between gap-1" style={{ height: '140px' }}>
                         {yearData.months.map((m) => {
@@ -430,17 +430,17 @@ export default function GymStats() {
 
                     {/* Summary stat cards */}
                     <div className="grid grid-cols-3 gap-2">
-                      <div className="bg-white border border-slate-200 rounded-xl p-3 shadow-sm">
+                      <div className="glass rounded-2xl p-3 shadow-sm shadow-black/[0.03]">
                         <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Total</p>
                         <p className="text-xl font-bold text-slate-900">{yearData.totalWorkouts}</p>
                         <p className="text-[10px] text-slate-500">Workouts</p>
                       </div>
-                      <div className="bg-white border border-slate-200 rounded-xl p-3 shadow-sm">
+                      <div className="glass rounded-2xl p-3 shadow-sm shadow-black/[0.03]">
                         <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Avg</p>
                         <p className="text-xl font-bold text-slate-900">{yearData.avgPerMonth}</p>
                         <p className="text-[10px] text-slate-500">Per Month</p>
                       </div>
-                      <div className="bg-white border border-slate-200 rounded-xl p-3 shadow-sm">
+                      <div className="glass rounded-2xl p-3 shadow-sm shadow-black/[0.03]">
                         <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Best</p>
                         <p className="text-xl font-bold text-primary">{yearData.bestMonth.label}</p>
                         <p className="text-[10px] text-slate-500">{yearData.bestMonth.count} workouts</p>
@@ -461,7 +461,7 @@ export default function GymStats() {
               </div>
               <div className="flex flex-col gap-2">
                 {personalRecords.slice(0, 3).map((pr) => (
-                  <div key={pr.exercise_id} className="bg-white border border-slate-200 rounded-xl p-3 flex items-center gap-3 shadow-sm">
+                  <div key={pr.exercise_id} className="glass rounded-2xl p-3 flex items-center gap-3 shadow-sm shadow-black/[0.03]">
                     <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
                       <span className="material-symbols-outlined text-primary text-[18px]">emoji_events</span>
                     </div>
@@ -489,7 +489,7 @@ export default function GymStats() {
           ) : (
             <div className="flex flex-col gap-2">
               {personalRecords.map((pr) => (
-                <div key={pr.exercise_id} className="bg-white border border-slate-200 rounded-xl p-4 flex items-center gap-3 shadow-sm">
+                <div key={pr.exercise_id} className="glass rounded-2xl p-4 flex items-center gap-3 shadow-sm shadow-black/[0.03]">
                   <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">
                     <span className="material-symbols-outlined text-primary text-xl">emoji_events</span>
                   </div>

@@ -129,7 +129,7 @@ export default function ExerciseLibrary() {
             className={`px-4 h-9 rounded-full text-sm font-semibold whitespace-nowrap shrink-0 ${
               filter === f.value
                 ? 'bg-primary text-white'
-                : 'bg-slate-200 text-slate-700'
+                : 'bg-white/40 text-slate-700'
             }`}
           >
             {f.label}
@@ -163,7 +163,7 @@ export default function ExerciseLibrary() {
                     onEdit={() => openEditModal(exercise)}
                     onDelete={() => handleDelete(exercise.id)}
                   >
-                    <div className="bg-white border border-slate-100 rounded-xl p-3 flex items-center gap-3">
+                    <div className="glass border border-white/30 rounded-2xl p-3 flex items-center gap-3">
                       {/* Icon */}
                       <div className="w-14 h-14 bg-slate-100 rounded-lg flex items-center justify-center shrink-0">
                         <span className="material-symbols-outlined text-slate-400 text-xl">fitness_center</span>
@@ -186,7 +186,7 @@ export default function ExerciseLibrary() {
       )}
 
       {/* Fixed Add Button */}
-      <div className="fixed left-0 right-0 px-4 pb-2 pt-6 bg-gradient-to-t from-slate-50 via-slate-50 to-transparent z-10" style={{ bottom: 'calc(4.5rem + env(safe-area-inset-bottom))' }}>
+      <div className="fixed left-0 right-0 px-4 pb-2 pt-6 bg-gradient-to-t from-white/80 via-white/40 to-transparent z-10" style={{ bottom: 'calc(4.5rem + env(safe-area-inset-bottom))' }}>
         <button
           onClick={openAddModal}
           className="bg-primary text-white font-bold rounded-xl py-4 w-full text-base shadow-lg shadow-primary/20 flex items-center justify-center gap-2 active:bg-primary/90"
@@ -211,7 +211,7 @@ export default function ExerciseLibrary() {
               placeholder="e.g., Barbell Back Squat"
               value={formName}
               onChange={(e) => setFormName(e.target.value)}
-              className="bg-slate-100 border-none rounded-xl px-4 py-3.5 text-slate-900 placeholder:text-slate-400 text-base focus:outline-none focus:ring-2 focus:ring-primary/20 w-full"
+              className="bg-white/50 backdrop-blur-sm border border-white/40 rounded-xl px-4 py-3.5 text-slate-900 placeholder:text-slate-400 text-base focus:outline-none focus:ring-2 focus:ring-primary/20 w-full"
             />
           </div>
 
@@ -237,7 +237,7 @@ export default function ExerciseLibrary() {
           <div className="flex gap-2 mt-2">
             <button
               onClick={() => setShowModal(false)}
-              className="flex-1 bg-slate-100 text-slate-600 font-semibold rounded-xl py-3.5 text-sm"
+              className="flex-1 bg-white/40 text-slate-600 font-semibold rounded-xl py-3.5 text-sm"
             >
               Cancel
             </button>

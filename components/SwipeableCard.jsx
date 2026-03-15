@@ -129,7 +129,7 @@ export default function SwipeableCard({ children, onEdit, onDelete, id }) {
   if (buttonCount === 0) return children
 
   return (
-    <div className="relative overflow-hidden rounded-xl">
+    <div className="relative overflow-hidden rounded-2xl">
       {/* Action buttons behind */}
       <div className="absolute right-0 top-0 bottom-0 flex items-center">
         {hasEdit && (
