@@ -96,28 +96,31 @@ export default function ActiveWorkout() {
         saveWorkoutToStorage(day_id, name, initInputs)
       }
 
-      // Fetch previous session logs
-      const { data: lastSession } = await supabase
+      // Fetch previous session logs (RLS handles user filtering)
+      // Fetch recent sessions and find the first one that has actual logs
+      const { data: sessions } = await supabase
         .from('workout_sessions')
         .select('id')
         .eq('day_id', day_id)
         .order('performed_at', { ascending: false })
-        .limit(1)
-        .single()
+        .limit(5)
 
-      if (lastSession) {
+      for (const session of (sessions || [])) {
         const { data: logs } = await supabase
           .from('workout_logs')
           .select('exercise_id, weight, weight_type, reps, set_number')
-          .eq('session_id', lastSession.id)
+          .eq('session_id', session.id)
           .order('set_number', { ascending: true })
 
-        const logMap = {}
-        ;(logs || []).forEach((log) => {
-          if (!logMap[log.exercise_id]) logMap[log.exercise_id] = []
-          logMap[log.exercise_id].push(log)
-        })
-        setPreviousLogs(logMap)
+        if (logs && logs.length > 0) {
+          const logMap = {}
+          logs.forEach((log) => {
+            if (!logMap[log.exercise_id]) logMap[log.exercise_id] = []
+            logMap[log.exercise_id].push(log)
+          })
+          setPreviousLogs(logMap)
+          break
+        }
       }
 
       setLoading(false)
@@ -323,56 +326,94 @@ export default function ActiveWorkout() {
                 )}
               </button>
 
-              {/* Collapsible set rows */}
+              {/* Collapsible set rows — table layout */}
               {!collapsed && (
                 <div className="px-4 pb-4">
-                  {!allDone && prevSets.length > 0 && (
-                    <p className="text-xs text-dark-muted mb-3">
-                      Last: {prevSets[0].weight} lbs × {prevSets[0].reps} reps
-                    </p>
-                  )}
-                  {!allDone && prevSets.length === 0 && (
-                    <p className="text-xs text-dark-muted mb-3">No previous data</p>
-                  )}
+                  {/* Column headers */}
+                  <div className={`grid items-center gap-2 mb-2 ${
+                    ex.exercises.equipment_type !== 'no_equipment'
+                      ? 'grid-cols-[2.5rem_3.5rem_1fr_1fr_2.5rem]'
+                      : 'grid-cols-[2.5rem_3.5rem_1fr_2.5rem]'
+                  }`}>
+                    <span className="text-[11px] font-bold text-dark-muted text-center uppercase">Set</span>
+                    <span className="text-[11px] font-bold text-dark-muted text-center uppercase">Prev</span>
+                    {ex.exercises.equipment_type !== 'no_equipment' && (
+                      <span className="text-[11px] font-bold text-dark-muted text-center uppercase">Lbs</span>
+                    )}
+                    <span className="text-[11px] font-bold text-dark-muted text-center uppercase">Reps</span>
+                    <span></span>
+                  </div>
 
-                  <div className="flex flex-col gap-2">
+                  <div className="flex flex-col gap-1.5">
                     {Array.from({ length: totalSets }).map((_, setIdx) => {
                       const setData = exerciseSets[setIdx] || {}
+                      const prevSet = prevSets[setIdx]
+                      const isBodyweight = ex.exercises.equipment_type === 'no_equipment'
+                      const prevText = prevSet
+                        ? isBodyweight
+                          ? `${prevSet.reps}`
+                          : `${prevSet.weight} × ${prevSet.reps}`
+                        : '—'
+
                       return (
-                        <div key={setIdx} className="flex items-center gap-2">
-                          <div className="w-8 h-8 rounded-full bg-dark-card flex items-center justify-center shrink-0">
-                            <span className="text-xs font-bold text-dark-muted">{setIdx + 1}</span>
+                        <div
+                          key={setIdx}
+                          className={`grid items-center gap-2 rounded-xl px-1 py-1.5 transition-colors ${
+                            setData.completed ? 'bg-primary/10' : ''
+                          } ${
+                            isBodyweight
+                              ? 'grid-cols-[2.5rem_3.5rem_1fr_2.5rem]'
+                              : 'grid-cols-[2.5rem_3.5rem_1fr_1fr_2.5rem]'
+                          }`}
+                        >
+                          {/* SET number */}
+                          <div className={`w-8 h-8 rounded-full flex items-center justify-center mx-auto ${
+                            setData.completed ? 'bg-primary/20' : 'bg-dark-input'
+                          }`}>
+                            <span className={`text-xs font-bold ${setData.completed ? 'text-primary' : 'text-dark-muted'}`}>
+                              {setIdx + 1}
+                            </span>
                           </div>
 
-                          {ex.exercises.equipment_type !== 'no_equipment' && (
+                          {/* PREV */}
+                          <span className="text-xs text-dark-muted text-center truncate">{prevText}</span>
+
+                          {/* LBS input */}
+                          {!isBodyweight && (
                             <input
                               type="text"
                               inputMode="decimal"
-                              placeholder="lbs"
+                              placeholder="0"
                               value={setData.weight || ''}
                               onChange={(e) => updateSetInput(ex.exercise_id, setIdx, 'weight', e.target.value)}
-                              className="flex-1 bg-dark-input border border-dark-border rounded-lg px-3 py-2 text-sm text-dark-text placeholder:text-dark-muted focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50 min-w-0"
+                              className={`bg-dark-input border border-dark-border rounded-lg px-3 py-2 text-sm text-center font-medium text-dark-text placeholder:text-dark-muted focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50 min-w-0 ${
+                                setData.completed ? 'bg-primary/10 border-primary/20' : ''
+                              }`}
                             />
                           )}
 
+                          {/* REPS input */}
                           <input
                             type="text"
                             inputMode="numeric"
-                            placeholder="reps"
+                            placeholder="0"
                             value={setData.reps || ''}
                             onChange={(e) => updateSetInput(ex.exercise_id, setIdx, 'reps', e.target.value)}
-                            className="flex-1 bg-dark-input border border-dark-border rounded-lg px-3 py-2 text-sm text-dark-text placeholder:text-dark-muted focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50 min-w-0"
+                            className={`bg-dark-input border border-dark-border rounded-lg px-3 py-2 text-sm text-center font-medium text-dark-text placeholder:text-dark-muted focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50 min-w-0 ${
+                              setData.completed ? 'bg-primary/10 border-primary/20' : ''
+                            }`}
                           />
 
+                          {/* Completion checkbox */}
                           <button
                             onClick={() => toggleSetComplete(ex.exercise_id, setIdx)}
-                            className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 transition-colors ${
+                            className={`w-8 h-8 rounded-full flex items-center justify-center mx-auto shrink-0 transition-colors ${
                               setData.completed
                                 ? 'bg-primary text-white'
-                                : 'bg-dark-card text-dark-muted'
+                                : 'bg-dark-input border border-dark-border text-dark-muted'
                             }`}
                           >
-                            <span className="material-symbols-outlined text-[20px]">check</span>
+                            <span className="material-symbols-outlined text-[18px]">check</span>
                           </button>
                         </div>
                       )
