@@ -6,6 +6,13 @@ import LoadingSkeleton from '@/components/LoadingSkeleton'
 
 const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 
+// Convert UTC timestamp to local YYYY-MM-DD string
+function toLocalDate(utcStr) {
+  if (!utcStr) return ''
+  const d = new Date(utcStr)
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+}
+
 export default function GymStats() {
   const { supabase } = useAuth()
   const [loading, setLoading] = useState(true)
@@ -77,8 +84,8 @@ export default function GymStats() {
     return DAYS.map((_, i) => {
       const day = new Date(startOfWeek)
       day.setDate(startOfWeek.getDate() + i)
-      const dateStr = day.toISOString().split('T')[0]
-      const hasSessions = sessions.some((s) => s.performed_at?.startsWith(dateStr))
+      const dateStr = `${day.getFullYear()}-${String(day.getMonth() + 1).padStart(2, '0')}-${String(day.getDate()).padStart(2, '0')}`
+      const hasSessions = sessions.some((s) => toLocalDate(s.performed_at) === dateStr)
       return { day: DAYS[i], date: dateStr, active: hasSessions }
     })
   }
@@ -94,18 +101,19 @@ export default function GymStats() {
     const prefix = `${year}-${String(month + 1).padStart(2, '0')}`
     const activeDays = new Set()
     sessionsList.forEach(s => {
-      if (s.performed_at?.startsWith(prefix)) {
-        activeDays.add(parseInt(s.performed_at.substring(8, 10), 10))
+      const ld = toLocalDate(s.performed_at)
+      if (ld.startsWith(prefix)) {
+        activeDays.add(parseInt(ld.substring(8, 10), 10))
       }
     })
 
-    const totalWorkouts = sessionsList.filter(s => s.performed_at?.startsWith(prefix)).length
+    const totalWorkouts = sessionsList.filter(s => toLocalDate(s.performed_at).startsWith(prefix)).length
     const weeksInMonth = Math.ceil((daysInMonth + startOffset) / 7)
     const avgPerWeek = weeksInMonth > 0 ? (totalWorkouts / weeksInMonth).toFixed(1) : '0'
 
     const dayBreakdown = {}
     sessionsList.forEach(s => {
-      if (s.performed_at?.startsWith(prefix)) {
+      if (toLocalDate(s.performed_at).startsWith(prefix)) {
         const name = s.workout_days?.name || 'Unknown'
         dayBreakdown[name] = (dayBreakdown[name] || 0) + 1
       }
@@ -120,7 +128,7 @@ export default function GymStats() {
   function getYearData(targetYear, sessionsList) {
     const months = Array.from({ length: 12 }, (_, i) => {
       const prefix = `${targetYear}-${String(i + 1).padStart(2, '0')}`
-      const count = sessionsList.filter(s => s.performed_at?.startsWith(prefix)).length
+      const count = sessionsList.filter(s => toLocalDate(s.performed_at).startsWith(prefix)).length
       return {
         index: i,
         label: new Date(targetYear, i, 1).toLocaleString('default', { month: 'short' }),
