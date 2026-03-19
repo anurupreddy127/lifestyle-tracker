@@ -200,12 +200,15 @@ export default function ActiveWorkout() {
 
     const { data: newSession, error: sessionError } = await supabase
       .from('workout_sessions')
-      .insert({ day_id: day_id, user_id: user.id })
+      .insert({
+        day_id: day_id,
+        user_id: user.id,
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+      })
       .select()
       .single()
 
     if (sessionError || !newSession) {
-      console.error('Failed to create session:', sessionError)
       setToastMsg('Error creating session: ' + (sessionError?.message || 'unknown'))
       setShowToast(true)
       setSaving(false)
@@ -239,14 +242,11 @@ export default function ActiveWorkout() {
     if (logs.length > 0) {
       const { error: logError } = await supabase.from('workout_logs').insert(logs)
       if (logError) {
-        console.error('Failed to save workout logs:', logError)
         setToastMsg('Error saving logs: ' + logError.message)
         setShowToast(true)
         setSaving(false)
         return
       }
-    } else {
-      console.warn('No logs to save — check that sets have weight/reps filled in')
     }
 
     clearWorkoutStorage()
