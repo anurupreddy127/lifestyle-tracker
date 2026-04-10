@@ -96,31 +96,20 @@ export default function ActiveWorkout() {
         saveWorkoutToStorage(day_id, name, initInputs)
       }
 
-      // Fetch previous session logs (RLS handles user filtering)
-      // Fetch recent sessions and find the first one that has actual logs
-      const { data: sessions } = await supabase
-        .from('workout_sessions')
-        .select('id')
-        .eq('day_id', day_id)
-        .order('performed_at', { ascending: false })
-        .limit(5)
-
-      for (const session of (sessions || [])) {
-        const { data: logs } = await supabase
-          .from('workout_logs')
-          .select('exercise_id, weight, weight_type, reps, set_number')
-          .eq('session_id', session.id)
-          .order('set_number', { ascending: true })
-
-        if (logs && logs.length > 0) {
-          const logMap = {}
-          logs.forEach((log) => {
-            if (!logMap[log.exercise_id]) logMap[log.exercise_id] = []
-            logMap[log.exercise_id].push(log)
-          })
-          setPreviousLogs(logMap)
-          break
-        }
+      // Fetch latest logs per exercise across ALL sessions (not just this workout day)
+      const exerciseIds = (dayExercises || []).map(de => de.exercise_id)
+      if (exerciseIds.length > 0) {
+        const { data: logs } = await supabase.rpc('get_latest_exercise_logs', {
+          p_exercise_ids: exerciseIds,
+          p_user_id: user.id,
+        })
+        const logMap = {}
+        ;(logs || []).forEach((log) => {
+          if (!logMap[log.exercise_id]) logMap[log.exercise_id] = []
+          logMap[log.exercise_id].push(log)
+        })
+        Object.values(logMap).forEach(sets => sets.sort((a, b) => a.set_number - b.set_number))
+        setPreviousLogs(logMap)
       }
 
       setLoading(false)
