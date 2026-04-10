@@ -259,25 +259,25 @@ export default function ActiveWorkout() {
     <div className="pb-44" style={{ paddingTop: 'calc(6.5rem + env(safe-area-inset-top))' }}>
       {/* Custom header + progress bar (fixed to top) */}
       <header
-        className="fixed top-0 left-0 right-0 z-20 bg-dark-nav/95 backdrop-blur-md border-b border-dark-border"
+        className="fixed top-0 left-0 right-0 z-20 bg-bg-nav/95 backdrop-blur-md border-b border-border"
         style={{ paddingTop: 'env(safe-area-inset-top)' }}
       >
         <div className="flex items-center px-4 py-3 gap-3">
-          <button onClick={() => router.push('/gym')} className="w-11 h-11 flex items-center justify-center rounded-xl text-dark-muted active:bg-dark-card -ml-1">
+          <button onClick={() => router.push('/gym')} className="w-11 h-11 flex items-center justify-center rounded-xl text-text-secondary active:bg-bg-card -ml-1">
             <span className="material-symbols-outlined text-[24px]">arrow_back</span>
           </button>
           <div className="flex-1 min-w-0">
-            <h1 className="text-lg font-bold leading-tight text-dark-text truncate">{dayName}</h1>
+            <h1 className="text-lg font-bold leading-tight text-text-primary truncate">{dayName}</h1>
           </div>
         </div>
         <div className="px-4 pb-3">
           <div className="flex items-center justify-between mb-1.5">
-            <p className="text-xs font-semibold text-dark-muted">Workout Progress</p>
-            <p className="text-xs font-bold text-primary">{completedCount} of {exercises.length}</p>
+            <p className="text-xs font-semibold text-text-secondary">Workout Progress</p>
+            <p className="text-xs font-bold text-accent">{completedCount} of {exercises.length}</p>
           </div>
-          <div className="w-full bg-dark-card rounded-full h-2">
+          <div className="w-full bg-bg-card rounded-full h-2">
             <div
-              className="bg-primary h-2 rounded-full transition-all duration-300"
+              className="bg-accent h-2 rounded-full transition-all duration-300"
               style={{ width: `${progress}%` }}
             />
           </div>
@@ -296,8 +296,8 @@ export default function ActiveWorkout() {
           return (
             <div
               key={ex.exercise_id}
-              className={`bg-dark-card border border-dark-border border rounded-2xl  transition-all duration-300 ${
-                allDone ? 'border-primary/30 bg-primary/[0.02]' : 'border-dark-border'
+              className={`bg-bg-card border border-border border rounded-2xl  transition-all duration-300 ${
+                allDone ? 'border-accent/30 bg-accent/[0.02]' : 'border-border'
               }`}
             >
               {/* Exercise header — tappable when completed */}
@@ -307,17 +307,17 @@ export default function ActiveWorkout() {
                 className={`w-full flex items-center p-4 text-left ${allDone ? 'cursor-pointer' : 'cursor-default'}`}
               >
                 {allDone && (
-                  <div className="w-8 h-8 rounded-full bg-primary/15 flex items-center justify-center shrink-0 mr-3">
-                    <span className="material-symbols-outlined text-[18px] text-primary" style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>
+                  <div className="w-8 h-8 rounded-full bg-accent/15 flex items-center justify-center shrink-0 mr-3">
+                    <span className="material-symbols-outlined text-[18px] text-accent" style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>
                   </div>
                 )}
                 <div className="flex-1 min-w-0">
-                  <h3 className={`text-lg font-bold ${allDone ? 'text-primary' : 'text-dark-text'}`}>{ex.exercises.name}</h3>
+                  <h3 className={`text-lg font-bold ${allDone ? 'text-accent' : 'text-text-primary'}`}>{ex.exercises.name}</h3>
                   <div className="flex items-center gap-1.5 mt-1 flex-wrap">
-                    <span className="text-xs font-semibold bg-primary/15 text-primary rounded-full px-2.5 py-0.5 inline-flex items-center gap-1">
+                    <span className="text-xs font-semibold bg-accent/15 text-accent rounded-full px-2.5 py-0.5 inline-flex items-center gap-1">
                       Target: {ex.target_sets} × {ex.target_reps}
                     </span>
-                    <span className="text-xs font-semibold bg-dark-card text-dark-muted rounded-full px-2.5 py-0.5 inline-flex items-center gap-1">
+                    <span className="text-xs font-semibold bg-bg-card text-text-secondary rounded-full px-2.5 py-0.5 inline-flex items-center gap-1">
                       <span className="material-symbols-outlined text-[13px]">
                         {ex.exercises.equipment_type === 'barbell_dumbbell' ? 'fitness_center' : ex.exercises.equipment_type === 'machine' ? 'precision_manufacturing' : 'back_hand'}
                       </span>
@@ -326,7 +326,7 @@ export default function ActiveWorkout() {
                   </div>
                 </div>
                 {allDone && (
-                  <span className={`material-symbols-outlined text-[22px] text-dark-muted shrink-0 ml-2 transition-transform duration-200 ${collapsed ? '' : 'rotate-180'}`}>
+                  <span className={`material-symbols-outlined text-[22px] text-text-secondary shrink-0 ml-2 transition-transform duration-200 ${collapsed ? '' : 'rotate-180'}`}>
                     expand_more
                   </span>
                 )}
@@ -341,12 +341,12 @@ export default function ActiveWorkout() {
                       ? 'grid-cols-[2.5rem_3.5rem_1fr_1fr_2.5rem]'
                       : 'grid-cols-[2.5rem_3.5rem_1fr_2.5rem]'
                   }`}>
-                    <span className="text-[11px] font-bold text-dark-muted text-center uppercase">Set</span>
-                    <span className="text-[11px] font-bold text-dark-muted text-center uppercase">Prev</span>
+                    <span className="text-[11px] font-bold text-text-secondary text-center uppercase">Set</span>
+                    <span className="text-[11px] font-bold text-text-secondary text-center uppercase">Prev</span>
                     {ex.exercises.equipment_type !== 'no_equipment' && (
-                      <span className="text-[11px] font-bold text-dark-muted text-center uppercase">Lbs</span>
+                      <span className="text-[11px] font-bold text-text-secondary text-center uppercase">Lbs</span>
                     )}
-                    <span className="text-[11px] font-bold text-dark-muted text-center uppercase">Reps</span>
+                    <span className="text-[11px] font-bold text-text-secondary text-center uppercase">Reps</span>
                     <span></span>
                   </div>
 
@@ -365,7 +365,7 @@ export default function ActiveWorkout() {
                         <div
                           key={setIdx}
                           className={`grid items-center gap-2 rounded-xl px-1 py-1.5 transition-colors ${
-                            setData.completed ? 'bg-primary/10' : ''
+                            setData.completed ? 'bg-accent/10' : ''
                           } ${
                             isBodyweight
                               ? 'grid-cols-[2.5rem_3.5rem_1fr_2.5rem]'
@@ -374,15 +374,15 @@ export default function ActiveWorkout() {
                         >
                           {/* SET number */}
                           <div className={`w-8 h-8 rounded-full flex items-center justify-center mx-auto ${
-                            setData.completed ? 'bg-primary/20' : 'bg-dark-input'
+                            setData.completed ? 'bg-accent/20' : 'bg-bg-input'
                           }`}>
-                            <span className={`text-xs font-bold ${setData.completed ? 'text-primary' : 'text-dark-muted'}`}>
+                            <span className={`text-xs font-bold ${setData.completed ? 'text-accent' : 'text-text-secondary'}`}>
                               {setIdx + 1}
                             </span>
                           </div>
 
                           {/* PREV */}
-                          <span className="text-xs text-dark-muted text-center truncate">{prevText}</span>
+                          <span className="text-xs text-text-secondary text-center truncate">{prevText}</span>
 
                           {/* LBS input */}
                           {!isBodyweight && (
@@ -392,8 +392,8 @@ export default function ActiveWorkout() {
                               placeholder="0"
                               value={setData.weight || ''}
                               onChange={(e) => updateSetInput(ex.exercise_id, setIdx, 'weight', e.target.value)}
-                              className={`bg-dark-input border border-dark-border rounded-lg px-3 py-2 text-sm text-center font-medium text-dark-text placeholder:text-dark-muted focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50 min-w-0 ${
-                                setData.completed ? 'bg-primary/10 border-primary/20' : ''
+                              className={`bg-bg-input border border-border rounded-lg px-3 py-2 text-sm text-center font-medium text-text-primary placeholder:text-text-secondary focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent/50 min-w-0 ${
+                                setData.completed ? 'bg-accent/10 border-accent/20' : ''
                               }`}
                             />
                           )}
@@ -405,8 +405,8 @@ export default function ActiveWorkout() {
                             placeholder="0"
                             value={setData.reps || ''}
                             onChange={(e) => updateSetInput(ex.exercise_id, setIdx, 'reps', e.target.value)}
-                            className={`bg-dark-input border border-dark-border rounded-lg px-3 py-2 text-sm text-center font-medium text-dark-text placeholder:text-dark-muted focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50 min-w-0 ${
-                              setData.completed ? 'bg-primary/10 border-primary/20' : ''
+                            className={`bg-bg-input border border-border rounded-lg px-3 py-2 text-sm text-center font-medium text-text-primary placeholder:text-text-secondary focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent/50 min-w-0 ${
+                              setData.completed ? 'bg-accent/10 border-accent/20' : ''
                             }`}
                           />
 
@@ -415,8 +415,8 @@ export default function ActiveWorkout() {
                             onClick={() => toggleSetComplete(ex.exercise_id, setIdx)}
                             className={`w-8 h-8 rounded-full flex items-center justify-center mx-auto shrink-0 transition-colors ${
                               setData.completed
-                                ? 'bg-primary text-white'
-                                : 'bg-dark-input border border-dark-border text-dark-muted'
+                                ? 'bg-accent text-white'
+                                : 'bg-bg-input border border-border text-text-secondary'
                             }`}
                           >
                             <span className="material-symbols-outlined text-[18px]">check</span>
@@ -434,13 +434,13 @@ export default function ActiveWorkout() {
 
       {/* Fixed bottom buttons */}
       <div
-        className="fixed left-0 right-0 px-4 py-3 bg-dark-nav/95 backdrop-blur-md border-t border-dark-border z-40"
+        className="fixed left-0 right-0 px-4 py-3 bg-bg-nav/95 backdrop-blur-md border-t border-border z-40"
         style={{ bottom: 'calc(5rem + env(safe-area-inset-bottom))' }}
       >
         <div className="grid grid-cols-2 gap-3">
           <button
             onClick={() => { clearWorkoutStorage(); router.push('/gym') }}
-            className="border-2 border-dark-border text-dark-muted font-semibold rounded-xl py-3.5 flex items-center justify-center gap-2"
+            className="border-2 border-border text-text-secondary font-semibold rounded-xl py-3.5 flex items-center justify-center gap-2"
           >
             <span className="material-symbols-outlined text-[18px]">close</span>
             Cancel
@@ -448,7 +448,7 @@ export default function ActiveWorkout() {
           <button
             onClick={handleFinishWorkout}
             disabled={saving}
-            className="bg-primary text-white font-semibold rounded-xl py-3.5 shadow-lg shadow-primary/20 flex items-center justify-center gap-2 disabled:opacity-50"
+            className="bg-accent text-white font-semibold rounded-xl py-3.5 shadow-lg shadow-primary/20 flex items-center justify-center gap-2 disabled:opacity-50"
           >
             <span className="material-symbols-outlined text-[18px]">task_alt</span>
             {saving ? 'Saving...' : 'Finish'}

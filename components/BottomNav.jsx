@@ -49,10 +49,10 @@ export default function BottomNav() {
 
   const isFinance = workspace === 'finance' || (!workspace && storedWorkspace === 'finance')
   const tabs = isFinance ? FINANCE_TABS : GYM_TABS
-  const activeColor = isFinance ? 'text-finance' : 'text-primary'
+  const activeColor = isFinance ? 'text-finance' : 'text-accent'
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 bg-dark-nav" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
+    <div className="fixed bottom-0 left-0 right-0 z-50 bg-bg-nav" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
       <nav className="flex">
         {tabs.map((tab) => {
           const active = isTabActive(pathname, tab.href)
@@ -61,7 +61,7 @@ export default function BottomNav() {
               key={tab.href}
               href={tab.href}
               className={`flex-1 flex flex-col items-center py-3 gap-0.5 transition-colors ${
-                active ? activeColor : 'text-dark-muted'
+                active ? activeColor : 'text-text-secondary'
               }`}
             >
               <span

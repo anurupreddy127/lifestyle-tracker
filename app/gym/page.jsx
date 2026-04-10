@@ -61,7 +61,7 @@ export default function GymHome() {
       {activeWorkout && (
         <button
           onClick={() => router.push(`/gym/workout/${activeWorkout.day_id}`)}
-          className="w-full mb-4 bg-primary rounded-2xl p-4 flex items-center gap-3 shadow-lg shadow-primary/20 active:opacity-90 cursor-pointer"
+          className="w-full mb-4 bg-accent rounded-2xl p-4 flex items-center gap-3 shadow-lg shadow-primary/20 active:opacity-90 cursor-pointer"
         >
           <div className="w-10 h-10 rounded-full bg-white/15 flex items-center justify-center shrink-0">
             <span className="material-symbols-outlined text-white text-[22px]">play_arrow</span>
@@ -78,7 +78,7 @@ export default function GymHome() {
       {loading ? (
         <LoadingSkeleton count={4} height="h-24" />
       ) : days.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-20 gap-3 text-dark-muted">
+        <div className="flex flex-col items-center justify-center py-20 gap-3 text-text-secondary">
           <span className="material-symbols-outlined text-5xl">fitness_center</span>
           <p className="text-sm">No days yet. Create your first workout!</p>
         </div>
@@ -94,7 +94,7 @@ export default function GymHome() {
                 onEdit={() => router.push(`/gym/builder/${day.id}`)}
                 onDelete={() => handleDeleteDay(day.id)}
               >
-                <div className="bg-dark-card border border-dark-border rounded-2xl p-3 flex items-center gap-3">
+                <div className="bg-bg-card border border-border rounded-2xl p-3 flex items-center gap-3">
                   {/* Thumbnail */}
                   <div className={`w-20 h-20 rounded-lg bg-gradient-to-br ${gradient} flex items-center justify-center shrink-0`}>
                     <span className="material-symbols-outlined text-white/80 text-3xl">fitness_center</span>
@@ -102,8 +102,8 @@ export default function GymHome() {
 
                   {/* Info */}
                   <div className="flex-1 min-w-0">
-                    <h3 className="text-base font-bold text-dark-text truncate">{day.name}</h3>
-                    <div className="flex items-center gap-1 mt-1 text-dark-muted">
+                    <h3 className="text-base font-bold text-text-primary truncate">{day.name}</h3>
+                    <div className="flex items-center gap-1 mt-1 text-text-secondary">
                       <span className="material-symbols-outlined text-[14px]">exercise</span>
                       <span className="text-xs font-medium">{exerciseCount} {exerciseCount === 1 ? 'exercise' : 'exercises'}</span>
                     </div>
@@ -115,7 +115,7 @@ export default function GymHome() {
                     className={`font-semibold text-sm rounded-lg px-4 h-9 shrink-0 cursor-pointer ${
                       activeWorkout?.day_id === day.id
                         ? 'bg-amber-500 text-white active:bg-amber-600'
-                        : 'bg-primary text-white active:bg-primary/90'
+                        : 'bg-accent text-white active:bg-accent/90'
                     }`}
                     aria-label={activeWorkout?.day_id === day.id ? 'Resume workout' : 'Start workout'}
                   >
@@ -131,7 +131,7 @@ export default function GymHome() {
       {/* Create New Day Button */}
       <button
         onClick={() => router.push('/gym/builder')}
-        className="border-2 border-dashed border-dark-border bg-dark-card/50 rounded-2xl h-14 w-full font-bold text-dark-muted text-sm mt-4 flex items-center justify-center gap-2 active:bg-dark-card cursor-pointer transition-colors"
+        className="border-2 border-dashed border-border bg-bg-card/50 rounded-2xl h-14 w-full font-bold text-text-secondary text-sm mt-4 flex items-center justify-center gap-2 active:bg-bg-card cursor-pointer transition-colors"
         aria-label="Create new workout day"
       >
         <span className="material-symbols-outlined text-[20px]">add_circle</span>

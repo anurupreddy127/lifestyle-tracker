@@ -1,21 +1,68 @@
 @import "tailwindcss";
 
-@theme {
-  --color-primary: #256af4;
-  --color-primary-light: oklch(from #256af4 l c h / 0.15);
-  --color-finance: #10b981;
-  --color-finance-light: oklch(from #10b981 l c h / 0.15);
-
-  /* WhatsApp dark palette */
-  --color-dark-bg: #111B21;
-  --color-dark-nav: #202C33;
-  --color-dark-card: #1F2C34;
-  --color-dark-border: #2A3942;
-  --color-dark-text: #E9EDEF;
-  --color-dark-muted: #8696A0;
-  --color-dark-input: #2A3942;
+/* ============================================
+   Design Tokens — Light Theme (default in :root)
+   ============================================ */
+:root {
+  --bg-primary: #FFFFFF;
+  --bg-secondary: #F8FAFC;
+  --bg-card: #FFFFFF;
+  --bg-input: #F1F5F9;
+  --bg-nav: #FFFFFF;
+  --text-primary: #0F172A;
+  --text-secondary: #64748B;
+  --border: #E2E8F0;
+  --accent: #14B8A6;
+  --accent-light: oklch(from #14B8A6 l c h / 0.12);
+  --finance: #10B981;
+  --finance-light: oklch(from #10B981 l c h / 0.12);
+  --danger: #EF4444;
+  --danger-light: oklch(from #EF4444 l c h / 0.12);
 }
 
+/* ============================================
+   Design Tokens — Dark Theme
+   ============================================ */
+.dark {
+  --bg-primary: #0F172A;
+  --bg-secondary: #1E293B;
+  --bg-card: #1E293B;
+  --bg-input: #334155;
+  --bg-nav: #1E293B;
+  --text-primary: #F1F5F9;
+  --text-secondary: #94A3B8;
+  --border: #334155;
+  --accent: #14B8A6;
+  --accent-light: oklch(from #14B8A6 l c h / 0.15);
+  --finance: #10B981;
+  --finance-light: oklch(from #10B981 l c h / 0.15);
+  --danger: #EF4444;
+  --danger-light: oklch(from #EF4444 l c h / 0.15);
+}
+
+/* ============================================
+   Tailwind v4 Theme — Maps CSS vars to utilities
+   ============================================ */
+@theme {
+  --color-bg-primary: var(--bg-primary);
+  --color-bg-secondary: var(--bg-secondary);
+  --color-bg-card: var(--bg-card);
+  --color-bg-input: var(--bg-input);
+  --color-bg-nav: var(--bg-nav);
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-border: var(--border);
+  --color-accent: var(--accent);
+  --color-accent-light: var(--accent-light);
+  --color-finance: var(--finance);
+  --color-finance-light: var(--finance-light);
+  --color-danger: var(--danger);
+  --color-danger-light: var(--danger-light);
+}
+
+/* ============================================
+   Base Styles
+   ============================================ */
 html {
   -webkit-text-size-adjust: 100%;
 }
@@ -25,14 +72,17 @@ body {
   -webkit-user-select: none;
   overscroll-behavior-y: none;
   -webkit-tap-highlight-color: transparent;
-  background-color: var(--color-dark-bg);
-  color: var(--color-dark-text);
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
   min-height: 100dvh;
 }
 
 /* Prevent iOS zoom on input focus (inputs < 16px trigger zoom) */
 input, select, textarea {
   font-size: 16px !important;
+}
+
+.dark input, .dark select, .dark textarea {
   color-scheme: dark;
 }
 

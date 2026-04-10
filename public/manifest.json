@@ -2,8 +2,8 @@
   "name": "Lifestyle Tracker",
   "short_name": "Tracker",
   "display": "standalone",
-  "background_color": "#111B21",
-  "theme_color": "#111B21",
+  "background_color": "#0F172A",
+  "theme_color": "#1E293B",
   "start_url": "/",
   "orientation": "portrait",
   "icons": [

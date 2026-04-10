@@ -442,7 +442,7 @@ export default function TransactionsPage() {
           {/* Spending by Category — tappable to filter */}
           {Object.keys(categorySpending).length > 0 && (
             <div className="mb-3">
-              <h2 className="text-base font-bold text-dark-text mb-3">
+              <h2 className="text-base font-bold text-text-primary mb-3">
                 Spending by Category
               </h2>
               <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
@@ -455,16 +455,16 @@ export default function TransactionsPage() {
                       className={`min-w-[100px] w-[100px] rounded-xl p-3 flex flex-col items-center gap-2 shrink-0 cursor-pointer transition-all duration-200 ${
                         filterCategory === cat
                           ? "bg-finance/15 border-2 border-finance "
-                          : "bg-dark-card border border-dark-border"
+                          : "bg-bg-card border border-border"
                       }`}
                     >
                       <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${getCategoryColor(cat)}`}>
                         <span className="text-lg">{getCategoryEmoji(cat)}</span>
                       </div>
-                      <p className="text-[11px] text-dark-muted text-center leading-tight">
+                      <p className="text-[11px] text-text-secondary text-center leading-tight">
                         {cat}
                       </p>
-                      <p className="text-sm font-bold text-dark-text">
+                      <p className="text-sm font-bold text-text-primary">
                         {formatCurrency(amount)}
                       </p>
                     </button>
@@ -485,8 +485,8 @@ export default function TransactionsPage() {
                   }}
                   className={`flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-semibold whitespace-nowrap transition-all duration-200 min-h-[36px] ${
                     filterType === t.value
-                      ? `${t.color || "bg-dark-card"} ${t.activeText || "text-white"} `
-                      : "bg-dark-card text-dark-muted"
+                      ? `${t.color || "bg-bg-card"} ${t.activeText || "text-white"} `
+                      : "bg-bg-card text-text-secondary"
                   }`}
                 >
                   <span className="material-symbols-outlined text-[16px]">{t.icon}</span>
@@ -499,7 +499,7 @@ export default function TransactionsPage() {
               className={`relative flex items-center justify-center w-9 h-9 rounded-full shrink-0 transition-colors duration-200 ${
                 showFilters || activeFilterCount > 0
                   ? "bg-finance text-white"
-                  : "bg-dark-card text-dark-muted"
+                  : "bg-bg-card text-text-secondary"
               }`}
             >
               <span className="material-symbols-outlined text-[18px]">tune</span>
@@ -521,10 +521,10 @@ export default function TransactionsPage() {
                 transition={{ duration: 0.2 }}
                 className="overflow-hidden"
               >
-                <div className="bg-dark-card border border-dark-border rounded-2xl p-3 mb-3 flex flex-col gap-3">
+                <div className="bg-bg-card border border-border rounded-2xl p-3 mb-3 flex flex-col gap-3">
                   {/* Account filter */}
                   <div>
-                    <p className="text-xs font-semibold text-dark-muted uppercase tracking-wider mb-2">Account</p>
+                    <p className="text-xs font-semibold text-text-secondary uppercase tracking-wider mb-2">Account</p>
                     <div className="flex gap-1.5 overflow-x-auto scrollbar-hide">
                       {accounts.map((acc) => (
                         <button
@@ -533,7 +533,7 @@ export default function TransactionsPage() {
                           className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all duration-200 ${
                             filterAccounts.includes(acc.id)
                               ? "bg-finance text-white"
-                              : "bg-dark-card text-dark-muted"
+                              : "bg-bg-card text-text-secondary"
                           }`}
                         >
                           {acc.name}
@@ -544,7 +544,7 @@ export default function TransactionsPage() {
 
                   {/* Date range presets */}
                   <div>
-                    <p className="text-xs font-semibold text-dark-muted uppercase tracking-wider mb-2">Date Range</p>
+                    <p className="text-xs font-semibold text-text-secondary uppercase tracking-wider mb-2">Date Range</p>
                     <div className="flex gap-1.5 overflow-x-auto scrollbar-hide">
                       {DATE_PRESETS.map((d) => (
                         <button
@@ -553,7 +553,7 @@ export default function TransactionsPage() {
                           className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all duration-200 ${
                             filterDatePreset === d.value
                               ? "bg-finance text-white"
-                              : "bg-dark-card text-dark-muted"
+                              : "bg-bg-card text-text-secondary"
                           }`}
                         >
                           {d.label}
@@ -611,13 +611,13 @@ export default function TransactionsPage() {
 
           {/* Transaction count */}
           {transactions.length > 0 && (
-            <p className="text-[11px] text-dark-muted mb-1 px-1">
+            <p className="text-[11px] text-text-secondary mb-1 px-1">
               Showing {transactions.length} of {totalCount} transaction{totalCount !== 1 ? "s" : ""}
             </p>
           )}
 
           {transactions.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-20 gap-3 text-dark-muted">
+            <div className="flex flex-col items-center justify-center py-20 gap-3 text-text-secondary">
               <span className="material-symbols-outlined text-5xl">
                 {activeFilterCount > 0 ? "filter_list_off" : "receipt_long"}
               </span>
@@ -632,7 +632,7 @@ export default function TransactionsPage() {
           <div className="flex flex-col gap-1">
           {grouped.map(([dateLabel, items]) => (
             <div key={dateLabel}>
-              <p className="text-xs font-bold text-dark-muted uppercase tracking-widest px-1 pt-4 pb-2">
+              <p className="text-xs font-bold text-text-secondary uppercase tracking-widest px-1 pt-4 pb-2">
                 {dateLabel}
               </p>
               <div className="flex flex-col gap-2">
@@ -646,12 +646,12 @@ export default function TransactionsPage() {
                       setTimeout(() => setShowDeleteConfirm(true), 100);
                     }}
                   >
-                    <div className="bg-dark-card border border-dark-border rounded-2xl px-4 py-3 flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-dark-card flex items-center justify-center shrink-0">
+                    <div className="bg-bg-card border border-border rounded-2xl px-4 py-3 flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-bg-card flex items-center justify-center shrink-0">
                         {tx.category ? (
                           <span className="text-lg">{getCategoryEmoji(tx.category)}</span>
                         ) : (
-                          <span className="material-symbols-outlined text-dark-muted text-[20px]">
+                          <span className="material-symbols-outlined text-text-secondary text-[20px]">
                             {tx.transaction_type === "income"
                               ? "work"
                               : tx.transaction_type === "received"
@@ -665,7 +665,7 @@ export default function TransactionsPage() {
                         )}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-dark-text truncate">
+                        <p className="text-sm font-medium text-text-primary truncate">
                           {tx.person_name
                             ? `${tx.transaction_type === "transfer" ? "Lent to" : "From"} ${tx.person_name}`
                             : tx.description ||
@@ -673,7 +673,7 @@ export default function TransactionsPage() {
                               tx.transaction_type.charAt(0).toUpperCase() +
                                 tx.transaction_type.slice(1)}
                         </p>
-                        <p className="text-xs text-dark-muted mt-0.5">
+                        <p className="text-xs text-text-secondary mt-0.5">
                           {tx.person_name && tx.description
                             ? `${tx.description} · ${tx.accounts?.name || ""}`
                             : tx.accounts?.name || ""}
@@ -681,7 +681,7 @@ export default function TransactionsPage() {
                       </div>
                       <div className="text-right ml-2">
                         <p
-                          className={`text-sm font-bold ${tx.transaction_type === "expense" ? "text-rose-400" : (tx.transaction_type === "income" || tx.transaction_type === "received") ? "text-finance" : "text-dark-muted"}`}
+                          className={`text-sm font-bold ${tx.transaction_type === "expense" ? "text-rose-400" : (tx.transaction_type === "income" || tx.transaction_type === "received") ? "text-finance" : "text-text-secondary"}`}
                         >
                           {tx.transaction_type === "expense"
                             ? "-"
@@ -693,7 +693,7 @@ export default function TransactionsPage() {
                         {tx.transaction_type === "expense" &&
                           tx.personal_amount != null &&
                           tx.personal_amount !== tx.amount && (
-                          <p className="text-[10px] text-dark-muted mt-0.5">
+                          <p className="text-[10px] text-text-secondary mt-0.5">
                             You: {formatCurrency(tx.personal_amount)}
                           </p>
                         )}
@@ -710,7 +710,7 @@ export default function TransactionsPage() {
             <button
               onClick={loadMore}
               disabled={loadingMore}
-              className="mt-4 mb-2 py-3 w-full rounded-xl text-sm font-semibold bg-dark-card text-dark-muted active:bg-white/5 disabled:opacity-50 flex items-center justify-center gap-2"
+              className="mt-4 mb-2 py-3 w-full rounded-xl text-sm font-semibold bg-bg-card text-text-secondary active:bg-white/5 disabled:opacity-50 flex items-center justify-center gap-2"
             >
               {loadingMore ? (
                 <>
@@ -783,7 +783,7 @@ export default function TransactionsPage() {
                 className={`flex flex-col items-center gap-1 py-2 rounded-xl text-[9px] font-semibold border-2 ${
                   txType === t.value
                     ? "border-finance bg-finance/10 text-finance"
-                    : "border-transparent bg-dark-card text-dark-muted"
+                    : "border-transparent bg-bg-card text-text-secondary"
                 }`}
               >
                 <span className="material-symbols-outlined text-[18px]">
@@ -800,7 +800,7 @@ export default function TransactionsPage() {
               <>
                 <button
                   onClick={closeSubForm}
-                  className="flex items-center gap-1 text-sm font-medium text-dark-muted active:text-dark-text"
+                  className="flex items-center gap-1 text-sm font-medium text-text-secondary active:text-text-primary"
                 >
                   <span className="material-symbols-outlined text-[18px]">
                     arrow_back
@@ -808,7 +808,7 @@ export default function TransactionsPage() {
                   Back to list
                 </button>
                 <div>
-                  <label className="text-sm font-medium text-dark-muted mb-1.5 block">
+                  <label className="text-sm font-medium text-text-secondary mb-1.5 block">
                     Name
                   </label>
                   <input
@@ -816,11 +816,11 @@ export default function TransactionsPage() {
                     value={subFormName}
                     onChange={(e) => setSubFormName(e.target.value)}
                     placeholder="e.g., Netflix"
-                    className="bg-dark-input border border-dark-border rounded-xl px-4 py-3 text-dark-text placeholder:text-dark-muted text-base focus:outline-none focus:ring-2 focus:ring-finance/30 w-full"
+                    className="bg-bg-input border border-border rounded-xl px-4 py-3 text-text-primary placeholder:text-text-secondary text-base focus:outline-none focus:ring-2 focus:ring-finance/30 w-full"
                   />
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-dark-muted mb-1.5 block">
+                  <label className="text-sm font-medium text-text-secondary mb-1.5 block">
                     Amount
                   </label>
                   <input
@@ -829,11 +829,11 @@ export default function TransactionsPage() {
                     value={subFormAmount}
                     onChange={(e) => setSubFormAmount(e.target.value)}
                     placeholder="0.00"
-                    className="bg-dark-input border border-dark-border rounded-xl px-4 py-3 text-dark-text placeholder:text-dark-muted text-base focus:outline-none focus:ring-2 focus:ring-finance/30 w-full"
+                    className="bg-bg-input border border-border rounded-xl px-4 py-3 text-text-primary placeholder:text-text-secondary text-base focus:outline-none focus:ring-2 focus:ring-finance/30 w-full"
                   />
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-dark-muted mb-2 block">
+                  <label className="text-sm font-medium text-text-secondary mb-2 block">
                     Billing Type
                   </label>
                   <div className="grid grid-cols-2 gap-2">
@@ -844,7 +844,7 @@ export default function TransactionsPage() {
                         className={`py-3 rounded-xl text-sm font-semibold border-2 ${
                           subFormBillingType === t
                             ? "border-finance bg-finance/15 text-finance"
-                            : "border-transparent bg-dark-card text-dark-muted"
+                            : "border-transparent bg-bg-card text-text-secondary"
                         }`}
                       >
                         {t === "monthly" ? "Monthly" : "Yearly"}
@@ -853,24 +853,24 @@ export default function TransactionsPage() {
                   </div>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-dark-muted mb-1.5 block">
+                  <label className="text-sm font-medium text-text-secondary mb-1.5 block">
                     Next Billing Date
                   </label>
                   <input
                     type="date"
                     value={subFormNextDate}
                     onChange={(e) => setSubFormNextDate(e.target.value)}
-                    className="bg-dark-input border border-dark-border rounded-xl px-4 py-3 text-base text-dark-text focus:outline-none focus:ring-2 focus:ring-finance/30 w-full"
+                    className="bg-bg-input border border-border rounded-xl px-4 py-3 text-base text-text-primary focus:outline-none focus:ring-2 focus:ring-finance/30 w-full"
                   />
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-dark-muted mb-1.5 block">
+                  <label className="text-sm font-medium text-text-secondary mb-1.5 block">
                     Account
                   </label>
                   <select
                     value={subFormAccountId}
                     onChange={(e) => setSubFormAccountId(e.target.value)}
-                    className="bg-dark-input border border-dark-border rounded-xl px-4 py-3 text-base text-dark-text focus:outline-none focus:ring-2 focus:ring-finance/30 w-full"
+                    className="bg-bg-input border border-border rounded-xl px-4 py-3 text-base text-text-primary focus:outline-none focus:ring-2 focus:ring-finance/30 w-full"
                   >
                     <option value="">Select account</option>
                     {accounts.map((acc) => (
@@ -881,13 +881,13 @@ export default function TransactionsPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-dark-muted mb-1.5 block">
+                  <label className="text-sm font-medium text-text-secondary mb-1.5 block">
                     Category
                   </label>
                   <select
                     value={subFormCategory}
                     onChange={(e) => setSubFormCategory(e.target.value)}
-                    className="bg-dark-input border border-dark-border rounded-xl px-4 py-3 text-base text-dark-text focus:outline-none focus:ring-2 focus:ring-finance/30 w-full"
+                    className="bg-bg-input border border-border rounded-xl px-4 py-3 text-base text-text-primary focus:outline-none focus:ring-2 focus:ring-finance/30 w-full"
                   >
                     {categories.map((cat) => (
                       <option key={cat.id} value={cat.name}>
@@ -910,20 +910,20 @@ export default function TransactionsPage() {
                     subscriptions
                   </span>
                 </div>
-                <p className="text-sm font-medium text-dark-muted">
+                <p className="text-sm font-medium text-text-secondary">
                   Add subscription transaction?
                 </p>
-                <p className="text-lg font-bold text-dark-text">
+                <p className="text-lg font-bold text-text-primary">
                   {selectedSubscription.name}
                 </p>
-                <p className="text-sm text-dark-muted">
+                <p className="text-sm text-text-secondary">
                   {formatCurrency(selectedSubscription.amount)} →{" "}
                   {selectedSubscription.accounts?.name}
                 </p>
                 <div className="flex gap-3 w-full mt-2">
                   <button
                     onClick={() => setSelectedSubscription(null)}
-                    className="flex-1 py-3 rounded-xl text-sm font-semibold bg-dark-card text-dark-muted active:bg-white/5"
+                    className="flex-1 py-3 rounded-xl text-sm font-semibold bg-bg-card text-text-secondary active:bg-white/5"
                   >
                     Cancel
                   </button>
@@ -938,7 +938,7 @@ export default function TransactionsPage() {
             ) : (
               <>
                 {subscriptions.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center py-8 gap-2 text-dark-muted">
+                  <div className="flex flex-col items-center justify-center py-8 gap-2 text-text-secondary">
                     <span className="material-symbols-outlined text-4xl">
                       subscriptions
                     </span>
@@ -949,7 +949,7 @@ export default function TransactionsPage() {
                     {subscriptions.map((sub) => (
                       <div
                         key={sub.id}
-                        className="bg-dark-input border border-dark-border rounded-xl px-4 py-3"
+                        className="bg-bg-input border border-border rounded-xl px-4 py-3"
                       >
                         <div className="flex items-center gap-2">
                           <div
@@ -957,19 +957,19 @@ export default function TransactionsPage() {
                             onClick={() => setSelectedSubscription(sub)}
                           >
                             <div className="flex items-center justify-between">
-                              <p className="text-sm font-bold text-dark-text">
+                              <p className="text-sm font-bold text-text-primary">
                                 {sub.name}
                               </p>
-                              <p className="text-sm font-bold text-dark-text">
+                              <p className="text-sm font-bold text-text-primary">
                                 {formatCurrency(sub.amount)}
                               </p>
                             </div>
                             <div className="flex items-center gap-2 mt-0.5">
-                              <span className="text-xs text-dark-muted">
+                              <span className="text-xs text-text-secondary">
                                 {sub.accounts?.name}
                               </span>
-                              <span className="text-xs text-dark-muted">·</span>
-                              <span className="text-[10px] font-bold uppercase bg-dark-card text-dark-muted rounded px-1.5 py-0.5">
+                              <span className="text-xs text-text-secondary">·</span>
+                              <span className="text-[10px] font-bold uppercase bg-bg-card text-text-secondary rounded px-1.5 py-0.5">
                                 {sub.billing_type === "monthly"
                                   ? "Monthly"
                                   : "Yearly"}
@@ -979,13 +979,13 @@ export default function TransactionsPage() {
                           <div className="flex items-center gap-1 shrink-0">
                             <button
                               onClick={() => openSubEdit(sub)}
-                              className="w-8 h-8 rounded-full bg-dark-card flex items-center justify-center text-dark-muted active:bg-blue-500/15 active:text-blue-500"
+                              className="w-8 h-8 rounded-full bg-bg-card flex items-center justify-center text-text-secondary active:bg-blue-500/15 active:text-blue-500"
                             >
                               <span className="material-symbols-outlined text-[16px]">edit</span>
                             </button>
                             <button
                               onClick={() => handleSubDelete(sub.id, setSubscriptions)}
-                              className="w-8 h-8 rounded-full bg-dark-card flex items-center justify-center text-dark-muted active:bg-rose-500/100/15 active:text-rose-400"
+                              className="w-8 h-8 rounded-full bg-bg-card flex items-center justify-center text-text-secondary active:bg-rose-500/100/15 active:text-rose-400"
                             >
                               <span className="material-symbols-outlined text-[16px]">delete</span>
                             </button>
@@ -1010,11 +1010,11 @@ export default function TransactionsPage() {
             <>
               {/* Amount */}
               <div>
-                <label className={`text-sm font-medium mb-1.5 block ${fieldErrors.amount ? "text-rose-400" : "text-dark-muted"}`}>
+                <label className={`text-sm font-medium mb-1.5 block ${fieldErrors.amount ? "text-rose-400" : "text-text-secondary"}`}>
                   {txType === "expense" ? "Total Amount" : "Amount"}
                 </label>
                 <div className="relative">
-                  <span className={`absolute left-4 top-1/2 -translate-y-1/2 font-bold text-lg ${fieldErrors.amount ? "text-rose-400" : "text-dark-muted"}`}>
+                  <span className={`absolute left-4 top-1/2 -translate-y-1/2 font-bold text-lg ${fieldErrors.amount ? "text-rose-400" : "text-text-secondary"}`}>
                     $
                   </span>
                   <input
@@ -1023,7 +1023,7 @@ export default function TransactionsPage() {
                     value={txAmount}
                     onChange={(e) => { setTxAmount(e.target.value); setFieldErrors((p) => ({ ...p, amount: undefined })); }}
                     placeholder="0.00"
-                    className={`bg-dark-card border rounded-xl pl-8 pr-4 py-3 text-2xl font-bold text-dark-text placeholder:text-dark-muted/60 focus:outline-none focus:ring-2 w-full ${fieldErrors.amount ? "border-rose-400 focus:ring-rose-200 focus:border-rose-400" : "border-dark-border focus:ring-finance/30 focus:border-finance/50"}`}
+                    className={`bg-bg-card border rounded-xl pl-8 pr-4 py-3 text-2xl font-bold text-text-primary placeholder:text-text-secondary/60 focus:outline-none focus:ring-2 w-full ${fieldErrors.amount ? "border-rose-400 focus:ring-rose-200 focus:border-rose-400" : "border-border focus:ring-finance/30 focus:border-finance/50"}`}
                   />
                 </div>
                 {fieldErrors.amount && <p className="text-xs text-rose-400 mt-1">{fieldErrors.amount}</p>}
@@ -1032,11 +1032,11 @@ export default function TransactionsPage() {
               {/* Your Share (expense only) */}
               {txType === "expense" && (
                 <div>
-                  <label className={`text-sm font-medium mb-1.5 block ${fieldErrors.personalAmount ? "text-rose-400" : "text-dark-muted"}`}>
+                  <label className={`text-sm font-medium mb-1.5 block ${fieldErrors.personalAmount ? "text-rose-400" : "text-text-secondary"}`}>
                     Your Share
                   </label>
                   <div className="relative">
-                    <span className={`absolute left-4 top-1/2 -translate-y-1/2 font-bold text-base ${fieldErrors.personalAmount ? "text-rose-400" : "text-dark-muted"}`}>
+                    <span className={`absolute left-4 top-1/2 -translate-y-1/2 font-bold text-base ${fieldErrors.personalAmount ? "text-rose-400" : "text-text-secondary"}`}>
                       $
                     </span>
                     <input
@@ -1045,13 +1045,13 @@ export default function TransactionsPage() {
                       value={txPersonalAmount}
                       onChange={(e) => { setTxPersonalAmount(e.target.value); setFieldErrors((p) => ({ ...p, personalAmount: undefined })); }}
                       placeholder={txAmount || "Same as total"}
-                      className={`bg-dark-card border rounded-xl pl-8 pr-4 py-2.5 text-base font-semibold text-dark-text placeholder:text-dark-muted/60 focus:outline-none focus:ring-2 w-full ${fieldErrors.personalAmount ? "border-rose-400 focus:ring-rose-200 focus:border-rose-400" : "border-dark-border focus:ring-finance/30 focus:border-finance/50"}`}
+                      className={`bg-bg-card border rounded-xl pl-8 pr-4 py-2.5 text-base font-semibold text-text-primary placeholder:text-text-secondary/60 focus:outline-none focus:ring-2 w-full ${fieldErrors.personalAmount ? "border-rose-400 focus:ring-rose-200 focus:border-rose-400" : "border-border focus:ring-finance/30 focus:border-finance/50"}`}
                     />
                   </div>
                   {fieldErrors.personalAmount ? (
                     <p className="text-xs text-rose-400 mt-1">{fieldErrors.personalAmount}</p>
                   ) : (
-                    <p className="text-[10px] text-dark-muted mt-1">
+                    <p className="text-[10px] text-text-secondary mt-1">
                       Leave empty if you paid for yourself only
                     </p>
                   )}
@@ -1060,26 +1060,26 @@ export default function TransactionsPage() {
 
               {/* Date — full width */}
               <div>
-                <label className="text-sm font-medium text-dark-muted mb-1.5 block">
+                <label className="text-sm font-medium text-text-secondary mb-1.5 block">
                   Date
                 </label>
                 <input
                   type="date"
                   value={txDate}
                   onChange={(e) => setTxDate(e.target.value)}
-                  className="bg-dark-input border border-dark-border rounded-xl px-4 py-3 text-base text-dark-text focus:outline-none focus:ring-2 focus:ring-finance/30 w-full"
+                  className="bg-bg-input border border-border rounded-xl px-4 py-3 text-base text-text-primary focus:outline-none focus:ring-2 focus:ring-finance/30 w-full"
                 />
               </div>
 
               {/* Account — full width */}
               <div>
-                <label className={`text-sm font-medium mb-1.5 block ${fieldErrors.account ? "text-rose-400" : "text-dark-muted"}`}>
+                <label className={`text-sm font-medium mb-1.5 block ${fieldErrors.account ? "text-rose-400" : "text-text-secondary"}`}>
                   {txType === "transfer" ? "From" : "Account"}
                 </label>
                 <select
                   value={txAccountId}
                   onChange={(e) => { setTxAccountId(e.target.value); setFieldErrors((p) => ({ ...p, account: undefined })); }}
-                  className={`bg-dark-card border rounded-xl px-4 py-3 text-base text-dark-text focus:outline-none focus:ring-2 w-full ${fieldErrors.account ? "border-rose-400 focus:ring-rose-200" : "border-dark-border focus:ring-finance/30"}`}
+                  className={`bg-bg-card border rounded-xl px-4 py-3 text-base text-text-primary focus:outline-none focus:ring-2 w-full ${fieldErrors.account ? "border-rose-400 focus:ring-rose-200" : "border-border focus:ring-finance/30"}`}
                 >
                   <option value="">Select</option>
                   {accounts.map((acc) => (
@@ -1100,7 +1100,7 @@ export default function TransactionsPage() {
                       className={`py-2.5 rounded-xl text-sm font-semibold border-2 ${
                         txTransferTarget === "account"
                           ? "border-finance bg-finance/15 text-finance"
-                          : "border-transparent bg-dark-card text-dark-muted"
+                          : "border-transparent bg-bg-card text-text-secondary"
                       }`}
                     >
                       To Account
@@ -1110,7 +1110,7 @@ export default function TransactionsPage() {
                       className={`py-2.5 rounded-xl text-sm font-semibold border-2 ${
                         txTransferTarget === "person"
                           ? "border-finance bg-finance/15 text-finance"
-                          : "border-transparent bg-dark-card text-dark-muted"
+                          : "border-transparent bg-bg-card text-text-secondary"
                       }`}
                     >
                       To Person
@@ -1119,13 +1119,13 @@ export default function TransactionsPage() {
 
                   {txTransferTarget === "account" ? (
                     <div>
-                      <label className={`text-sm font-medium mb-1.5 block ${fieldErrors.toAccount ? "text-rose-400" : "text-dark-muted"}`}>
+                      <label className={`text-sm font-medium mb-1.5 block ${fieldErrors.toAccount ? "text-rose-400" : "text-text-secondary"}`}>
                         To Account
                       </label>
                       <select
                         value={txToAccountId}
                         onChange={(e) => { setTxToAccountId(e.target.value); setFieldErrors((p) => ({ ...p, toAccount: undefined })); }}
-                        className={`bg-dark-card border rounded-xl px-4 py-3 text-base text-dark-text focus:outline-none focus:ring-2 w-full ${fieldErrors.toAccount ? "border-rose-400 focus:ring-rose-200" : "border-dark-border focus:ring-finance/30"}`}
+                        className={`bg-bg-card border rounded-xl px-4 py-3 text-base text-text-primary focus:outline-none focus:ring-2 w-full ${fieldErrors.toAccount ? "border-rose-400 focus:ring-rose-200" : "border-border focus:ring-finance/30"}`}
                       >
                         <option value="">Select</option>
                         {accounts
@@ -1140,7 +1140,7 @@ export default function TransactionsPage() {
                     </div>
                   ) : (
                     <div>
-                      <label className={`text-sm font-medium mb-1.5 block ${fieldErrors.personName ? "text-rose-400" : "text-dark-muted"}`}>
+                      <label className={`text-sm font-medium mb-1.5 block ${fieldErrors.personName ? "text-rose-400" : "text-text-secondary"}`}>
                         Person Name
                       </label>
                       <input
@@ -1148,7 +1148,7 @@ export default function TransactionsPage() {
                         value={txPersonName}
                         onChange={(e) => { setTxPersonName(e.target.value); setFieldErrors((p) => ({ ...p, personName: undefined })); }}
                         placeholder="e.g., John"
-                        className={`bg-dark-card border rounded-xl px-4 py-3 text-base text-dark-text placeholder:text-dark-muted focus:outline-none focus:ring-2 w-full ${fieldErrors.personName ? "border-rose-400 focus:ring-rose-200" : "border-dark-border focus:ring-finance/30"}`}
+                        className={`bg-bg-card border rounded-xl px-4 py-3 text-base text-text-primary placeholder:text-text-secondary focus:outline-none focus:ring-2 w-full ${fieldErrors.personName ? "border-rose-400 focus:ring-rose-200" : "border-border focus:ring-finance/30"}`}
                       />
                       {fieldErrors.personName && <p className="text-xs text-rose-400 mt-1">{fieldErrors.personName}</p>}
                     </div>
@@ -1159,15 +1159,15 @@ export default function TransactionsPage() {
               {/* From Person (received only, optional) */}
               {txType === "received" && (
                 <div>
-                  <label className="text-sm font-medium text-dark-muted mb-1.5 block">
-                    From Person <span className="text-dark-muted font-normal">(optional)</span>
+                  <label className="text-sm font-medium text-text-secondary mb-1.5 block">
+                    From Person <span className="text-text-secondary font-normal">(optional)</span>
                   </label>
                   <input
                     type="text"
                     value={txFromPersonName}
                     onChange={(e) => setTxFromPersonName(e.target.value)}
                     placeholder="e.g., John"
-                    className="bg-dark-input border border-dark-border rounded-xl px-4 py-3 text-base text-dark-text placeholder:text-dark-muted focus:outline-none focus:ring-2 focus:ring-finance/30 w-full"
+                    className="bg-bg-input border border-border rounded-xl px-4 py-3 text-base text-text-primary placeholder:text-text-secondary focus:outline-none focus:ring-2 focus:ring-finance/30 w-full"
                   />
                 </div>
               )}
@@ -1176,7 +1176,7 @@ export default function TransactionsPage() {
               {txType === "expense" && (
                 <div>
                   <div className="flex items-center justify-between mb-2">
-                    <label className="text-sm font-medium text-dark-muted">
+                    <label className="text-sm font-medium text-text-secondary">
                       Category
                     </label>
                     <button
@@ -1201,7 +1201,7 @@ export default function TransactionsPage() {
                         className={`relative flex flex-col items-center gap-1 py-2.5 rounded-xl text-[10px] font-semibold border-2 ${
                           !editingCategories && txCategory === cat.name
                             ? "border-finance bg-finance/10 text-finance"
-                            : "border-transparent bg-dark-card text-dark-muted"
+                            : "border-transparent bg-bg-card text-text-secondary"
                         }`}
                       >
                         {editingCategories && (
@@ -1220,7 +1220,7 @@ export default function TransactionsPage() {
                           setNewCatEmoji("📦");
                           setShowAddCategory(true);
                         }}
-                        className="flex flex-col items-center gap-1 py-2.5 rounded-xl text-[10px] font-semibold border-2 border-dashed border-dark-border bg-dark-card text-dark-muted"
+                        className="flex flex-col items-center gap-1 py-2.5 rounded-xl text-[10px] font-semibold border-2 border-dashed border-border bg-bg-card text-text-secondary"
                       >
                         <span className="text-lg">+</span>
                         Add
@@ -1228,9 +1228,9 @@ export default function TransactionsPage() {
                     )}
                   </div>
                   {showAddCategory && (
-                    <div className="bg-dark-input border border-dark-border rounded-xl p-4 mt-3 flex flex-col gap-3">
+                    <div className="bg-bg-input border border-border rounded-xl p-4 mt-3 flex flex-col gap-3">
                       <div>
-                        <label className="text-xs font-medium text-dark-muted mb-1 block">
+                        <label className="text-xs font-medium text-text-secondary mb-1 block">
                           Category Name
                         </label>
                         <input
@@ -1238,11 +1238,11 @@ export default function TransactionsPage() {
                           value={newCatName}
                           onChange={(e) => setNewCatName(e.target.value)}
                           placeholder="e.g., Pets"
-                          className="bg-dark-card border border-dark-border rounded-lg px-3 py-2 text-base text-dark-text placeholder:text-dark-muted focus:outline-none focus:ring-2 focus:ring-finance/30 w-full"
+                          className="bg-bg-card border border-border rounded-lg px-3 py-2 text-base text-text-primary placeholder:text-text-secondary focus:outline-none focus:ring-2 focus:ring-finance/30 w-full"
                         />
                       </div>
                       <div>
-                        <label className="text-xs font-medium text-dark-muted mb-1 block">
+                        <label className="text-xs font-medium text-text-secondary mb-1 block">
                           Emoji
                         </label>
                         <input
@@ -1254,13 +1254,13 @@ export default function TransactionsPage() {
                             setNewCatEmoji(emojis.length > 0 ? emojis[emojis.length - 1] : "");
                           }}
                           placeholder="Tap to pick emoji"
-                          className="bg-dark-card border border-dark-border rounded-lg px-3 py-2 text-2xl text-center w-16 h-12 focus:outline-none focus:ring-2 focus:ring-finance/30"
+                          className="bg-bg-card border border-border rounded-lg px-3 py-2 text-2xl text-center w-16 h-12 focus:outline-none focus:ring-2 focus:ring-finance/30"
                         />
                       </div>
                       <div className="flex gap-2">
                         <button
                           onClick={() => setShowAddCategory(false)}
-                          className="flex-1 py-2.5 rounded-xl text-sm font-semibold bg-dark-card text-dark-muted"
+                          className="flex-1 py-2.5 rounded-xl text-sm font-semibold bg-bg-card text-text-secondary"
                         >
                           Cancel
                         </button>
@@ -1288,7 +1288,7 @@ export default function TransactionsPage() {
 
               {/* Description */}
               <div>
-                <label className="text-sm font-medium text-dark-muted mb-1.5 block">
+                <label className="text-sm font-medium text-text-secondary mb-1.5 block">
                   Description
                 </label>
                 <input
@@ -1296,7 +1296,7 @@ export default function TransactionsPage() {
                   value={txDescription}
                   onChange={(e) => setTxDescription(e.target.value)}
                   placeholder={txType === "received" ? "Who sent it?" : "What was this for?"}
-                  className="bg-dark-input border border-dark-border rounded-xl px-4 py-3 text-base text-dark-text placeholder:text-dark-muted focus:outline-none focus:ring-2 focus:ring-finance/30 w-full"
+                  className="bg-bg-input border border-border rounded-xl px-4 py-3 text-base text-text-primary placeholder:text-text-secondary focus:outline-none focus:ring-2 focus:ring-finance/30 w-full"
                 />
               </div>
 
@@ -1316,12 +1316,12 @@ export default function TransactionsPage() {
                 <div className="mt-1">
                   {showDeleteConfirm ? (
                     <div className="flex items-center justify-center gap-3">
-                      <p className="text-sm font-medium text-dark-muted">
+                      <p className="text-sm font-medium text-text-secondary">
                         Are you sure?
                       </p>
                       <button
                         onClick={() => setShowDeleteConfirm(false)}
-                        className="px-4 py-2.5 rounded-xl text-sm font-semibold bg-dark-card text-dark-muted active:bg-white/5"
+                        className="px-4 py-2.5 rounded-xl text-sm font-semibold bg-bg-card text-text-secondary active:bg-white/5"
                       >
                         Cancel
                       </button>

@@ -2,6 +2,7 @@ import { Manrope } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 import AppShell from "@/components/AppShell";
+import { ThemeProvider } from "@/contexts/ThemeContext";
 
 const manrope = Manrope({ subsets: ["latin"] });
 
@@ -21,12 +22,12 @@ export const viewport = {
   maximumScale: 1,
   userScalable: false,
   viewportFit: "cover",
-  themeColor: "#202C33",
+  themeColor: "#1E293B",
 };
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" className={manrope.className}>
+    <html lang="en" className={`${manrope.className} dark`}>
       <head>
         <link rel="manifest" href="/manifest.json" />
         <link rel="apple-touch-icon" href="/icon-192.png" />
@@ -35,8 +36,10 @@ export default function RootLayout({ children }) {
           href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&display=swap"
         />
       </head>
-      <body className="bg-dark-bg text-dark-text select-none overscroll-none antialiased">
-        <AppShell>{children}</AppShell>
+      <body className="bg-bg-primary text-text-primary select-none overscroll-none antialiased">
+        <ThemeProvider>
+          <AppShell>{children}</AppShell>
+        </ThemeProvider>
         <Analytics />
       </body>
     </html>

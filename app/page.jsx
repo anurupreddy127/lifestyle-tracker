@@ -4,13 +4,13 @@ import Link from 'next/link'
 
 export default function Home() {
   return (
-    <div className="h-[100dvh] flex flex-col items-center justify-center px-6 bg-dark-bg overflow-hidden">
+    <div className="h-[100dvh] flex flex-col items-center justify-center px-6 bg-bg-primary overflow-hidden">
       {/* Title */}
       <div className="text-center mb-10">
-        <h1 className="text-3xl font-extrabold text-dark-text tracking-tight">
+        <h1 className="text-3xl font-extrabold text-text-primary tracking-tight">
           Lifestyle Tracker
         </h1>
-        <p className="text-sm text-dark-muted mt-1">Choose your workspace</p>
+        <p className="text-sm text-text-secondary mt-1">Choose your workspace</p>
       </div>
 
       {/* Cards */}
@@ -18,7 +18,7 @@ export default function Home() {
         {/* Gym Card */}
         <Link
           href="/gym"
-          className="flex items-center gap-5 bg-primary rounded-2xl p-6 shadow-lg shadow-primary/20 active:scale-[0.98] transition-transform cursor-pointer"
+          className="flex items-center gap-5 bg-accent rounded-2xl p-6 shadow-lg shadow-primary/20 active:scale-[0.98] transition-transform cursor-pointer"
         >
           <div className="w-16 h-16 bg-white/15 rounded-2xl flex items-center justify-center">
             <span className="material-symbols-outlined text-white text-[36px]">

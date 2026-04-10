@@ -277,7 +277,7 @@ export default function FinanceDashboard() {
   return (
     <div className="px-4 pt-2 pb-4">
       {/* Month label */}
-      <p className="text-xs font-bold text-dark-muted uppercase tracking-widest mb-3">
+      <p className="text-xs font-bold text-text-secondary uppercase tracking-widest mb-3">
         {currentMonth}
       </p>
 
@@ -287,12 +287,12 @@ export default function FinanceDashboard() {
         <>
           {/* Section 1 — Cash Flow Cards */}
           <div className="grid grid-cols-3 gap-2 mb-6">
-            <div className="bg-dark-card border border-dark-border rounded-2xl p-3  shadow-black/[0.03]">
+            <div className="bg-bg-card border border-border rounded-2xl p-3  shadow-black/[0.03]">
               <div className="flex items-center gap-1 mb-1">
                 <span className="material-symbols-outlined text-finance text-[16px]">
                   arrow_upward
                 </span>
-                <p className="text-[10px] font-bold text-dark-muted uppercase tracking-widest">
+                <p className="text-[10px] font-bold text-text-secondary uppercase tracking-widest">
                   Income
                 </p>
               </div>
@@ -300,12 +300,12 @@ export default function FinanceDashboard() {
                 {formatCurrency(totalIncome)}
               </p>
             </div>
-            <div className="bg-dark-card border border-dark-border rounded-2xl p-3  shadow-black/[0.03]">
+            <div className="bg-bg-card border border-border rounded-2xl p-3  shadow-black/[0.03]">
               <div className="flex items-center gap-1 mb-1">
                 <span className="material-symbols-outlined text-rose-400 text-[16px]">
                   arrow_downward
                 </span>
-                <p className="text-[10px] font-bold text-dark-muted uppercase tracking-widest">
+                <p className="text-[10px] font-bold text-text-secondary uppercase tracking-widest">
                   Expenses
                 </p>
               </div>
@@ -313,12 +313,12 @@ export default function FinanceDashboard() {
                 {formatCurrency(totalExpenses)}
               </p>
             </div>
-            <div className="bg-dark-card border border-dark-border rounded-2xl p-3  shadow-black/[0.03]">
+            <div className="bg-bg-card border border-border rounded-2xl p-3  shadow-black/[0.03]">
               <div className="flex items-center gap-1 mb-1">
                 <span className="material-symbols-outlined text-[16px]" style={{ color: net >= 0 ? "#10b981" : "#f43f5e" }}>
                   balance
                 </span>
-                <p className="text-[10px] font-bold text-dark-muted uppercase tracking-widest">
+                <p className="text-[10px] font-bold text-text-secondary uppercase tracking-widest">
                   Net
                 </p>
               </div>
@@ -329,11 +329,11 @@ export default function FinanceDashboard() {
           </div>
 
           {/* Section 2 — Spending by Category */}
-          <h2 className="text-base font-bold text-dark-text mb-3">
+          <h2 className="text-base font-bold text-text-primary mb-3">
             Spending by Category
           </h2>
           {Object.keys(categorySpending).length === 0 ? (
-            <p className="text-sm text-dark-muted mb-6">No expenses this month.</p>
+            <p className="text-sm text-text-secondary mb-6">No expenses this month.</p>
           ) : (
             <div className="flex gap-3 overflow-x-auto pb-2 mb-6 scrollbar-hide">
               {Object.entries(categorySpending)
@@ -341,15 +341,15 @@ export default function FinanceDashboard() {
                 .map(([cat, amount]) => (
                   <div
                     key={cat}
-                    className="min-w-[100px] w-[100px] bg-dark-card border border-dark-border rounded-2xl p-3 flex flex-col items-center gap-2 shrink-0"
+                    className="min-w-[100px] w-[100px] bg-bg-card border border-border rounded-2xl p-3 flex flex-col items-center gap-2 shrink-0"
                   >
                     <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${getCategoryColor(cat)}`}>
                       <span className="text-lg">{getCategoryEmoji(cat)}</span>
                     </div>
-                    <p className="text-[11px] text-dark-muted text-center leading-tight">
+                    <p className="text-[11px] text-text-secondary text-center leading-tight">
                       {cat}
                     </p>
-                    <p className="text-sm font-bold text-dark-text">
+                    <p className="text-sm font-bold text-text-primary">
                       {formatCurrency(amount)}
                     </p>
                   </div>
@@ -359,7 +359,7 @@ export default function FinanceDashboard() {
 
           {/* Section 3 — Top Accounts */}
           <div className="flex items-center justify-between mb-3">
-            <h2 className="text-base font-bold text-dark-text">
+            <h2 className="text-base font-bold text-text-primary">
               Top Accounts
             </h2>
             <button
@@ -370,30 +370,30 @@ export default function FinanceDashboard() {
             </button>
           </div>
           {accountSpending.length === 0 ? (
-            <p className="text-sm text-dark-muted">No spending this month.</p>
+            <p className="text-sm text-text-secondary">No spending this month.</p>
           ) : (
             <div className="flex flex-col gap-2">
               {accountSpending.map((acc) => (
                 <div
                   key={acc.id}
-                  className="bg-dark-card border border-dark-border rounded-2xl px-4 py-3 flex items-center gap-3"
+                  className="bg-bg-card border border-border rounded-2xl px-4 py-3 flex items-center gap-3"
                 >
                   <div
-                    className={`w-10 h-10 rounded-lg flex items-center justify-center ${ACCOUNT_TYPE_COLORS[acc.type] || "bg-dark-card text-dark-muted"}`}
+                    className={`w-10 h-10 rounded-lg flex items-center justify-center ${ACCOUNT_TYPE_COLORS[acc.type] || "bg-bg-card text-text-secondary"}`}
                   >
                     <span className="material-symbols-outlined text-[20px]">
                       {ACCOUNT_TYPE_ICONS[acc.type] || "account_balance"}
                     </span>
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-bold text-dark-text truncate">
+                    <p className="text-sm font-bold text-text-primary truncate">
                       {acc.name}
                     </p>
-                    <p className="text-xs text-dark-muted">
+                    <p className="text-xs text-text-secondary">
                       {TYPE_LABELS[acc.type] || acc.type}
                     </p>
                   </div>
-                  <p className="text-sm font-bold text-dark-text">
+                  <p className="text-sm font-bold text-text-primary">
                     {formatCurrency(acc.total)}
                   </p>
                 </div>
@@ -447,7 +447,7 @@ export default function FinanceDashboard() {
                 className={`flex flex-col items-center gap-1 py-2 rounded-xl text-[9px] font-semibold border-2 ${
                   txType === t.value
                     ? "border-finance bg-finance/10 text-finance"
-                    : "border-transparent bg-dark-card text-dark-muted"
+                    : "border-transparent bg-bg-card text-text-secondary"
                 }`}
               >
                 <span className="material-symbols-outlined text-[18px]">
@@ -465,7 +465,7 @@ export default function FinanceDashboard() {
               <>
                 <button
                   onClick={closeSubForm}
-                  className="flex items-center gap-1 text-sm font-medium text-dark-muted active:text-dark-text"
+                  className="flex items-center gap-1 text-sm font-medium text-text-secondary active:text-text-primary"
                 >
                   <span className="material-symbols-outlined text-[18px]">
                     arrow_back
@@ -473,7 +473,7 @@ export default function FinanceDashboard() {
                   Back to list
                 </button>
                 <div>
-                  <label className="text-sm font-medium text-dark-muted mb-1.5 block">
+                  <label className="text-sm font-medium text-text-secondary mb-1.5 block">
                     Name
                   </label>
                   <input
@@ -481,11 +481,11 @@ export default function FinanceDashboard() {
                     value={subFormName}
                     onChange={(e) => setSubFormName(e.target.value)}
                     placeholder="e.g., Netflix"
-                    className="bg-dark-input border border-dark-border rounded-2xl px-4 py-3 text-dark-text placeholder:text-dark-muted text-base focus:outline-none focus:ring-2 focus:ring-finance/30 w-full"
+                    className="bg-bg-input border border-border rounded-2xl px-4 py-3 text-text-primary placeholder:text-text-secondary text-base focus:outline-none focus:ring-2 focus:ring-finance/30 w-full"
                   />
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-dark-muted mb-1.5 block">
+                  <label className="text-sm font-medium text-text-secondary mb-1.5 block">
                     Amount
                   </label>
                   <input
@@ -494,11 +494,11 @@ export default function FinanceDashboard() {
                     value={subFormAmount}
                     onChange={(e) => setSubFormAmount(e.target.value)}
                     placeholder="0.00"
-                    className="bg-dark-input border border-dark-border rounded-2xl px-4 py-3 text-dark-text placeholder:text-dark-muted text-base focus:outline-none focus:ring-2 focus:ring-finance/30 w-full"
+                    className="bg-bg-input border border-border rounded-2xl px-4 py-3 text-text-primary placeholder:text-text-secondary text-base focus:outline-none focus:ring-2 focus:ring-finance/30 w-full"
                   />
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-dark-muted mb-2 block">
+                  <label className="text-sm font-medium text-text-secondary mb-2 block">
                     Billing Type
                   </label>
                   <div className="grid grid-cols-2 gap-2">
@@ -509,7 +509,7 @@ export default function FinanceDashboard() {
                         className={`py-3 rounded-xl text-sm font-semibold border-2 ${
                           subFormBillingType === t
                             ? "border-finance bg-finance/15 text-finance"
-                            : "border-transparent bg-dark-card text-dark-muted"
+                            : "border-transparent bg-bg-card text-text-secondary"
                         }`}
                       >
                         {t === "monthly" ? "Monthly" : "Yearly"}
@@ -518,24 +518,24 @@ export default function FinanceDashboard() {
                   </div>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-dark-muted mb-1.5 block">
+                  <label className="text-sm font-medium text-text-secondary mb-1.5 block">
                     Next Billing Date
                   </label>
                   <input
                     type="date"
                     value={subFormNextDate}
                     onChange={(e) => setSubFormNextDate(e.target.value)}
-                    className="bg-dark-input border border-dark-border rounded-2xl px-4 py-3 text-base text-dark-text focus:outline-none focus:ring-2 focus:ring-finance/30 w-full"
+                    className="bg-bg-input border border-border rounded-2xl px-4 py-3 text-base text-text-primary focus:outline-none focus:ring-2 focus:ring-finance/30 w-full"
                   />
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-dark-muted mb-1.5 block">
+                  <label className="text-sm font-medium text-text-secondary mb-1.5 block">
                     Account
                   </label>
                   <select
                     value={subFormAccountId}
                     onChange={(e) => setSubFormAccountId(e.target.value)}
-                    className="bg-dark-input border border-dark-border rounded-2xl px-4 py-3 text-base text-dark-text focus:outline-none focus:ring-2 focus:ring-finance/30 w-full"
+                    className="bg-bg-input border border-border rounded-2xl px-4 py-3 text-base text-text-primary focus:outline-none focus:ring-2 focus:ring-finance/30 w-full"
                   >
                     <option value="">Select account</option>
                     {accounts.map((acc) => (
@@ -546,13 +546,13 @@ export default function FinanceDashboard() {
                   </select>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-dark-muted mb-1.5 block">
+                  <label className="text-sm font-medium text-text-secondary mb-1.5 block">
                     Category
                   </label>
                   <select
                     value={subFormCategory}
                     onChange={(e) => setSubFormCategory(e.target.value)}
-                    className="bg-dark-input border border-dark-border rounded-2xl px-4 py-3 text-base text-dark-text focus:outline-none focus:ring-2 focus:ring-finance/30 w-full"
+                    className="bg-bg-input border border-border rounded-2xl px-4 py-3 text-base text-text-primary focus:outline-none focus:ring-2 focus:ring-finance/30 w-full"
                   >
                     {categories.map((cat) => (
                       <option key={cat.id} value={cat.name}>
@@ -576,20 +576,20 @@ export default function FinanceDashboard() {
                     subscriptions
                   </span>
                 </div>
-                <p className="text-sm font-medium text-dark-muted">
+                <p className="text-sm font-medium text-text-secondary">
                   Add subscription transaction?
                 </p>
-                <p className="text-lg font-bold text-dark-text">
+                <p className="text-lg font-bold text-text-primary">
                   {selectedSubscription.name}
                 </p>
-                <p className="text-sm text-dark-muted">
+                <p className="text-sm text-text-secondary">
                   {formatCurrency(selectedSubscription.amount)} →{" "}
                   {selectedSubscription.accounts?.name}
                 </p>
                 <div className="flex gap-3 w-full mt-2">
                   <button
                     onClick={() => setSelectedSubscription(null)}
-                    className="flex-1 py-3 rounded-xl text-sm font-semibold bg-dark-card text-dark-muted active:bg-white/5"
+                    className="flex-1 py-3 rounded-xl text-sm font-semibold bg-bg-card text-text-secondary active:bg-white/5"
                   >
                     Cancel
                   </button>
@@ -606,7 +606,7 @@ export default function FinanceDashboard() {
               /* --- Subscription List --- */
               <>
                 {subscriptions.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center py-8 gap-2 text-dark-muted">
+                  <div className="flex flex-col items-center justify-center py-8 gap-2 text-text-secondary">
                     <span className="material-symbols-outlined text-4xl">
                       subscriptions
                     </span>
@@ -617,7 +617,7 @@ export default function FinanceDashboard() {
                     {subscriptions.map((sub) => (
                       <div
                         key={sub.id}
-                        className="bg-dark-input border border-dark-border rounded-2xl px-4 py-3"
+                        className="bg-bg-input border border-border rounded-2xl px-4 py-3"
                       >
                         <div className="flex items-center gap-2">
                           <div
@@ -625,19 +625,19 @@ export default function FinanceDashboard() {
                             onClick={() => setSelectedSubscription(sub)}
                           >
                             <div className="flex items-center justify-between">
-                              <p className="text-sm font-bold text-dark-text">
+                              <p className="text-sm font-bold text-text-primary">
                                 {sub.name}
                               </p>
-                              <p className="text-sm font-bold text-dark-text">
+                              <p className="text-sm font-bold text-text-primary">
                                 {formatCurrency(sub.amount)}
                               </p>
                             </div>
                             <div className="flex items-center gap-2 mt-0.5">
-                              <span className="text-xs text-dark-muted">
+                              <span className="text-xs text-text-secondary">
                                 {sub.accounts?.name}
                               </span>
-                              <span className="text-xs text-dark-muted">·</span>
-                              <span className="text-[10px] font-bold uppercase bg-dark-card text-dark-muted rounded px-1.5 py-0.5">
+                              <span className="text-xs text-text-secondary">·</span>
+                              <span className="text-[10px] font-bold uppercase bg-bg-card text-text-secondary rounded px-1.5 py-0.5">
                                 {sub.billing_type === "monthly"
                                   ? "Monthly"
                                   : "Yearly"}
@@ -647,13 +647,13 @@ export default function FinanceDashboard() {
                           <div className="flex items-center gap-1 shrink-0">
                             <button
                               onClick={() => openSubEdit(sub)}
-                              className="w-8 h-8 rounded-full bg-dark-card flex items-center justify-center text-dark-muted active:bg-blue-500/15 active:text-blue-500"
+                              className="w-8 h-8 rounded-full bg-bg-card flex items-center justify-center text-text-secondary active:bg-blue-500/15 active:text-blue-500"
                             >
                               <span className="material-symbols-outlined text-[16px]">edit</span>
                             </button>
                             <button
                               onClick={() => handleSubDelete(sub.id, setSubscriptions)}
-                              className="w-8 h-8 rounded-full bg-dark-card flex items-center justify-center text-dark-muted active:bg-rose-500/100/15 active:text-rose-400"
+                              className="w-8 h-8 rounded-full bg-bg-card flex items-center justify-center text-text-secondary active:bg-rose-500/100/15 active:text-rose-400"
                             >
                               <span className="material-symbols-outlined text-[16px]">delete</span>
                             </button>
@@ -679,11 +679,11 @@ export default function FinanceDashboard() {
             <>
               {/* Amount */}
               <div>
-                <label className="text-sm font-medium text-dark-muted mb-1.5 block">
+                <label className="text-sm font-medium text-text-secondary mb-1.5 block">
                   {txType === "expense" ? "Total Amount" : "Amount"}
                 </label>
                 <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-dark-muted font-bold text-lg">
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-text-secondary font-bold text-lg">
                     $
                   </span>
                   <input
@@ -692,7 +692,7 @@ export default function FinanceDashboard() {
                     value={txAmount}
                     onChange={(e) => setTxAmount(e.target.value)}
                     placeholder="0.00"
-                    className="bg-dark-input border border-dark-border rounded-2xl pl-8 pr-4 py-3 text-2xl font-bold text-dark-text placeholder:text-dark-muted/60 focus:outline-none focus:ring-2 focus:ring-finance/30 focus:border-finance/50 w-full"
+                    className="bg-bg-input border border-border rounded-2xl pl-8 pr-4 py-3 text-2xl font-bold text-text-primary placeholder:text-text-secondary/60 focus:outline-none focus:ring-2 focus:ring-finance/30 focus:border-finance/50 w-full"
                   />
                 </div>
               </div>
@@ -700,11 +700,11 @@ export default function FinanceDashboard() {
               {/* Your Share (expense only) */}
               {txType === "expense" && (
                 <div>
-                  <label className="text-sm font-medium text-dark-muted mb-1.5 block">
+                  <label className="text-sm font-medium text-text-secondary mb-1.5 block">
                     Your Share
                   </label>
                   <div className="relative">
-                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-dark-muted font-bold text-base">
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-text-secondary font-bold text-base">
                       $
                     </span>
                     <input
@@ -713,10 +713,10 @@ export default function FinanceDashboard() {
                       value={txPersonalAmount}
                       onChange={(e) => setTxPersonalAmount(e.target.value)}
                       placeholder={txAmount || "Same as total"}
-                      className="bg-dark-input border border-dark-border rounded-2xl pl-8 pr-4 py-2.5 text-base font-semibold text-dark-text placeholder:text-dark-muted/60 focus:outline-none focus:ring-2 focus:ring-finance/30 focus:border-finance/50 w-full"
+                      className="bg-bg-input border border-border rounded-2xl pl-8 pr-4 py-2.5 text-base font-semibold text-text-primary placeholder:text-text-secondary/60 focus:outline-none focus:ring-2 focus:ring-finance/30 focus:border-finance/50 w-full"
                     />
                   </div>
-                  <p className="text-[10px] text-dark-muted mt-1">
+                  <p className="text-[10px] text-text-secondary mt-1">
                     Leave empty if you paid for yourself only
                   </p>
                 </div>
@@ -724,26 +724,26 @@ export default function FinanceDashboard() {
 
               {/* Date — full width */}
               <div>
-                <label className="text-sm font-medium text-dark-muted mb-1.5 block">
+                <label className="text-sm font-medium text-text-secondary mb-1.5 block">
                   Date
                 </label>
                 <input
                   type="date"
                   value={txDate}
                   onChange={(e) => setTxDate(e.target.value)}
-                  className="bg-dark-input border border-dark-border rounded-2xl px-4 py-3 text-base text-dark-text focus:outline-none focus:ring-2 focus:ring-finance/30 w-full"
+                  className="bg-bg-input border border-border rounded-2xl px-4 py-3 text-base text-text-primary focus:outline-none focus:ring-2 focus:ring-finance/30 w-full"
                 />
               </div>
 
               {/* Account — full width */}
               <div>
-                <label className="text-sm font-medium text-dark-muted mb-1.5 block">
+                <label className="text-sm font-medium text-text-secondary mb-1.5 block">
                   {txType === "transfer" ? "From" : "Account"}
                 </label>
                 <select
                   value={txAccountId}
                   onChange={(e) => setTxAccountId(e.target.value)}
-                  className="bg-dark-input border border-dark-border rounded-2xl px-4 py-3 text-base text-dark-text focus:outline-none focus:ring-2 focus:ring-finance/30 w-full"
+                  className="bg-bg-input border border-border rounded-2xl px-4 py-3 text-base text-text-primary focus:outline-none focus:ring-2 focus:ring-finance/30 w-full"
                 >
                   <option value="">Select</option>
                   {accounts.map((acc) => (
@@ -763,7 +763,7 @@ export default function FinanceDashboard() {
                       className={`py-2.5 rounded-xl text-sm font-semibold border-2 ${
                         txTransferTarget === "account"
                           ? "border-finance bg-finance/15 text-finance"
-                          : "border-transparent bg-dark-card text-dark-muted"
+                          : "border-transparent bg-bg-card text-text-secondary"
                       }`}
                     >
                       To Account
@@ -773,7 +773,7 @@ export default function FinanceDashboard() {
                       className={`py-2.5 rounded-xl text-sm font-semibold border-2 ${
                         txTransferTarget === "person"
                           ? "border-finance bg-finance/15 text-finance"
-                          : "border-transparent bg-dark-card text-dark-muted"
+                          : "border-transparent bg-bg-card text-text-secondary"
                       }`}
                     >
                       To Person
@@ -782,13 +782,13 @@ export default function FinanceDashboard() {
 
                   {txTransferTarget === "account" ? (
                     <div>
-                      <label className="text-sm font-medium text-dark-muted mb-1.5 block">
+                      <label className="text-sm font-medium text-text-secondary mb-1.5 block">
                         To Account
                       </label>
                       <select
                         value={txToAccountId}
                         onChange={(e) => setTxToAccountId(e.target.value)}
-                        className="bg-dark-input border border-dark-border rounded-2xl px-4 py-3 text-base text-dark-text focus:outline-none focus:ring-2 focus:ring-finance/30 w-full"
+                        className="bg-bg-input border border-border rounded-2xl px-4 py-3 text-base text-text-primary focus:outline-none focus:ring-2 focus:ring-finance/30 w-full"
                       >
                         <option value="">Select</option>
                         {accounts
@@ -802,7 +802,7 @@ export default function FinanceDashboard() {
                     </div>
                   ) : (
                     <div>
-                      <label className="text-sm font-medium text-dark-muted mb-1.5 block">
+                      <label className="text-sm font-medium text-text-secondary mb-1.5 block">
                         Person Name
                       </label>
                       <input
@@ -810,7 +810,7 @@ export default function FinanceDashboard() {
                         value={txPersonName}
                         onChange={(e) => setTxPersonName(e.target.value)}
                         placeholder="e.g., John"
-                        className="bg-dark-input border border-dark-border rounded-2xl px-4 py-3 text-base text-dark-text placeholder:text-dark-muted focus:outline-none focus:ring-2 focus:ring-finance/30 w-full"
+                        className="bg-bg-input border border-border rounded-2xl px-4 py-3 text-base text-text-primary placeholder:text-text-secondary focus:outline-none focus:ring-2 focus:ring-finance/30 w-full"
                       />
                     </div>
                   )}
@@ -820,15 +820,15 @@ export default function FinanceDashboard() {
               {/* From Person (received only, optional) */}
               {txType === "received" && (
                 <div>
-                  <label className="text-sm font-medium text-dark-muted mb-1.5 block">
-                    From Person <span className="text-dark-muted font-normal">(optional)</span>
+                  <label className="text-sm font-medium text-text-secondary mb-1.5 block">
+                    From Person <span className="text-text-secondary font-normal">(optional)</span>
                   </label>
                   <input
                     type="text"
                     value={txFromPersonName}
                     onChange={(e) => setTxFromPersonName(e.target.value)}
                     placeholder="e.g., John"
-                    className="bg-dark-input border border-dark-border rounded-2xl px-4 py-3 text-base text-dark-text placeholder:text-dark-muted focus:outline-none focus:ring-2 focus:ring-finance/30 w-full"
+                    className="bg-bg-input border border-border rounded-2xl px-4 py-3 text-base text-text-primary placeholder:text-text-secondary focus:outline-none focus:ring-2 focus:ring-finance/30 w-full"
                   />
                 </div>
               )}
@@ -837,7 +837,7 @@ export default function FinanceDashboard() {
               {txType === "expense" && (
                 <div>
                   <div className="flex items-center justify-between mb-2">
-                    <label className="text-sm font-medium text-dark-muted">
+                    <label className="text-sm font-medium text-text-secondary">
                       Category
                     </label>
                     <button
@@ -862,7 +862,7 @@ export default function FinanceDashboard() {
                         className={`relative flex flex-col items-center gap-1 py-2.5 rounded-xl text-[10px] font-semibold border-2 ${
                           !editingCategories && txCategory === cat.name
                             ? "border-finance bg-finance/10 text-finance"
-                            : "border-transparent bg-dark-card text-dark-muted"
+                            : "border-transparent bg-bg-card text-text-secondary"
                         }`}
                       >
                         {editingCategories && (
@@ -881,7 +881,7 @@ export default function FinanceDashboard() {
                           setNewCatEmoji("📦");
                           setShowAddCategory(true);
                         }}
-                        className="flex flex-col items-center gap-1 py-2.5 rounded-xl text-[10px] font-semibold border-2 border-dashed border-dark-border bg-dark-card text-dark-muted"
+                        className="flex flex-col items-center gap-1 py-2.5 rounded-xl text-[10px] font-semibold border-2 border-dashed border-border bg-bg-card text-text-secondary"
                       >
                         <span className="text-lg">+</span>
                         Add
@@ -889,9 +889,9 @@ export default function FinanceDashboard() {
                     )}
                   </div>
                   {showAddCategory && (
-                    <div className="bg-dark-input border border-dark-border rounded-2xl p-4 mt-3 flex flex-col gap-3">
+                    <div className="bg-bg-input border border-border rounded-2xl p-4 mt-3 flex flex-col gap-3">
                       <div>
-                        <label className="text-xs font-medium text-dark-muted mb-1 block">
+                        <label className="text-xs font-medium text-text-secondary mb-1 block">
                           Category Name
                         </label>
                         <input
@@ -899,11 +899,11 @@ export default function FinanceDashboard() {
                           value={newCatName}
                           onChange={(e) => setNewCatName(e.target.value)}
                           placeholder="e.g., Pets"
-                          className="bg-dark-card border border-dark-border rounded-lg px-3 py-2 text-base text-dark-text placeholder:text-dark-muted focus:outline-none focus:ring-2 focus:ring-finance/30 w-full"
+                          className="bg-bg-card border border-border rounded-lg px-3 py-2 text-base text-text-primary placeholder:text-text-secondary focus:outline-none focus:ring-2 focus:ring-finance/30 w-full"
                         />
                       </div>
                       <div>
-                        <label className="text-xs font-medium text-dark-muted mb-1 block">
+                        <label className="text-xs font-medium text-text-secondary mb-1 block">
                           Emoji
                         </label>
                         <input
@@ -916,13 +916,13 @@ export default function FinanceDashboard() {
                             setNewCatEmoji(emojis.length > 0 ? emojis[emojis.length - 1] : "");
                           }}
                           placeholder="Tap to pick emoji"
-                          className="bg-dark-card border border-dark-border rounded-lg px-3 py-2 text-2xl text-center w-16 h-12 focus:outline-none focus:ring-2 focus:ring-finance/30"
+                          className="bg-bg-card border border-border rounded-lg px-3 py-2 text-2xl text-center w-16 h-12 focus:outline-none focus:ring-2 focus:ring-finance/30"
                         />
                       </div>
                       <div className="flex gap-2">
                         <button
                           onClick={() => setShowAddCategory(false)}
-                          className="flex-1 py-2.5 rounded-xl text-sm font-semibold bg-dark-card text-dark-muted"
+                          className="flex-1 py-2.5 rounded-xl text-sm font-semibold bg-bg-card text-text-secondary"
                         >
                           Cancel
                         </button>
@@ -950,7 +950,7 @@ export default function FinanceDashboard() {
 
               {/* Description */}
               <div>
-                <label className="text-sm font-medium text-dark-muted mb-1.5 block">
+                <label className="text-sm font-medium text-text-secondary mb-1.5 block">
                   Description
                 </label>
                 <input
@@ -964,7 +964,7 @@ export default function FinanceDashboard() {
                         ? "Transfer note"
                         : "What was this for?"
                   }
-                  className="bg-dark-input border border-dark-border rounded-2xl px-4 py-3 text-base text-dark-text placeholder:text-dark-muted focus:outline-none focus:ring-2 focus:ring-finance/30 w-full"
+                  className="bg-bg-input border border-border rounded-2xl px-4 py-3 text-base text-text-primary placeholder:text-text-secondary focus:outline-none focus:ring-2 focus:ring-finance/30 w-full"
                 />
               </div>
 

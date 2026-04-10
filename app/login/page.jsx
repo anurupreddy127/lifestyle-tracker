@@ -51,25 +51,25 @@ export default function LoginPage() {
     }
   }
 
-  const inputClass = "w-full px-4 py-3 rounded-xl bg-dark-input border border-dark-border text-dark-text placeholder-dark-muted focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50 transition-colors"
+  const inputClass = "w-full px-4 py-3 rounded-xl bg-bg-input border border-border text-text-primary placeholder-text-secondary focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent/50 transition-colors"
 
   if (resetMode) {
     return (
-      <div className="min-h-screen bg-dark-bg flex flex-col items-center justify-center px-6">
+      <div className="min-h-screen bg-bg-primary flex flex-col items-center justify-center px-6">
         <div className="w-full max-w-sm">
           <div className="text-center mb-8">
-            <div className="w-16 h-16 bg-primary rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <div className="w-16 h-16 bg-accent rounded-2xl flex items-center justify-center mx-auto mb-4">
               <span className="material-symbols-outlined text-white text-3xl">lock_reset</span>
             </div>
-            <h1 className="text-2xl font-bold text-dark-text">Reset password</h1>
-            <p className="text-dark-muted mt-1">
+            <h1 className="text-2xl font-bold text-text-primary">Reset password</h1>
+            <p className="text-text-secondary mt-1">
               {resetSent
                 ? 'Check your email for a reset link'
                 : 'Enter your email to receive a reset link'}
             </p>
           </div>
 
-          <div className="bg-dark-card border border-dark-border rounded-2xl p-6">
+          <div className="bg-bg-card border border-border rounded-2xl p-6">
             {resetSent ? (
               <div className="space-y-4">
                 <div className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-sm rounded-xl px-4 py-3 text-center">
@@ -81,7 +81,7 @@ export default function LoginPage() {
                     setResetSent(false)
                     setError(null)
                   }}
-                  className="w-full py-3 bg-primary text-white font-semibold rounded-xl hover:bg-primary/90 transition-colors cursor-pointer"
+                  className="w-full py-3 bg-accent text-white font-semibold rounded-xl hover:bg-accent/90 transition-colors cursor-pointer"
                 >
                   Back to sign in
                 </button>
@@ -95,7 +95,7 @@ export default function LoginPage() {
                 )}
 
                 <div>
-                  <label className="block text-sm font-medium text-dark-muted mb-1.5">Email</label>
+                  <label className="block text-sm font-medium text-text-secondary mb-1.5">Email</label>
                   <input
                     type="email"
                     value={email}
@@ -109,7 +109,7 @@ export default function LoginPage() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full py-3 bg-primary text-white font-semibold rounded-xl hover:bg-primary/90 disabled:opacity-50 transition-colors cursor-pointer"
+                  className="w-full py-3 bg-accent text-white font-semibold rounded-xl hover:bg-accent/90 disabled:opacity-50 transition-colors cursor-pointer"
                 >
                   {loading ? 'Sending...' : 'Send reset link'}
                 </button>
@@ -117,14 +117,14 @@ export default function LoginPage() {
             )}
           </div>
 
-          <p className="text-center text-sm text-dark-muted mt-6">
+          <p className="text-center text-sm text-text-secondary mt-6">
             <button
               onClick={() => {
                 setResetMode(false)
                 setResetSent(false)
                 setError(null)
               }}
-              className="text-primary font-semibold cursor-pointer"
+              className="text-accent font-semibold cursor-pointer"
             >
               Back to sign in
             </button>
@@ -135,17 +135,17 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-dark-bg flex flex-col items-center justify-center px-6">
+    <div className="min-h-screen bg-bg-primary flex flex-col items-center justify-center px-6">
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
-          <div className="w-16 h-16 bg-primary rounded-2xl flex items-center justify-center mx-auto mb-4">
+          <div className="w-16 h-16 bg-accent rounded-2xl flex items-center justify-center mx-auto mb-4">
             <span className="material-symbols-outlined text-white text-3xl">fitness_center</span>
           </div>
-          <h1 className="text-2xl font-bold text-dark-text">Welcome back</h1>
-          <p className="text-dark-muted mt-1">Sign in to your account</p>
+          <h1 className="text-2xl font-bold text-text-primary">Welcome back</h1>
+          <p className="text-text-secondary mt-1">Sign in to your account</p>
         </div>
 
-        <div className="bg-dark-card border border-dark-border rounded-2xl p-6">
+        <div className="bg-bg-card border border-border rounded-2xl p-6">
           <form onSubmit={handleSubmit} className="space-y-4">
             {error && (
               <div className="bg-rose-500/10 border border-rose-500/20 text-rose-400 text-sm rounded-xl px-4 py-3">
@@ -154,7 +154,7 @@ export default function LoginPage() {
             )}
 
             <div>
-              <label className="block text-sm font-medium text-dark-muted mb-1.5">Email</label>
+              <label className="block text-sm font-medium text-text-secondary mb-1.5">Email</label>
               <input
                 type="email"
                 value={email}
@@ -167,14 +167,14 @@ export default function LoginPage() {
 
             <div>
               <div className="flex items-center justify-between mb-1.5">
-                <label className="block text-sm font-medium text-dark-muted">Password</label>
+                <label className="block text-sm font-medium text-text-secondary">Password</label>
                 <button
                   type="button"
                   onClick={() => {
                     setResetMode(true)
                     setError(null)
                   }}
-                  className="text-xs text-primary font-semibold cursor-pointer"
+                  className="text-xs text-accent font-semibold cursor-pointer"
                 >
                   Forgot password?
                 </button>
@@ -192,16 +192,16 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3 bg-primary text-white font-semibold rounded-xl hover:bg-primary/90 disabled:opacity-50 transition-colors cursor-pointer"
+              className="w-full py-3 bg-accent text-white font-semibold rounded-xl hover:bg-accent/90 disabled:opacity-50 transition-colors cursor-pointer"
             >
               {loading ? 'Signing in...' : 'Sign in'}
             </button>
           </form>
         </div>
 
-        <p className="text-center text-sm text-dark-muted mt-6">
+        <p className="text-center text-sm text-text-secondary mt-6">
           Don&apos;t have an account?{' '}
-          <Link href="/signup" className="text-primary font-semibold">
+          <Link href="/signup" className="text-accent font-semibold">
             Sign up
           </Link>
         </p>
