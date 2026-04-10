@@ -256,10 +256,10 @@ export default function ActiveWorkout() {
   }
 
   return (
-    <div className="pb-44">
-      {/* Custom header + progress bar (sticky together) */}
+    <div className="pb-44" style={{ paddingTop: 'calc(6.5rem + env(safe-area-inset-top))' }}>
+      {/* Custom header + progress bar (fixed to top) */}
       <header
-        className="sticky top-0 z-20 bg-dark-nav/95 backdrop-blur-md border-b border-dark-border"
+        className="fixed top-0 left-0 right-0 z-20 bg-dark-nav/95 backdrop-blur-md border-b border-dark-border"
         style={{ paddingTop: 'env(safe-area-inset-top)' }}
       >
         <div className="flex items-center px-4 py-3 gap-3">

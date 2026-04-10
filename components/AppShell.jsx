@@ -83,7 +83,13 @@ export default function AppShell({ children }) {
           />
         )}
 
-        <div className="min-h-screen" style={{ paddingBottom: 'calc(5.5rem + env(safe-area-inset-bottom))' }}>
+        <div
+          className="min-h-screen"
+          style={{
+            paddingTop: hideHeader ? undefined : 'calc(3.5rem + env(safe-area-inset-top))',
+            paddingBottom: 'calc(5.5rem + env(safe-area-inset-bottom))',
+          }}
+        >
           {children}
         </div>
 
