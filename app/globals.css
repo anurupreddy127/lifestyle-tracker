@@ -24,14 +24,14 @@
    Design Tokens — Dark Theme
    ============================================ */
 .dark {
-  --bg-primary: #0F172A;
-  --bg-secondary: #1E293B;
-  --bg-card: #1E293B;
-  --bg-input: #334155;
-  --bg-nav: #1E293B;
-  --text-primary: #F1F5F9;
-  --text-secondary: #94A3B8;
-  --border: #334155;
+  --bg-primary: #000000;
+  --bg-secondary: #111111;
+  --bg-card: #161616;
+  --bg-input: #1C1C1E;
+  --bg-nav: #0A0A0A;
+  --text-primary: #F5F5F5;
+  --text-secondary: #8E8E93;
+  --border: #2C2C2E;
   --accent: #14B8A6;
   --accent-light: oklch(from #14B8A6 l c h / 0.15);
   --finance: #10B981;
