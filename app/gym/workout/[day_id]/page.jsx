@@ -259,7 +259,7 @@ export default function ActiveWorkout() {
     <div className="pb-44" style={{ paddingTop: 'calc(6.5rem + env(safe-area-inset-top))' }}>
       {/* Custom header + progress bar (fixed to top) */}
       <header
-        className="fixed top-0 left-0 right-0 z-20 bg-bg-nav/95 backdrop-blur-md border-b border-border"
+        className="fixed top-0 left-0 right-0 z-20 bg-bg-nav border-b border-border"
         style={{ paddingTop: 'env(safe-area-inset-top)' }}
       >
         <div className="flex items-center px-4 py-3 gap-3">
