@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
 import LoadingSkeleton from '@/components/LoadingSkeleton'
 import SwipeableCard from '@/components/SwipeableCard'
+import BottomSheet from '@/components/BottomSheet'
 
 const GRADIENTS = [
   'from-blue-500 to-indigo-600',
@@ -21,6 +22,9 @@ export default function GymHome() {
   const [days, setDays] = useState([])
   const [loading, setLoading] = useState(true)
   const [activeWorkout, setActiveWorkout] = useState(null)
+  const [previewDay, setPreviewDay] = useState(null)
+  const [previewExercises, setPreviewExercises] = useState([])
+  const [previewLoading, setPreviewLoading] = useState(false)
 
   useEffect(() => {
     try {
@@ -55,6 +59,28 @@ export default function GymHome() {
     }
   }
 
+  async function openPreview(day) {
+    setPreviewDay(day)
+    setPreviewExercises([])
+    setPreviewLoading(true)
+    try {
+      const { data } = await supabase
+        .from('day_exercises')
+        .select('target_sets, target_reps, sort_order, exercises(id, name, equipment_type)')
+        .eq('day_id', day.id)
+        .order('sort_order', { ascending: true })
+      setPreviewExercises(data || [])
+    } catch {
+      setPreviewExercises([])
+    } finally {
+      setPreviewLoading(false)
+    }
+  }
+
+  function closePreview() {
+    setPreviewDay(null)
+  }
+
   return (
     <div className="px-4 pt-4 pb-4">
       {/* In-progress workout banner */}
@@ -87,6 +113,7 @@ export default function GymHome() {
           {days.map((day, index) => {
             const exerciseCount = day.day_exercises?.[0]?.count ?? 0
             const gradient = GRADIENTS[index % GRADIENTS.length]
+            const isActive = activeWorkout?.day_id === day.id
             return (
               <SwipeableCard
                 key={day.id}
@@ -94,7 +121,19 @@ export default function GymHome() {
                 onEdit={() => router.push(`/gym/builder/${day.id}`)}
                 onDelete={() => handleDeleteDay(day.id)}
               >
-                <div className="bg-bg-card border border-border rounded-2xl p-3 flex items-center gap-3">
+                <div
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => openPreview(day)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault()
+                      openPreview(day)
+                    }
+                  }}
+                  className="bg-bg-card border border-border rounded-2xl p-3 flex items-center gap-3 cursor-pointer active:bg-bg-card/70 transition-colors"
+                  aria-label={`View ${day.name} exercises`}
+                >
                   {/* Thumbnail */}
                   <div className={`w-20 h-20 rounded-lg bg-gradient-to-br ${gradient} flex items-center justify-center shrink-0`}>
                     <span className="material-symbols-outlined text-white/80 text-3xl">fitness_center</span>
@@ -111,15 +150,18 @@ export default function GymHome() {
 
                   {/* Start / Resume button */}
                   <button
-                    onClick={() => router.push(`/gym/workout/${day.id}`)}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      router.push(`/gym/workout/${day.id}`)
+                    }}
                     className={`font-semibold text-sm rounded-lg px-4 h-9 shrink-0 cursor-pointer ${
-                      activeWorkout?.day_id === day.id
+                      isActive
                         ? 'bg-amber-500 text-white active:bg-amber-600'
                         : 'bg-accent text-white active:bg-accent/90'
                     }`}
-                    aria-label={activeWorkout?.day_id === day.id ? 'Resume workout' : 'Start workout'}
+                    aria-label={isActive ? 'Resume workout' : 'Start workout'}
                   >
-                    {activeWorkout?.day_id === day.id ? 'Resume' : 'Start'}
+                    {isActive ? 'Resume' : 'Start'}
                   </button>
                 </div>
               </SwipeableCard>
@@ -137,6 +179,75 @@ export default function GymHome() {
         <span className="material-symbols-outlined text-[20px]">add_circle</span>
         Create New Day
       </button>
+
+      {/* Exercise preview sheet */}
+      <BottomSheet
+        isOpen={previewDay !== null}
+        onClose={closePreview}
+        title={previewDay?.name}
+      >
+        {previewLoading ? (
+          <LoadingSkeleton count={4} height="h-14" />
+        ) : previewExercises.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-10 gap-2 text-text-secondary">
+            <span className="material-symbols-outlined text-4xl">exercise</span>
+            <p className="text-sm">No exercises in this workout yet.</p>
+          </div>
+        ) : (
+          <ul className="flex flex-col gap-2">
+            {previewExercises.map((de, i) => (
+              <li
+                key={`${de.exercises?.id ?? i}-${i}`}
+                className="bg-bg-input rounded-xl p-3 flex items-center gap-3"
+              >
+                <div className="w-8 h-8 rounded-full bg-bg-card flex items-center justify-center shrink-0 text-text-secondary text-xs font-bold">
+                  {i + 1}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-text-primary truncate">
+                    {de.exercises?.name ?? 'Unknown'}
+                  </p>
+                  {de.exercises?.equipment_type && (
+                    <p className="text-xs text-text-secondary truncate capitalize">
+                      {de.exercises.equipment_type}
+                    </p>
+                  )}
+                </div>
+                <div className="text-xs font-semibold text-text-secondary shrink-0">
+                  {de.target_sets} × {de.target_reps}
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+
+        {previewDay && (
+          <div className="flex gap-2 mt-5">
+            <button
+              onClick={() => {
+                const id = previewDay.id
+                closePreview()
+                router.push(`/gym/builder/${id}`)
+              }}
+              className="flex-1 h-11 rounded-xl border border-border bg-bg-input font-semibold text-text-primary text-sm cursor-pointer active:opacity-80"
+            >
+              Edit
+            </button>
+            <button
+              onClick={() => {
+                const id = previewDay.id
+                closePreview()
+                router.push(`/gym/workout/${id}`)
+              }}
+              className={`flex-1 h-11 rounded-xl font-semibold text-white text-sm cursor-pointer active:opacity-90 ${
+                activeWorkout?.day_id === previewDay.id ? 'bg-amber-500' : 'bg-accent'
+              }`}
+            >
+              {activeWorkout?.day_id === previewDay.id ? 'Resume' : 'Start'}
+            </button>
+          </div>
+        )}
+      </BottomSheet>
     </div>
   )
 }
