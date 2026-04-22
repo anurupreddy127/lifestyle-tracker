@@ -493,7 +493,7 @@ export default function ActiveWorkout() {
 
       {/* Fixed bottom buttons */}
       <div
-        className="fixed left-0 right-0 px-4 py-3 bg-bg-nav/95 backdrop-blur-md border-t border-border z-40"
+        className="fixed left-0 right-0 px-4 py-3 z-40"
         style={{ bottom: 'calc(5rem + env(safe-area-inset-bottom))' }}
       >
         <div className="grid grid-cols-2 gap-3">
