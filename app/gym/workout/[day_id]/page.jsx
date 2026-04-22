@@ -5,15 +5,25 @@ import { useRouter, useParams } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
 import Toast from '@/components/Toast'
 import LoadingSkeleton from '@/components/LoadingSkeleton'
+import BottomSheet from '@/components/BottomSheet'
+import {
+  EQUIPMENT_LABELS,
+  EQUIPMENT_ICONS,
+  WEIGHT_TYPE_FOR,
+  isBodyweight,
+  normalizeEquipment,
+} from '@/lib/equipment'
 
 const STORAGE_KEY = 'activeWorkout'
+const EQUIPMENT_OPTIONS = ['dumbbell', 'barbell', 'machine', 'no_equipment']
 
-function saveWorkoutToStorage(dayId, dayName, inputValues) {
+function saveWorkoutToStorage(dayId, dayName, inputValues, equipmentOverrides) {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify({
       day_id: dayId,
       day_name: dayName,
       input_values: inputValues,
+      equipment_overrides: equipmentOverrides || {},
       started_at: JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}').started_at || new Date().toISOString(),
     }))
   } catch {}
@@ -32,6 +42,8 @@ export default function ActiveWorkout() {
   const [previousLogs, setPreviousLogs] = useState({})
   // inputValues: { [exerciseId]: { [setIndex]: { weight, reps, completed } } }
   const [inputValues, setInputValues] = useState({})
+  const [equipmentOverrides, setEquipmentOverrides] = useState({})
+  const [equipSheetExerciseId, setEquipSheetExerciseId] = useState(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [showToast, setShowToast] = useState(false)
@@ -69,6 +81,7 @@ export default function ActiveWorkout() {
       if (saved?.input_values) {
         // Restore saved input values
         setInputValues(saved.input_values)
+        setEquipmentOverrides(saved.equipment_overrides || {})
         // Auto-collapse completed exercises
         const collapsed = {}
         ;(dayExercises || []).forEach((de) => {
@@ -92,8 +105,9 @@ export default function ActiveWorkout() {
           initInputs[de.exercise_id] = sets
         })
         setInputValues(initInputs)
+        setEquipmentOverrides({})
         // Save initial state to mark workout as in-progress
-        saveWorkoutToStorage(day_id, name, initInputs)
+        saveWorkoutToStorage(day_id, name, initInputs, {})
       }
 
       // Fetch latest logs per exercise across ALL sessions (not just this workout day)
@@ -126,7 +140,7 @@ export default function ActiveWorkout() {
           [setIndex]: { ...prev[exerciseId]?.[setIndex], [field]: value },
         },
       }
-      saveWorkoutToStorage(day_id, dayName, next)
+      saveWorkoutToStorage(day_id, dayName, next, equipmentOverrides)
       return next
     })
   }
@@ -161,9 +175,22 @@ export default function ActiveWorkout() {
         setCollapsedExercises((p) => ({ ...p, [exerciseId]: true }))
       }
 
-      saveWorkoutToStorage(day_id, dayName, newValues)
+      saveWorkoutToStorage(day_id, dayName, newValues, equipmentOverrides)
       return newValues
     })
+  }
+
+  function getEffectiveEquipment(ex) {
+    return equipmentOverrides[ex.exercise_id] ?? normalizeEquipment(ex.exercises.equipment_type)
+  }
+
+  function setEquipmentOverride(exerciseId, newEquipment) {
+    setEquipmentOverrides((prev) => {
+      const next = { ...prev, [exerciseId]: newEquipment }
+      saveWorkoutToStorage(day_id, dayName, inputValues, next)
+      return next
+    })
+    setEquipSheetExerciseId(null)
   }
 
   // Count completed exercises (all sets completed)
@@ -209,20 +236,22 @@ export default function ActiveWorkout() {
     exercises.forEach((ex) => {
       const sets = inputValues[ex.exercise_id] || {}
       const totalSets = ex.target_sets || 3
-      const isBodyweight = ex.exercises.equipment_type === 'no_equipment'
+      const effectiveEq = getEffectiveEquipment(ex)
+      const bodyweight = isBodyweight(effectiveEq)
       for (let i = 0; i < totalSets; i++) {
         const setData = sets[i]
         const hasReps = setData?.reps
         const hasWeight = setData?.weight
-        if (isBodyweight ? hasReps : (hasWeight && hasReps)) {
+        if (bodyweight ? hasReps : (hasWeight && hasReps)) {
           logs.push({
             session_id: newSession.id,
             exercise_id: ex.exercise_id,
-            weight: isBodyweight ? 0 : parseFloat(setData.weight),
-            weight_type: isBodyweight ? 'bodyweight' : ex.exercises.equipment_type === 'barbell_dumbbell' ? 'per_side' : 'total',
+            weight: bodyweight ? 0 : parseFloat(setData.weight),
+            weight_type: WEIGHT_TYPE_FOR[effectiveEq] || 'total',
             reps: parseInt(setData.reps),
             set_number: i + 1,
             user_id: user.id,
+            equipment_used: effectiveEq,
           })
         }
       }
@@ -292,6 +321,11 @@ export default function ActiveWorkout() {
           const exerciseSets = inputValues[ex.exercise_id] || {}
           const allDone = isExerciseComplete(ex.exercise_id, totalSets)
           const collapsed = allDone && collapsedExercises[ex.exercise_id]
+          const defaultEq = normalizeEquipment(ex.exercises.equipment_type)
+          const effectiveEq = equipmentOverrides[ex.exercise_id] ?? defaultEq
+          const overridden = effectiveEq !== defaultEq
+          const lastUsedEq = prevSets.find((s) => s?.equipment_used)?.equipment_used
+          const showLastUsed = lastUsedEq && lastUsedEq !== effectiveEq
 
           return (
             <div
@@ -301,9 +335,16 @@ export default function ActiveWorkout() {
               }`}
             >
               {/* Exercise header — tappable when completed */}
-              <button
-                type="button"
+              <div
+                role={allDone ? 'button' : undefined}
+                tabIndex={allDone ? 0 : undefined}
                 onClick={() => allDone && setCollapsedExercises((p) => ({ ...p, [ex.exercise_id]: !p[ex.exercise_id] }))}
+                onKeyDown={(e) => {
+                  if (allDone && (e.key === 'Enter' || e.key === ' ')) {
+                    e.preventDefault()
+                    setCollapsedExercises((p) => ({ ...p, [ex.exercise_id]: !p[ex.exercise_id] }))
+                  }
+                }}
                 className={`w-full flex items-center p-4 text-left ${allDone ? 'cursor-pointer' : 'cursor-default'}`}
               >
                 {allDone && (
@@ -317,12 +358,30 @@ export default function ActiveWorkout() {
                     <span className="text-xs font-semibold bg-accent/15 text-accent rounded-full px-2.5 py-0.5 inline-flex items-center gap-1">
                       Target: {ex.target_sets} × {ex.target_reps}
                     </span>
-                    <span className="text-xs font-semibold bg-bg-card text-text-secondary rounded-full px-2.5 py-0.5 inline-flex items-center gap-1">
+                    <button
+                      type="button"
+                      onClick={(e) => { e.stopPropagation(); setEquipSheetExerciseId(ex.exercise_id) }}
+                      className={`text-xs font-semibold rounded-full px-2.5 py-0.5 inline-flex items-center gap-1 cursor-pointer active:opacity-80 ${
+                        overridden
+                          ? 'bg-accent/15 text-accent'
+                          : 'bg-bg-card text-text-secondary'
+                      }`}
+                      aria-label="Change equipment"
+                    >
                       <span className="material-symbols-outlined text-[13px]">
-                        {ex.exercises.equipment_type === 'barbell_dumbbell' ? 'fitness_center' : ex.exercises.equipment_type === 'machine' ? 'precision_manufacturing' : 'back_hand'}
+                        {EQUIPMENT_ICONS[effectiveEq]}
                       </span>
-                      {ex.exercises.equipment_type === 'barbell_dumbbell' ? 'Dumbbell' : ex.exercises.equipment_type === 'machine' ? 'Machine' : 'Bodyweight'}
-                    </span>
+                      {EQUIPMENT_LABELS[effectiveEq]}
+                      <span className="material-symbols-outlined text-[12px] opacity-70">swap_horiz</span>
+                    </button>
+                    {showLastUsed && (
+                      <span className="text-[10px] font-medium bg-bg-input text-text-secondary rounded-full px-2 py-0.5 inline-flex items-center gap-1">
+                        <span className="material-symbols-outlined text-[11px]">
+                          {EQUIPMENT_ICONS[lastUsedEq]}
+                        </span>
+                        Last: {EQUIPMENT_LABELS[lastUsedEq]}
+                      </span>
+                    )}
                   </div>
                 </div>
                 {allDone && (
@@ -330,20 +389,20 @@ export default function ActiveWorkout() {
                     expand_more
                   </span>
                 )}
-              </button>
+              </div>
 
               {/* Collapsible set rows — table layout */}
               {!collapsed && (
                 <div className="px-4 pb-4">
                   {/* Column headers */}
                   <div className={`grid items-center gap-2 mb-2 ${
-                    ex.exercises.equipment_type !== 'no_equipment'
+                    !isBodyweight(effectiveEq)
                       ? 'grid-cols-[2.5rem_3.5rem_1fr_1fr_2.5rem]'
                       : 'grid-cols-[2.5rem_3.5rem_1fr_2.5rem]'
                   }`}>
                     <span className="text-[11px] font-bold text-text-secondary text-center uppercase">Set</span>
                     <span className="text-[11px] font-bold text-text-secondary text-center uppercase">Prev</span>
-                    {ex.exercises.equipment_type !== 'no_equipment' && (
+                    {!isBodyweight(effectiveEq) && (
                       <span className="text-[11px] font-bold text-text-secondary text-center uppercase">Lbs</span>
                     )}
                     <span className="text-[11px] font-bold text-text-secondary text-center uppercase">Reps</span>
@@ -354,9 +413,9 @@ export default function ActiveWorkout() {
                     {Array.from({ length: totalSets }).map((_, setIdx) => {
                       const setData = exerciseSets[setIdx] || {}
                       const prevSet = prevSets[setIdx]
-                      const isBodyweight = ex.exercises.equipment_type === 'no_equipment'
+                      const bw = isBodyweight(effectiveEq)
                       const prevText = prevSet
-                        ? isBodyweight
+                        ? bw
                           ? `${prevSet.reps}`
                           : `${prevSet.weight} × ${prevSet.reps}`
                         : '—'
@@ -367,7 +426,7 @@ export default function ActiveWorkout() {
                           className={`grid items-center gap-2 rounded-xl px-1 py-1.5 transition-colors ${
                             setData.completed ? 'bg-accent/10' : ''
                           } ${
-                            isBodyweight
+                            bw
                               ? 'grid-cols-[2.5rem_3.5rem_1fr_2.5rem]'
                               : 'grid-cols-[2.5rem_3.5rem_1fr_1fr_2.5rem]'
                           }`}
@@ -385,7 +444,7 @@ export default function ActiveWorkout() {
                           <span className="text-xs text-text-secondary text-center truncate">{prevText}</span>
 
                           {/* LBS input */}
-                          {!isBodyweight && (
+                          {!bw && (
                             <input
                               type="text"
                               inputMode="decimal"
@@ -457,6 +516,56 @@ export default function ActiveWorkout() {
       </div>
 
       <Toast message={toastMsg} isVisible={showToast} onDismiss={() => setShowToast(false)} />
+
+      {/* Equipment override sheet */}
+      <BottomSheet
+        isOpen={equipSheetExerciseId !== null}
+        onClose={() => setEquipSheetExerciseId(null)}
+        title="Equipment used"
+      >
+        {(() => {
+          const ex = exercises.find((e) => e.exercise_id === equipSheetExerciseId)
+          if (!ex) return null
+          const defaultEq = normalizeEquipment(ex.exercises.equipment_type)
+          const currentEq = equipmentOverrides[ex.exercise_id] ?? defaultEq
+          return (
+            <div className="flex flex-col gap-3">
+              <p className="text-sm text-text-secondary">{ex.exercises.name}</p>
+              <div className="grid grid-cols-2 gap-2">
+                {EQUIPMENT_OPTIONS.map((key) => {
+                  const selected = currentEq === key
+                  const isDefault = key === defaultEq
+                  return (
+                    <button
+                      key={key}
+                      onClick={() => setEquipmentOverride(ex.exercise_id, key)}
+                      className={`py-3 rounded-xl text-sm font-semibold border-2 flex flex-col items-center justify-center gap-1 ${
+                        selected
+                          ? 'border-accent bg-accent/15 text-accent'
+                          : 'border-transparent bg-bg-card text-text-primary'
+                      }`}
+                    >
+                      <span className="material-symbols-outlined text-[22px]">{EQUIPMENT_ICONS[key]}</span>
+                      <span>{EQUIPMENT_LABELS[key]}</span>
+                      {isDefault && (
+                        <span className="text-[10px] font-medium text-text-secondary">Default</span>
+                      )}
+                    </button>
+                  )
+                })}
+              </div>
+              {currentEq !== defaultEq && (
+                <button
+                  onClick={() => setEquipmentOverride(ex.exercise_id, defaultEq)}
+                  className="text-sm text-text-secondary underline underline-offset-2 py-2"
+                >
+                  Reset to default ({EQUIPMENT_LABELS[defaultEq]})
+                </button>
+              )}
+            </div>
+          )
+        })()}
+      </BottomSheet>
     </div>
   )
 }

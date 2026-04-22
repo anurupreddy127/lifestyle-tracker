@@ -146,3 +146,41 @@ CREATE POLICY "Users can delete own api_keys" ON api_keys FOR DELETE USING (auth
 
 -- Store person name directly on transaction (no separate people table needed)
 ALTER TABLE transactions ADD COLUMN IF NOT EXISTS person_name TEXT;
+
+-- =============================================================================
+-- Phase 6: Split barbell_dumbbell, track equipment used per log
+-- =============================================================================
+
+UPDATE exercises SET equipment_type = 'dumbbell' WHERE equipment_type = 'barbell_dumbbell';
+
+ALTER TABLE workout_logs ADD COLUMN IF NOT EXISTS equipment_used TEXT;
+
+UPDATE workout_logs wl
+SET equipment_used = e.equipment_type
+FROM exercises e
+WHERE wl.exercise_id = e.id AND wl.equipment_used IS NULL;
+
+DROP FUNCTION IF EXISTS public.get_latest_exercise_logs(uuid[], uuid);
+
+CREATE FUNCTION public.get_latest_exercise_logs(
+  p_exercise_ids uuid[],
+  p_user_id uuid
+)
+RETURNS TABLE(
+  exercise_id uuid,
+  weight numeric,
+  weight_type text,
+  reps integer,
+  set_number integer,
+  equipment_used text
+)
+LANGUAGE sql STABLE
+AS $function$
+  SELECT DISTINCT ON (wl.exercise_id, wl.set_number)
+    wl.exercise_id, wl.weight, wl.weight_type, wl.reps, wl.set_number, wl.equipment_used
+  FROM workout_logs wl
+  JOIN workout_sessions ws ON ws.id = wl.session_id
+  WHERE wl.exercise_id = ANY(p_exercise_ids)
+    AND wl.user_id = p_user_id
+  ORDER BY wl.exercise_id, wl.set_number, ws.performed_at DESC
+$function$;

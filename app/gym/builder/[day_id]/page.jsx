@@ -5,6 +5,7 @@ import { useRouter, useParams } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
 import BottomSheet from '@/components/BottomSheet'
 import LoadingSkeleton from '@/components/LoadingSkeleton'
+import { EQUIPMENT_LABELS, normalizeEquipment } from '@/lib/equipment'
 
 export default function EditDayBuilder() {
   const router = useRouter()
@@ -224,7 +225,7 @@ export default function EditDayBuilder() {
                 <div className="flex-1 min-w-0">
                   <span className="text-sm font-semibold text-text-primary block truncate">{ex.name}</span>
                   <span className="text-[10px] font-bold uppercase text-accent/60">
-                    {ex.equipment_type === 'barbell_dumbbell' ? 'Barbell/Dumbbell' : ex.equipment_type === 'no_equipment' ? 'No Equipment' : 'Machine'}
+                    {EQUIPMENT_LABELS[normalizeEquipment(ex.equipment_type)] || ex.equipment_type}
                   </span>
                 </div>
               </button>

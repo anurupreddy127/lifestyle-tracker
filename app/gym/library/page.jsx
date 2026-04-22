@@ -5,19 +5,17 @@ import { useAuth } from '@/contexts/AuthContext'
 import BottomSheet from '@/components/BottomSheet'
 import LoadingSkeleton from '@/components/LoadingSkeleton'
 import SwipeableCard from '@/components/SwipeableCard'
-
-const EQUIPMENT_LABELS = {
-  barbell_dumbbell: 'Barbell/Dumbbell',
-  machine: 'Machine',
-  no_equipment: 'No Equipment',
-}
+import { EQUIPMENT_LABELS, EQUIPMENT_ICONS, normalizeEquipment } from '@/lib/equipment'
 
 const FILTERS = [
   { label: 'All', value: 'all' },
-  { label: 'Barbell', value: 'barbell_dumbbell' },
+  { label: 'Dumbbell', value: 'dumbbell' },
+  { label: 'Barbell', value: 'barbell' },
   { label: 'Machine', value: 'machine' },
-  { label: 'No Equipment', value: 'no_equipment' },
+  { label: 'Bodyweight', value: 'no_equipment' },
 ]
+
+const EQUIPMENT_OPTIONS = ['dumbbell', 'barbell', 'machine', 'no_equipment']
 
 function groupByLetter(exercises) {
   const groups = {}
@@ -36,7 +34,7 @@ export default function ExerciseLibrary() {
   const [showModal, setShowModal] = useState(false)
   const [editingExercise, setEditingExercise] = useState(null)
   const [formName, setFormName] = useState('')
-  const [formEquipmentType, setFormEquipmentType] = useState('barbell_dumbbell')
+  const [formEquipmentType, setFormEquipmentType] = useState('dumbbell')
   const [deleteError, setDeleteError] = useState('')
   const [filter, setFilter] = useState('all')
 
@@ -58,14 +56,14 @@ export default function ExerciseLibrary() {
 
   function openAddModal() {
     setFormName('')
-    setFormEquipmentType('barbell_dumbbell')
+    setFormEquipmentType('dumbbell')
     setEditingExercise(null)
     setShowModal(true)
   }
 
   function openEditModal(exercise) {
     setFormName(exercise.name)
-    setFormEquipmentType(exercise.equipment_type)
+    setFormEquipmentType(normalizeEquipment(exercise.equipment_type))
     setEditingExercise(exercise)
     setShowModal(true)
   }
@@ -172,8 +170,11 @@ export default function ExerciseLibrary() {
                       {/* Info */}
                       <div className="flex-1 min-w-0">
                         <p className="text-base font-semibold text-text-primary truncate">{exercise.name}</p>
-                        <span className="text-[10px] font-bold uppercase bg-accent/15 text-accent rounded px-2 py-0.5 mt-1 inline-block">
-                          {EQUIPMENT_LABELS[exercise.equipment_type] || exercise.equipment_type}
+                        <span className="text-[10px] font-bold uppercase bg-accent/15 text-accent rounded px-2 py-0.5 mt-1 inline-flex items-center gap-1">
+                          <span className="material-symbols-outlined text-[11px]">
+                            {EQUIPMENT_ICONS[normalizeEquipment(exercise.equipment_type)]}
+                          </span>
+                          {EQUIPMENT_LABELS[normalizeEquipment(exercise.equipment_type)] || exercise.equipment_type}
                         </span>
                       </div>
                     </div>
@@ -217,18 +218,19 @@ export default function ExerciseLibrary() {
 
           <div>
             <label className="text-sm font-medium text-text-secondary mb-2 block">Equipment Type</label>
-            <div className="grid grid-cols-3 gap-2">
-              {Object.entries(EQUIPMENT_LABELS).map(([key, label]) => (
+            <div className="grid grid-cols-2 gap-2">
+              {EQUIPMENT_OPTIONS.map((key) => (
                 <button
                   key={key}
                   onClick={() => setFormEquipmentType(key)}
-                  className={`py-3 rounded-xl text-xs font-semibold border-2 ${
+                  className={`py-3 rounded-xl text-xs font-semibold border-2 flex items-center justify-center gap-1.5 ${
                     formEquipmentType === key
                       ? 'border-accent bg-accent/15 text-accent'
                       : 'border-transparent bg-bg-card text-text-secondary'
                   }`}
                 >
-                  {label}
+                  <span className="material-symbols-outlined text-[16px]">{EQUIPMENT_ICONS[key]}</span>
+                  {EQUIPMENT_LABELS[key]}
                 </button>
               ))}
             </div>
