@@ -499,7 +499,7 @@ export default function ActiveWorkout() {
         <div className="grid grid-cols-2 gap-3">
           <button
             onClick={() => { clearWorkoutStorage(); router.push('/gym') }}
-            className="border-2 border-border text-text-secondary font-semibold rounded-xl py-3.5 flex items-center justify-center gap-2"
+            className="bg-black/40 backdrop-blur-md border-2 border-border text-text-secondary font-semibold rounded-xl py-3.5 flex items-center justify-center gap-2"
           >
             <span className="material-symbols-outlined text-[18px]">close</span>
             Cancel
